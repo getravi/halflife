@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frontier Lab Learning Plan</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.hero {
+  padding: 4rem 0 3rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3rem;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.hero h1 {
+  font-size: 36px;
+  color: var(--text);
+  margin-bottom: 1rem;
+  line-height: 1.15;
+}
+.hero h1 span { color: var(--accent); }
+.hero p {
+  max-width: 560px;
+  color: var(--muted2);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.global-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.global-bar-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  max-width: 320px;
+}
+.global-bar-fill {
+  height: 3px;
+  background: var(--accent);
+  transition: width .4s;
+}
+.global-bar-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.phase-card-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 180px;
+}
+.phase-tag-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+.phase-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: auto;
+  padding-top: 1rem;
+}
+.note-box {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 1.25rem 1.5rem;
+  margin-top: 2rem;
+  font-size: 12px;
+  color: var(--muted2);
+  line-height: 1.7;
+}
+.note-box strong { color: var(--text); font-weight: 500; }
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.progress-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="logo">FLP</span>
+  <nav class="nav">
+    <a href="#overview">Overview</a>
+    <a href="#phase0">Phase 0</a>
+    <a href="#phase1">Phase 1</a>
+    <a href="#phase2">Phase 2</a>
+    <a href="#phase3">Phase 3</a>
+    <a href="#phase4">Phase 4</a>
+  </nav>
+</header>
+
+<!-- OVERVIEW VIEW PANEL -->
+<div id="view-overview" class="view-panel">
+  <div class="container">
+    <div class="hero">
+      <div class="hero-eyebrow">Frontier Lab Learning Plan · Applied Research &amp; Evaluation Track</div>
+      <h1>Build credible evidence for<br><span>applied research roles.</span></h1>
+      <p>Five phases, 52 weeks, starting from close to zero. Learn to program, then PyTorch and transformers, then JAX and scaling economics, then fine-tuning, RL and evaluation. It ends with the artifact frontier labs are actually hiring against right now: a published environment with honest reliability numbers, plus the portfolio to explain it.</p>
+      <div class="global-bar">
+        <div style="flex: 1; max-width: 320px;">
+          <progress-bar id="global-bar-fill" value="0"></progress-bar>
+        </div>
+        <span class="global-bar-label"><span id="global-done">0</span> / <span id="global-total">0</span> tasks · <span id="global-pct">0</span>%</span>
+      </div>
+    </div>
+
+    <div class="section-label">Progress by phase</div>
+
+    <div class="stats-row" style="margin-bottom:1px">
+      <div class="stat">
+        <div class="stat-num" id="global-done-2">0</div>
+        <div class="stat-label">Tasks done</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="global-pct-2">0%</div>
+        <div class="stat-label">Overall progress</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="phases-started">0</div>
+        <div class="stat-label">Phases started</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="streak-weeks">52</div>
+        <div class="stat-label">Week runway</div>
+      </div>
+    </div>
+
+    <div class="phase-grid" style="margin-top:1px; margin-bottom:3rem">
+      <a href="#phase0" class="phase-card">
+        <div class="phase-card-inner">
+          <div class="phase-num">Phase 00</div>
+          <div class="phase-title">Programming<br>foundations</div>
+          <div class="phase-weeks">Weeks 1–10</div>
+          <div class="phase-tag-row">
+            <span class="tag tag-exercise">Exercise</span>
+            <span class="tag tag-theory">Theory</span>
+          </div>
+          <div class="phase-count">
+            <span data-phase-count="p0">0</span>
+          </div>
+          <div class="phase-progress-bar" style="border:none; padding-top:0.5rem;">
+            <progress-bar data-phase-fill="p0" value="0"></progress-bar>
+          </div>
+        </div>
+      </a>
+
+      <a href="#phase1" class="phase-card">
+        <div class="phase-card-inner">
+          <div class="phase-num">Phase 01</div>
+          <div class="phase-title">PyTorch, DL &amp;<br>Transformers</div>
+          <div class="phase-weeks">Weeks 11–22</div>
+          <div class="phase-tag-row">
+            <span class="tag tag-theory">Theory</span>
+            <span class="tag tag-exercise">Exercise</span>
+          </div>
+          <div class="phase-count">
+            <span data-phase-count="p1">0</span>
+          </div>
+          <div class="phase-progress-bar" style="border:none; padding-top:0.5rem;">
+            <progress-bar data-phase-fill="p1" value="0"></progress-bar>
+          </div>
+        </div>
+      </a>
+
+      <a href="#phase2" class="phase-card">
+        <div class="phase-card-inner">
+          <div class="phase-num">Phase 02</div>
+          <div class="phase-title">JAX, TPUs &amp;<br>Scaling Laws</div>
+          <div class="phase-weeks">Weeks 23–34</div>
+          <div class="phase-tag-row">
+            <span class="tag tag-jax">JAX</span>
+            <span class="tag tag-theory">Theory</span>
+          </div>
+          <div class="phase-count">
+            <span data-phase-count="p2">0</span>
+          </div>
+          <div class="phase-progress-bar" style="border:none; padding-top:0.5rem;">
+            <progress-bar data-phase-fill="p2" value="0"></progress-bar>
+          </div>
+        </div>
+      </a>
+
+      <a href="#phase3" class="phase-card">
+        <div class="phase-card-inner">
+          <div class="phase-num">Phase 03</div>
+          <div class="phase-title">Fine-Tuning, RL,<br>Evals &amp; Environments</div>
+          <div class="phase-weeks">Weeks 35–46</div>
+          <div class="phase-tag-row">
+            <span class="tag tag-agent">Agents</span>
+            <span class="tag tag-theory">Theory</span>
+          </div>
+          <div class="phase-count">
+            <span data-phase-count="p3">0</span>
+          </div>
+          <div class="phase-progress-bar" style="border:none; padding-top:0.5rem;">
+            <progress-bar data-phase-fill="p3" value="0"></progress-bar>
+          </div>
+        </div>
+      </a>
+
+      <a href="#phase4" class="phase-card">
+        <div class="phase-card-inner">
+          <div class="phase-num">Phase 04</div>
+          <div class="phase-title">Capstone Research<br>Project</div>
+          <div class="phase-weeks">Weeks 47–52+</div>
+          <div class="phase-tag-row">
+            <span class="tag tag-agent">Agents</span>
+            <span class="tag tag-exercise">Exercise</span>
+          </div>
+          <div class="phase-count">
+            <span data-phase-count="p4">0</span>
+          </div>
+          <div class="phase-progress-bar" style="border:none; padding-top:0.5rem;">
+            <progress-bar data-phase-fill="p4" value="0"></progress-bar>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="note-box">
+      <strong>On what this plan is and isn't.</strong> This plan focuses on the Applied Research &amp; Agentic Evaluation track, omitting low-level custom GPU kernels to focus on model scaling intuition, fine-tuning (LoRA), data quality, and rigorous scientific evaluations. The 44-week curriculum (10-15h/week commitment) is designed to produce reproducible public artifacts and credible interview evidence. Start by sharpening your coding velocity in Phase 0, then progress sequentially.
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 0 VIEW PANEL -->
+<div id="view-phase0" class="view-panel">
+  <div class="container-sm">
+    <div class="breadcrumb">
+      <a href="#overview">Overview</a>
+      <span>›</span>
+      <span>Phase 0</span>
+    </div>
+
+    <div class="page-hero">
+      <div class="page-hero-eyebrow">Phase 00 · Weeks 1–10</div>
+      <h1>Programming<br>foundations</h1>
+      <p>This phase assumes you are starting from close to zero. You will learn Python properly, then array thinking, then the math that deep learning is actually made of. Nothing here is optional and nothing here is skippable — every later phase silently assumes all of it. Target 10–15 hours/week over 10 weeks.</p>
+    </div>
+
+    <div class="progress-header">
+      <div style="flex: 1;">
+        <progress-bar id="progress-bar-p0" value="0"></progress-bar>
+      </div>
+      <span class="progress-label" id="progress-label-p0">0% complete</span>
+    </div>
+
+    <div class="callout callout-tip" style="margin-bottom:2rem">
+      <strong>Start here, today.</strong> Install Python 3.13 and <code>uv</code> before anything else, then work Task 01 in order. If you already write Python daily and know what a decorator and a generator are, skim Task 01 for the exit check and start at Task 02 instead.
+    </div>
+
+    <!-- Task 1 -->
+    <div class="day-section" id="sec-p0-python-basics">
+      <div class="day-header">
+        <span class="day-num-badge">Task 01</span>
+        <span class="day-title-text">Python from zero</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p0-python-basics">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Set up and write your first programs</div>
+          <div class="task-item-desc">Install Python 3.13 and Astral's `uv`. Create your first project with `uv init`, run scripts, use the REPL. Learn variables, numbers, strings, f-strings, and `print` debugging. Write 20 tiny programs — no tutorials on autopilot, type every line.</div>
+          <div class="task-item-time">Week 1</div>
+          <a class="resource" href="https://docs.python.org/3/tutorial/" target="_blank">Python Tutorial ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Data structures and control flow</div>
+          <div class="task-item-desc">Lists, dicts, sets, tuples. `if`/`for`/`while`, slicing, iteration, nesting. Learn what mutability means and why it bites. Build: a word-frequency counter, a to-do list, and a text-file parser — from a blank file, not from a template.</div>
+          <div class="task-item-time">Week 2</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Functions, files, errors, and classes</div>
+          <div class="task-item-desc">Function arguments and return values, scope, exceptions and `try`/`except`, reading and writing files, modules and imports, and basic classes with `__init__`. Learn to read a traceback top-to-bottom and fix the actual line it names.</div>
+          <div class="task-item-time">Week 3</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Exit check</div>
+          <div class="task-item-desc">From an empty file, write a program that reads a text file, counts word frequencies, sorts by count, and writes the top 20 to a new file — with a function per step and error handling for a missing file. No copying, no AI assistance. If it takes over an hour, repeat Week 2.</div>
+          <div class="task-item-time">Week 3</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>Do not use an AI assistant to write code in this phase.</strong> It will produce working programs and leave you unable to debug a shape mismatch in Phase 1. Use it to explain concepts, never to emit code you then paste.
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="day-section" id="sec-p0-python-fluency">
+      <div class="day-header">
+        <span class="day-num-badge">Task 02</span>
+        <span class="day-title-text">Python fluency refresh</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p0-python-fluency">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Refresh core Python</div>
+          <div class="task-item-desc">List/dict/set comprehensions, generators, decorators, context managers, *args/**kwargs. Write code by hand. Use Python docs directly. Focus on coding speed.</div>
+          <div class="task-item-time">Week 4</div>
+          <a class="resource" href="https://docs.python.org/3/tutorial/" target="_blank">docs.python.org ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Type annotations &amp; tooling</div>
+          <div class="task-item-desc">Set up a clean environment with ruff 0.16 and mypy 2.x. Practice using explicit type hints throughout. Strong typing and linting habits make larger ML/evals codebases easier to review. Astral's `ty` is the fast Rust type checker to watch, but it is still 0.0.x — do not make it your default yet.</div>
+          <div class="task-item-time">Week 4</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Exit check</div>
+          <div class="task-item-desc">Write a generic typed LRU cache from scratch using only Python stdlib (no functools). If you can do it cleanly in under 30 minutes, you're done.</div>
+          <div class="task-item-time">Week 5</div>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <strong>Focus on coding hygiene.</strong> Mypy type-checking and Ruff linting should run on save in your VS Code workspace. Build this reflex on day one.
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="day-section" id="sec-p0-numpy">
+      <div class="day-header">
+        <span class="day-num-badge">Task 03</span>
+        <span class="day-title-text">NumPy array thinking</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p0-numpy">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Think in arrays, not loops</div>
+          <div class="task-item-desc">Work through the NumPy 100 exercises. Focus on broadcasting, fancy indexing, einsum, and axis semantics. Absolutely no Python for-loops on arrays.</div>
+          <div class="task-item-time">Week 6</div>
+          <a class="resource" href="https://github.com/rougier/numpy-100" target="_blank">numpy-100 ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Matrix ops by hand</div>
+          <div class="task-item-desc">Implement matrix multiply, softmax, and layer norm from scratch with NumPy. Verify outputs against reference implementations. JAX/PyTorch APIs are very similar.</div>
+          <div class="task-item-time">Week 6</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Exit check</div>
+          <div class="task-item-desc">Implement scaled dot-product attention (Q, K, V → output) using only np.einsum and np.exp. No loops. Must match PyTorch reference to 1e-5 tolerance.</div>
+          <div class="task-item-time">Week 6</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>Array thinking is non-negotiable.</strong> Both PyTorch and JAX require thinking in terms of high-dimensional array transforms. If this isn't fluent, model building is painful.
+      </div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="day-section" id="sec-p0-algorithms">
+      <div class="day-header">
+        <span class="day-num-badge">Task 04</span>
+        <span class="day-title-text">Algorithms &amp; complexity</span>
+        <span class="tag tag-theory">Theory</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p0-algorithms">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Complexity intuition</div>
+          <div class="task-item-desc">Read code loops and state time/space complexity instantly. Focus on: sorting, tree traversal, BFS/DFS, sliding window, two-pointer patterns.</div>
+          <div class="task-item-time">Week 7</div>
+          <a class="resource" href="https://neetcode.io/roadmap" target="_blank">neetcode.io ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Optimizer math & 5 LeetCode</div>
+          <div class="task-item-desc">Implement SGD, SGD with momentum, and Adam from scratch in NumPy — derive each update rule on paper first. Verify Adam matches torch.optim.Adam output. Then solve 5 Medium LeetCode problems (arrays + hashmaps only) for baseline debugging confidence. Stop at 5.</div>
+          <div class="task-item-time">Week 7</div>
+          <a class="resource" href="https://ruder.io/optimizing-gradient-descent/" target="_blank">Ruder: Optimizer Overview ↗</a>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <strong>The optimizer math is the deliverable, not LeetCode.</strong> You will use Adam in every training loop from Phase 1 onward. Understanding its update rule on paper is directly useful. LeetCode is capped at 5 problems — it's for debugging speed only. Do not expand it.
+      </div>
+    </div>
+
+    <!-- Task 4 -->
+    <div class="day-section" id="sec-p0-git-tooling">
+      <div class="day-header">
+        <span class="day-num-badge">Task 05</span>
+        <span class="day-title-text">Git &amp; dev environment</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p0-git-tooling">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Git fluency</div>
+          <div class="task-item-desc">Master: interactive rebase, cherry-pick, bisect, stashing, worktrees, and resolving merge conflicts. Run a git bisect on a buggy repo history.</div>
+          <div class="task-item-time">Week 8</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Workspace setup with 'uv'</div>
+          <div class="task-item-desc">Set up a private learning repo. Configure python management using Astral's `uv` (faster and cleaner than conda). Set up VS Code and Google Colab.</div>
+          <div class="task-item-time">Week 8</div>
+          <a class="resource" href="https://github.com/astral-sh/uv" target="_blank">astral-sh/uv ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Profiling scripts</div>
+          <div class="task-item-desc">Learn `cProfile` and `line_profiler`. Profile a bottlenecked Python loop. Identify slow calls and optimize them. This builds optimization reflexes.</div>
+          <div class="task-item-time">Week 8</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 5 -->
+    <div class="day-section" id="sec-p0-math-refresh">
+      <div class="day-header">
+        <span class="day-num-badge">Task 06</span>
+        <span class="day-title-text">Math refresh</span>
+        <span class="tag tag-theory">Theory</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p0-math-refresh">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Linear algebra warmup</div>
+          <div class="task-item-desc">Eigendecomposition, SVD, matrix rank, projections. Work 10 problems by hand. Essential for low-rank adjustments (like LoRA) in Phase 3.</div>
+          <div class="task-item-time">Week 9</div>
+          <a class="resource" href="https://www.3blue1brown.com/?topic=linear-algebra" target="_blank">3Blue1Brown ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Calculus &amp; MLP Backprop</div>
+          <div class="task-item-desc">Chain rule in vector form, Jacobians, Hessians. Derive backpropagation for a 2-layer MLP by hand. Verify the gradients numerically in NumPy.</div>
+          <div class="task-item-time">Weeks 12–13</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Probability &amp; Entropy</div>
+          <div class="task-item-desc">Cross-entropy, KL divergence, entropy. Derive the softmax gradient by hand. Understand the mathematical justification for Cross-Entropy loss.</div>
+          <div class="task-item-time">Week 10</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>Do not skip Day 1.</strong> Do not skip pencil-and-paper work. Understanding matrix dimensions during backpropagation is key to debugging neural network shapes later.
+      </div>
+    </div>
+
+    <!-- Milestone -->
+    <div class="day-section" id="sec-p0-milestone">
+      <div class="day-header">
+        <span class="day-num-badge">Milestone</span>
+        <span class="day-title-text">Phase 0 complete</span>
+        <span class="tag tag-exercise">Deliverable</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p0-milestone">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="milestone-box">
+        <h3>You're ready for Phase 1 when…</h3>
+        <ul class="checklist">
+          <li>You can write a word-frequency program from an empty file, with functions and error handling, in under an hour</li>
+          <li>You can read a traceback and fix the line it names without guessing</li>
+          <li>You can write a typed Python LRU cache from scratch in &lt;30 min</li>
+          <li>You can implement softmax attention in NumPy without looking anything up</li>
+          <li>You've implemented Adam from scratch and verified it against torch.optim.Adam</li>
+          <li>Your private GitHub repo is initialized and package environment is managed with `uv`</li>
+          <li>You can derive backprop for a 2-layer MLP on paper and verify it numerically in code</li>
+        </ul>
+        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); font-size:12px; color:var(--muted2)">
+          Next: <a href="#phase1" style="color:var(--blue)">Phase 1 — PyTorch, DL &amp; Transformers →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 1 VIEW PANEL -->
+<div id="view-phase1" class="view-panel">
+  <div class="container-sm">
+    <div class="breadcrumb">
+      <a href="#overview">Overview</a>
+      <a href="#phase0">Phase 0</a>
+      <span>›</span>
+      <span>Phase 1</span>
+    </div>
+
+    <div class="page-hero">
+      <div class="page-hero-eyebrow">Phase 01 · Weeks 11–22</div>
+      <h1>PyTorch, DL &amp;<br>Transformers</h1>
+      <p>Transition from coding foundations to deep learning intuition using PyTorch 2.13. Build Karpathy's Zero to Hero projects, implement a decoder-only transformer from scratch, work Stanford CS336's first assignment, then run nanochat end to end — tokenizer through pretraining, SFT, RL, and eval.</p>
+    </div>
+
+    <div class="progress-header">
+      <div style="flex: 1;">
+        <progress-bar id="progress-bar-p1" value="0"></progress-bar>
+      </div>
+      <span class="progress-label" id="progress-label-p1">0% complete</span>
+    </div>
+
+    <!-- Task 1 -->
+    <div class="day-section" id="sec-p1-karpathy-hero">
+      <div class="day-header">
+        <span class="day-num-badge">Task 01</span>
+        <span class="day-title-text">Karpathy's Zero to Hero</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p1-karpathy-hero">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Build Micrograd</div>
+          <div class="task-item-desc">Watch Karpathy's micrograd video. Implement scalar-level autograd with backpropagation from scratch. Write a tiny MLP and train it on a binary classification dataset. The series has had no new lectures since Aug 2024 and none are coming — Karpathy joined Anthropic's pretraining team in May 2026 — but micrograd and makemore remain the best on-ramp that exists.</div>
+          <div class="task-item-time">Weeks 14–15</div>
+          <a class="resource" href="https://karpathy.ai/zero-to-hero.html" target="_blank">Zero to Hero ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Makemore Series</div>
+          <div class="task-item-desc">Build bigram, MLP, CNN, and RNN character-level language models. Understand PyTorch's API internals, initialization, batch normalization, and diagnostics (activations/gradients).</div>
+          <div class="task-item-time">Weeks 12–13</div>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <strong>Do not copy-paste code.</strong> Watch the lectures, understand the concepts, and write the training loops, model definitions, and backprop calls by hand. Debugging weight shapes builds crucial intuition.
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="day-section" id="sec-p1-transformer-pytorch">
+      <div class="day-header">
+        <span class="day-num-badge">Task 02</span>
+        <span class="day-title-text">Transformers from scratch</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p1-transformer-pytorch">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Read Attention Paper</div>
+          <div class="task-item-desc">Read "Attention Is All You Need." Be able to diagram and explain every mathematical component: scaled dot-product attention, multi-head attention, residual streams, layer normalization.</div>
+          <div class="task-item-time">Week 14</div>
+          <a class="resource" href="https://arxiv.org/abs/1706.03762" target="_blank">arxiv 1706.03762 ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Build a decoder-only transformer</div>
+          <div class="task-item-desc">Implement a ~10M parameter decoder-only transformer. Write multi-head attention, MLP layers, and layer norm yourself. Train it on character-level Shakespeare or addition datasets. Karpathy's `nanoGPT` repo is the classic reference but was formally deprecated by its author in Nov 2025 — read it, do not build on it.</div>
+          <div class="task-item-time">Weeks 14–15</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Modern LLM internals</div>
+          <div class="task-item-desc">Read: FlashAttention (IO-aware tiling — why attention is memory-bandwidth-bound, not compute-bound), RoPE (why learned positional encodings were replaced with rotary relative encodings), GQA (how grouped query attention reduces KV-cache memory). Trace KV-cache mechanics manually: what gets cached, at what layer, when it invalidates. These come up in every serious frontier lab discussion.</div>
+          <div class="task-item-time">Week 15</div>
+          <a class="resource" href="https://arxiv.org/abs/2205.14135" target="_blank">FlashAttention ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="day-section" id="sec-p1-cs336-basics">
+      <div class="day-header">
+        <span class="day-num-badge">Task 03</span>
+        <span class="day-title-text">Stanford CS336 · assignment 1</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p1-cs336-basics">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Watch the lectures</div>
+          <div class="task-item-desc">CS336 "Language Modeling from Scratch" is the single best structured course for this material and the Spring 2026 iteration is fully public — lectures on YouTube, slides and assignments on GitHub. Watch lectures 1–5 before touching the assignment. The paid Stanford Online certificate track is a separate product; you do not need it.</div>
+          <div class="task-item-time">Weeks 16–17</div>
+          <a class="resource" href="https://cs336.stanford.edu/" target="_blank">cs336.stanford.edu ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Implement assignment1-basics</div>
+          <div class="task-item-desc">Build a BPE tokenizer, a transformer, and an optimizer from scratch against the course's own test suite. This is the same material as Task 02 but graded by tests instead of by your own judgment — that difference is the whole point. Run it until the tests are green.</div>
+          <div class="task-item-time">Weeks 17–18</div>
+          <a class="resource" href="https://github.com/stanford-cs336/assignment1-basics" target="_blank">assignment1-basics ↗</a>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <strong>This replaces guesswork with a grader.</strong> Everything before this phase you checked yourself. A public test suite that fails loudly is worth more than a tutorial you believe you understood.
+      </div>
+    </div>
+
+    <!-- Task 4 -->
+    <div class="day-section" id="sec-p1-nanochat">
+      <div class="day-header">
+        <span class="day-num-badge">Task 04</span>
+        <span class="day-title-text">nanochat: the full pipeline</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p1-nanochat">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Read the whole repo</div>
+          <div class="task-item-desc">nanochat is Karpathy's successor to nanoGPT and covers the entire stack in one readable codebase: tokenization, pretraining, midtraining, SFT, RL, eval, and inference with a web UI. Read every file before running anything. A single `--depth` knob sets the rest of the hyperparameters.</div>
+          <div class="task-item-time">Week 19</div>
+          <a class="resource" href="https://github.com/karpathy/nanochat" target="_blank">karpathy/nanochat ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Run the speedrun</div>
+          <div class="task-item-desc">Execute the speedrun end to end and get a working chat model. The README targets GPT-2-class quality in roughly 1.5 hours on 8×H100 for about $48 on-demand, less on spot. Rent the box, budget the run, and keep the logs — this is your first real training bill and your first real training artifact.</div>
+          <div class="task-item-time">Weeks 19–20</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Change one thing and measure it</div>
+          <div class="task-item-desc">Pick a single variable — depth, learning rate schedule, data mixture, or SFT set — change only that, rerun, and write down what moved and by how much. Report the number with an honest note on run-to-run variance. This is the smallest possible version of every experiment you will run for the rest of this plan.</div>
+          <div class="task-item-time">Week 21</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>Spend money here deliberately.</strong> A full speedrun on rented 8×H100 is the first non-trivial cost in this plan. Read the pricing section in Phase 2 before you start, set a hard budget, and never leave an instance running overnight.
+      </div>
+    </div>
+
+    <!-- Task 5 -->
+    <div class="day-section" id="sec-p1-huggingface-stack">
+      <div class="day-header">
+        <span class="day-num-badge">Task 05</span>
+        <span class="day-title-text">Hugging Face stack &amp; open weights</span>
+        <span class="tag tag-theory">Theory</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p1-huggingface-stack">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Load Open Weights</div>
+          <div class="task-item-desc">Use Hugging Face's `transformers` v5 to download and run local inference on small open models. Current defaults for learning: `Qwen/Qwen3.5-4B`, `google/gemma-4-E2B-it`, or `HuggingFaceTB/SmolLM3-3B` (the last has a fully open training pipeline, so you can inspect the recipe and not just the weights). For laptop-speed iteration drop to `Qwen/Qwen3-0.6B` or `HuggingFaceTB/SmolLM2-135M-Instruct`. Llama is frozen at v4 with no 2026 releases — do not make it your default family.</div>
+          <div class="task-item-time">Week 21</div>
+          <a class="resource" href="https://huggingface.co/docs/transformers/index" target="_blank">HF Transformers Docs ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Generation parameters</div>
+          <div class="task-item-desc">Understand temperature, top-k, top-p, and repetition penalties. Write your own generation sampling logic (softmax → sample → append) without using `.generate()`.</div>
+          <div class="task-item-time">Week 22</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>`transformers` v5 broke almost every v4 tutorial you will find.</strong> v5 is PyTorch-only — TensorFlow and Flax support were removed outright. `torch_dtype` is now `dtype`; `load_in_4bit` is gone in favour of `quantization_config=BitsAndBytesConfig(...)`; `Trainer(tokenizer=...)` is now `processing_class=`; `config.rope_theta` became `config.rope_parameters`; several task pipelines were deleted. Pin an exact minor version while learning, and read the migration guide before trusting any blog post dated before 2026.
+      </div>
+    </div>
+
+    <!-- Milestone -->
+    <div class="day-section" id="sec-p1-milestone">
+      <div class="day-header">
+        <span class="day-num-badge">Milestone</span>
+        <span class="day-title-text">Phase 1 complete</span>
+        <span class="tag tag-exercise">Deliverable</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p1-milestone">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="milestone-box">
+        <h3>What you ship at end of Phase 1</h3>
+        <ul class="checklist">
+          <li>A public GitHub repo containing your scratch-built PyTorch decoder-only transformer trained on Shakespeare/addition</li>
+          <li>A passing CS336 `assignment1-basics` run — BPE tokenizer, transformer, and optimizer, green against the course test suite</li>
+          <li>A completed nanochat speedrun with logs, cost, and one measured single-variable change written up honestly</li>
+          <li>A screen-recording video walkthrough explaining your transformer components and multi-head attention logic</li>
+          <li>A custom generation script demonstrating sampling parameters (temperature, top-p) written from scratch</li>
+          <li>You can explain FlashAttention's tiling trick, why RoPE replaced sin/cos embeddings, and what KV-cache stores — without notes</li>
+        </ul>
+        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); font-size:12px; color:var(--muted2)">
+          Next: <a href="#phase2" style="color:var(--blue)">Phase 2 — JAX, TPUs &amp; Scaling Laws →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 2 VIEW PANEL -->
+<div id="view-phase2" class="view-panel">
+  <div class="container-sm">
+    <div class="breadcrumb">
+      <a href="#overview">Overview</a>
+      <a href="#phase0">Phase 0</a>
+      <span>›</span>
+      <span>Phase 2</span>
+    </div>
+
+    <div class="page-hero">
+      <div class="page-hero-eyebrow">Phase 02 · Weeks 23–34</div>
+      <h1>JAX, TPUs &amp;<br>Scaling Laws</h1>
+      <p>Transition to JAX's functional programming paradigm and learn compute-scaling economics at toy scale. Learn to shard computations across accelerators when available, complete Scaling Book exercises, and replicate small loss-vs-compute curves with rigorous methodology.</p>
+    </div>
+
+    <div class="progress-header">
+      <div style="flex: 1;">
+        <progress-bar id="progress-bar-p2" value="0"></progress-bar>
+      </div>
+      <span class="progress-label" id="progress-label-p2">0% complete</span>
+    </div>
+
+    <div class="callout callout-tip" style="margin-bottom:2rem">
+      <strong>JAX's paradigm is purely functional.</strong> It maps mathematical models directly into optimized XLA graphs. But it requires you to manage state explicitly (no side effects). Keep this in mind as you learn the ecosystem.
+    </div>
+
+    <div class="callout callout-tip" style="margin-bottom:2rem">
+      <strong>Week 15 Goal (JAX Week 1):</strong> Write a training loop with jit/vmap/grad without looking anything up. Understand <em>why</em> each transform exists, not just how to call it.
+    </div>
+
+    <!-- Day 1 -->
+    <div class="day-section" id="sec-jax-d1">
+      <div class="day-header">
+        <span class="day-num-badge">Day 01</span>
+        <span class="day-title-text">JAX is not NumPy with autodiff</span>
+        <span class="tag tag-theory">Concept</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d1">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Pure functions only</div>
+          <div class="task-item-desc">Read "Thinking in JAX." JAX transforms require pure functions — no side effects, no in-place mutation, no Python state. This isn't a style preference; it's how tracing works.</div>
+          <div class="task-item-time">~2h reading</div>
+          <a class="resource" href="https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html" target="_blank">docs.jax.dev ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Tracing model</div>
+          <div class="task-item-desc">When jit runs, it traces with abstract values. Understand what "abstract" means: this is why Python conditionals on traced values fail at trace time, not runtime.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Cause the failure modes</div>
+          <div class="task-item-desc">Run these deliberately: leaked tracer error, in-place mutation silently doing nothing, Python if on a traced bool. Know the error messages before they surprise you in week 2.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>Do not skip Day 1.</strong> Most JAX confusion in weeks 2–4 of the broader plan traces back to not internalizing purity here.
+      </div>
+    </div>
+
+    <!-- Day 2 -->
+    <div class="day-section" id="sec-jax-d2">
+      <div class="day-header">
+        <span class="day-num-badge">Day 02</span>
+        <span class="day-title-text">grad — automatic differentiation</span>
+        <span class="tag tag-jax">Code</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d2">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">jax.grad basics</div>
+          <div class="task-item-desc">grad wraps a scalar-output function and returns a gradient function. Work through: grad of simple functions, grad of loss over parameters, value_and_grad for efficiency.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">jacfwd vs jacrev</div>
+          <div class="task-item-desc">Forward mode (jacfwd) is efficient for wide Jacobians. Reverse mode (jacrev/grad) for narrow outputs. Understand the tradeoff — it comes up in kernel work later.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Higher-order grads</div>
+          <div class="task-item-desc">grad(grad(f)) just works in JAX. Build a Hessian. This is where JAX's composability visibly beats PyTorch's autograd model.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 3 -->
+    <div class="day-section" id="sec-jax-d3">
+      <div class="day-header">
+        <span class="day-num-badge">Day 03</span>
+        <span class="day-title-text">jit — compilation and recompilation</span>
+        <span class="tag tag-jax">Code</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d3">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">When jit recompiles</div>
+          <div class="task-item-desc">jit caches keyed on input shapes and dtypes. Shape change = recompile. Python values as arguments = recompile every call unless marked static_argnums. Know this cold.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Debugging inside jit</div>
+          <div class="task-item-desc">Python prints run at trace time, not runtime. Use jax.debug.print for runtime values, jax.debug.breakpoint for stepping. Practice with a real example.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Benchmark jit speedup</div>
+          <div class="task-item-desc">Use jax.block_until_ready() for accurate timing — JAX is async. Measure separately: first call (compile + run), second call (run only). The delta is compile cost.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 4 -->
+    <div class="day-section" id="sec-jax-d4">
+      <div class="day-header">
+        <span class="day-num-badge">Day 04</span>
+        <span class="day-title-text">vmap — vectorization without loops</span>
+        <span class="tag tag-jax">Code</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d4">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">vmap mental model</div>
+          <div class="task-item-desc">vmap transforms a single-example function into a batched one. It vectorizes, not parallelizes. No extra memory copies, no Python loop overhead. in_axes controls which args get batched.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Practical vmap uses</div>
+          <div class="task-item-desc">Per-example gradients (vmap(grad(loss))) is the canonical pattern. Also: batched matrix ops, pairwise distances without broadcasting confusion. Build all three.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Composing transforms</div>
+          <div class="task-item-desc">jit(vmap(grad(f))) is the standard training pattern. Order matters: jit outermost = one compiled artifact. vmap outermost = vectorize then compile. Try both, measure both.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 5 -->
+    <div class="day-section" id="sec-jax-d5">
+      <div class="day-header">
+        <span class="day-num-badge">Day 05</span>
+        <span class="day-title-text">First training loop — logistic regression</span>
+        <span class="tag tag-jax">Integrate</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d5">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Manual training loop (no libraries)</div>
+          <div class="task-item-desc">params as pytrees, loss function, grad step, jitted update. No Flax, no Optax. This forces understanding of what those libraries abstract. End target: working MNIST MLP.</div>
+          <div class="task-item-time">~2h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Pytrees deep dive</div>
+          <div class="task-item-desc">Pytrees are JAX's nested container abstraction. Every parameter dict is a pytree. Master tree_map, tree_leaves, tree_flatten — they're used everywhere in JAX code.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">PRNG key management</div>
+          <div class="task-item-desc">JAX has explicit PRNG — split keys before every random call. Reusing a key gives the same result silently (no error). This catches people constantly. Practice the split pattern.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <strong>JAX week 1 exit check:</strong> Write a 2-layer MLP for MNIST using only jnp + grad + jit (no Flax). If you can do it without googling, you are done.
+      </div>
+    </div>
+
+    <div class="callout callout-tip" style="margin-top:3rem; margin-bottom:2rem">
+      <strong>JAX week 2 goal:</strong> Use Flax NNX + Optax fluently, write a scan-based training loop, and run your code across multiple devices with explicit sharding. Know when sharding beats vmap.
+    </div>
+
+    <!-- Day 6 -->
+    <div class="day-section" id="sec-jax-d6">
+      <div class="day-header">
+        <span class="day-num-badge">Day 06</span>
+        <span class="day-title-text">Flax + Optax — the standard stack</span>
+        <span class="tag tag-jax">Code</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d6">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Flax NNX (current API)</div>
+          <div class="task-item-desc">Flax NNX is the recommended API for new code — stateful modules with explicit variable management. Linen is older and functional; it is <em>not</em> deprecated (the Flax team still supports it because most existing code depends on it), so you will keep meeting it in papers and repos. Write NNX, read Linen.</div>
+          <div class="task-item-time">~1.5h</div>
+          <a class="resource" href="https://flax.readthedocs.io/en/latest/" target="_blank">Flax NNX docs ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Rebuild your MLP with Flax + Optax</div>
+          <div class="task-item-desc">Take the week-1 manual training loop and rebuild it with Flax and Optax Adam. The contrast reveals exactly what those libraries are doing — which is the point.</div>
+          <div class="task-item-time">~2h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Optax transform chains</div>
+          <div class="task-item-desc">Optax is functional: optimizers are stateless transforms on gradients. chain(clip_by_global_norm(1.0), adam(lr)) is the standard transformer training pattern. Build a custom optimizer chain.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 7 -->
+    <div class="day-section" id="sec-jax-d7">
+      <div class="day-header">
+        <span class="day-num-badge">Day 07</span>
+        <span class="day-title-text">scan and lax control flow</span>
+        <span class="tag tag-jax">Code</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d7">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">lax.scan mental model</div>
+          <div class="task-item-desc">A Python for-loop inside jit unrolls — N iterations = N copies of the compiled graph. scan compiles one iteration and loops in XLA. Essential for long sequences and the scaling book exercises.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">scan-based training loop</div>
+          <div class="task-item-desc">Rewrite your Flax training loop using lax.scan. carry = (params, opt_state), xs = batch indices. Accumulate metrics in ys. This exact pattern appears throughout the scaling book.</div>
+          <div class="task-item-time">~2h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">lax.cond and while_loop</div>
+          <div class="task-item-desc">Python if inside jit = static branch (trace time). lax.cond = dynamic branch (both branches must have same output shape). while_loop = dynamic iteration. Build a working example of each.</div>
+          <div class="task-item-time">~1h</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>scan is not optional.</strong> The scaling book uses it extensively. If scan is uncomfortable after day 7, repeat the training loop exercise before moving to Day 8.
+      </div>
+    </div>
+
+    <!-- Day 8 -->
+    <div class="day-section" id="sec-jax-d8">
+      <div class="day-header">
+        <span class="day-num-badge">Day 08</span>
+        <span class="day-title-text">Parallelism: explicit sharding</span>
+        <span class="tag tag-jax">Code</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d8">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Explicit sharding (the current default)</div>
+          <div class="task-item-desc">Since JAX 0.9.0, `jax.make_mesh` creates meshes with `AxisType.Explicit` by default — JAX propagates shardings through the type system and errors on ambiguous communication instead of silently inserting it. Build a mesh with `jax.make_mesh`, activate it with `jax.set_mesh(mesh)`, annotate tensors with `jax.P` (the top-level alias for PartitionSpec), and write a sharded training step: replicate params, shard the batch along the data axis. Note `with mesh:` is deprecated — use `with jax.set_mesh(mesh):`.</div>
+          <div class="task-item-time">~2h</div>
+          <a class="resource" href="https://docs.jax.dev/en/latest/parallel.html" target="_blank">Explicit sharding ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Collective ops (pmean, psum)</div>
+          <div class="task-item-desc">After each device computes gradients, average them with lax.psum / lax.pmean — this is AllReduce. Understanding it is prerequisite for all distributed training work, and it is what every parallelism strategy in the scaling book ultimately reduces to.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">shard_map for manual control</div>
+          <div class="task-item-desc">`jax.shard_map` is the manual mode: you write the per-device program yourself and place the collectives by hand. Use the top-level `jax.shard_map`, not the old `jax.experimental.shard_map` import. One gotcha since 0.9.1: in Explicit mode, shard_map asserts your input PartitionSpec matches `in_specs` rather than silently resharding — call `jax.reshard` first if they differ.</div>
+          <div class="task-item-time">~1.5h</div>
+          <a class="resource" href="https://docs.jax.dev/en/latest/notebooks/shard_map.html" target="_blank">shard_map guide ↗</a>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>Do not learn pmap.</strong> JAX 0.10.0 removed the C++ pmap infrastructure; `jax.pmap` survives only as a thin wrapper over `jit(shard_map)` and `PmapSharding`, `device_put_sharded`, and `device_put_replicated` now raise AttributeError. Any tutorial, blog post, or scaling-book snippet built on pmap predates this. Read it to recognise it, translate it mentally to sharding, and never write it.
+      </div>
+    </div>
+
+    <!-- Day 9 -->
+    <div class="day-section" id="sec-jax-d9">
+      <div class="day-header">
+        <span class="day-num-badge">Day 09</span>
+        <span class="day-title-text">TPU basics without a budget</span>
+        <span class="tag tag-jax">Integrate</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d9">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Accelerator setup</div>
+          <div class="task-item-desc">Colab no longer hands out TPU v2-8 slices, so use Kaggle — still free TPUs, and the option the scaling book itself now points readers to. Failing that, rent an 8-core GCP slice, or set `jax.config.update("jax_num_cpu_devices", 8)` to fake eight devices on your laptop, which is enough for every sharding and shard_map exercise here and costs nothing. Verify `jax.devices()` first, record the hardware, keep it reproducible.</div>
+          <div class="task-item-time">~30 min setup</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">GPU vs TPU differences</div>
+          <div class="task-item-desc">TPUs prefer bfloat16. No float64. Matrix dims should be multiples of 128 for peak utilization. XLA uses tile-based execution — understand why padding to 128 matters for throughput.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Port your MLP to all 8 devices</div>
+          <div class="task-item-desc">Take your Flax training loop and run it across all available devices with explicit sharding. Replicate params, shard the batch, average gradients with pmean, and report throughput honestly for your hardware — including the case where "your hardware" is eight fake CPU devices.</div>
+          <div class="task-item-time">~2h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 10 -->
+    <div class="day-section" id="sec-jax-d10">
+      <div class="day-header">
+        <span class="day-num-badge">Day 10</span>
+        <span class="day-title-text">Transformer block + profiling setup</span>
+        <span class="tag tag-jax">Integrate</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="jax-d10">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Transformer block from scratch</div>
+          <div class="task-item-desc">Multi-head self-attention, MLP sublayer, layer norm, residual connections — in Flax NNX. No copying from examples. This is the direct prerequisite for the Phase 1 10M transformer exercise.</div>
+          <div class="task-item-time">~3h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Basic JAX profiling</div>
+          <div class="task-item-desc">jax.profiler + TensorBoard. Learn to read a trace: what's XLA compilation vs execution, where is time spent. This is the entry point to roofline analysis in Phase 2.</div>
+          <div class="task-item-time">~1.5h</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Start the scaling book</div>
+          <div class="task-item-desc">Don't wait. Open the book today and do the first 2–3 exercises. The mental model (tokens, parameters, compute budget) should run in parallel with code work from here on.</div>
+          <div class="task-item-time">~1.5h</div>
+          <a class="resource" href="https://jax-ml.github.io/scaling-book/" target="_blank">jax-ml.github.io/scaling-book ↗</a>
+        </div>
+      </div>
+      <div class="callout callout-mile">
+        <strong>Week 16 exit criteria:</strong> scan-based training loop written and working · multi-device or small fallback run documented · transformer block written from scratch · scaling book chapters 1–2 done with paper and pencil exercises.
+      </div>
+    </div>
+
+    <div class="callout callout-warn" style="margin-top:3rem; margin-bottom:2rem">
+      <strong>Plan your compute budget before the scaling experiments.</strong> The Task 12 grid varies N (model size) and D (tokens); even a modest 3×3 of short runs is 50–100 GPU-hours. Current rates (July 2026): RunPod Community RTX 4090 ~$0.34/hr or A100 80GB ~$1.19/hr; Vast.ai bottoms out near $0.09/hr for a 4090 with no SLA; Lambda H100 SXM ~$3.99/hr. For real TPU work, apply to the TPU Research Cloud — still open, still free for accepted researchers, rolling invitations, so apply early. Free Colab now gives you a T4 and no TPU. Whatever you pick, shrink the grid honestly rather than overclaiming reproducibility.</div>
+
+    <!-- Task 11 -->
+    <div class="day-section" id="sec-p2-scaling-book">
+      <div class="day-header">
+        <span class="day-num-badge">Task 11</span>
+        <span class="day-title-text">Scaling Book Exercises</span>
+        <span class="tag tag-theory">Theory</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p2-scaling-book">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Work the scaling book</div>
+          <div class="task-item-desc">Read and solve every mathematical problem in the Scaling Book (jax-ml.github.io/scaling-book) using paper and pencil. Convert answers to LaTeX.</div>
+          <div class="task-item-time">Weeks 26–28</div>
+          <a class="resource" href="https://jax-ml.github.io/scaling-book/" target="_blank">scaling-book ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">GPUs and the Ultra-Scale Playbook</div>
+          <div class="task-item-desc">The scaling book gained Chapter 12, "How to Think About GPUs," covering NVIDIA hardware, networking, and a direct GPU-vs-TPU comparison — it did not exist when this plan was first written and it is the chapter most relevant to hardware you can actually rent. Pair it with Hugging Face's Ultra-Scale Playbook, the GPU/PyTorch counterpart covering 5D parallelism, ZeRO, and kernel fusion, grounded in 4000+ experiments up to 512 GPUs.</div>
+          <div class="task-item-time">Weeks 28–29</div>
+          <a class="resource" href="https://huggingface.co/spaces/nanotron/ultrascale-playbook" target="_blank">Ultra-Scale Playbook ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Record your solutions</div>
+          <div class="task-item-desc">Screen-record your problem-solving. Review your derivations with an AI chat assistant. Have it check for correctness in your parameter and tokens budget models.</div>
+          <div class="task-item-time">Weeks 29–30</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 12 -->
+    <div class="day-section" id="sec-p2-scaling-laws">
+      <div class="day-header">
+        <span class="day-num-badge">Task 12</span>
+        <span class="day-title-text">Chinchilla scaling laws</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p2-scaling-laws">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Build JAX Transformer</div>
+          <div class="task-item-desc">Write a small transformer using JAX/Flax. Implement dense self-attention, layer normalization, and MLP layers. Treat MoE as a documented stretch, not part of the core result.</div>
+          <div class="task-item-time">Weeks 30–32</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Toy Scaling Experiments</div>
+          <div class="task-item-desc">Vary compute budget, model size, and training tokens within your hardware limits. Fit small loss-vs-compute curves, include confidence intervals, and state limits instead of overclaiming frontier-scale laws.</div>
+          <div class="task-item-time">Weeks 32–34</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestone -->
+    <div class="day-section" id="sec-p2-milestone">
+      <div class="day-header">
+        <span class="day-num-badge">Milestone</span>
+        <span class="day-title-text">Phase 2 complete</span>
+        <span class="tag tag-exercise">Deliverable</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p2-milestone">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="milestone-box">
+        <h3>What you ship at end of Phase 2</h3>
+        <ul class="checklist">
+          <li>A working JAX/Flax transformer codebase capable of training on TPU</li>
+          <li>A toy scaling report with reproducible runs, hardware notes, loss-vs-compute curves, uncertainty estimates, and clear limitations</li>
+          <li>Your completed Scaling Book derivations in LaTeX uploaded to your learning repository</li>
+        </ul>
+        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); font-size:12px; color:var(--muted2)">
+          Next: <a href="#phase3" style="color:var(--blue)">Phase 3 — Fine-Tuning, Evals &amp; Agents →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 3 VIEW PANEL -->
+<div id="view-phase3" class="view-panel">
+  <div class="container-sm">
+    <div class="breadcrumb">
+      <a href="#overview">Overview</a>
+      <a href="#phase0">Phase 0</a>
+      <span>›</span>
+      <span>Phase 3</span>
+    </div>
+
+    <div class="page-hero">
+      <div class="page-hero-eyebrow">Phase 03 · Weeks 35–46</div>
+      <h1>Fine-Tuning, RL,<br>Evals &amp; Environments</h1>
+      <p>Adapt models to tasks, run reinforcement learning against verifiable rewards, and build evaluation pipelines that survive scrutiny. Implement LoRA from scratch, run a GRPO-family training loop, then build a controlled agentic evaluation — and, most importantly, an environment. This is the phase that produces the work frontier labs are currently hiring for.</p>
+    </div>
+
+    <div class="progress-header">
+      <div style="flex: 1;">
+        <progress-bar id="progress-bar-p3" value="0"></progress-bar>
+      </div>
+      <span class="progress-label" id="progress-label-p3">0% complete</span>
+    </div>
+
+    <div class="callout callout-warn" style="margin-bottom:2rem">
+      <strong>Agent evaluation is a science.</strong> Avoid simple vibe checks or manual prompt adjustments. State your hypothesis, control variables, dataset boundaries, baseline models, uncertainty estimates, and systematically classify failure modes.
+    </div>
+
+    <div class="callout callout-tip" style="margin-bottom:2rem">
+      <strong>Environments are the 2026 unit of work.</strong> Anthropic is hiring research engineers for "Universes" to build agentic environments; OpenAI posts for "Frontier Evals and Environments"; Meta's evals roles name benchmarks <em>and</em> RL environments in the same sentence. The research agrees — the flagship 2026 agentic-RL result scaled environments, not algorithms. If you ship one thing from this plan, ship an environment with honest reliability numbers attached.
+    </div>
+
+    <!-- Task 1 -->
+    <div class="day-section" id="sec-p3-finetuning">
+      <div class="day-header">
+        <span class="day-num-badge">Task 01</span>
+        <span class="day-title-text">Fine-Tuning (SFT &amp; PEFT)</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p3-finetuning">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">LoRA from scratch</div>
+          <div class="task-item-desc">Implement Low-Rank Adaptation (LoRA) module layers from scratch in PyTorch. Inject them into the decoder-only transformer you built in Phase 1 to verify parameter counts and gradients.</div>
+          <div class="task-item-time">Weeks 35–36</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">PEFT Pipeline with HF</div>
+          <div class="task-item-desc">Fine-tune an open weights model on a specific instruction dataset using `peft` + `trl` (SFTTrainer). Create a dataset card, document train/test splits, and check for leakage before saving adapters. Use TRL or Axolotl — do not start anything new on torchtune, which has been wound down, or its successor torchforge, which is paused; PyTorch is consolidating on torchtitan.</div>
+          <div class="task-item-time">Week 37</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="day-section" id="sec-p3-rl-posttraining">
+      <div class="day-header">
+        <span class="day-num-badge">Task 02</span>
+        <span class="day-title-text">RL with verifiable rewards</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p3-rl-posttraining">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Run a GRPO-family training loop</div>
+          <div class="task-item-desc">Use TRL's GRPO trainer on a small verifiable task — arithmetic, or anything with a programmatic checker. Note that TRL v1.9.0 (July 2026) changed the default `loss_type` to `"dapo"` and marks plain `grpo` as not recommended because of length bias, so read what that default is actually doing rather than accepting it. Log reward curves, not just final accuracy.</div>
+          <div class="task-item-time">Weeks 38–39</div>
+          <a class="resource" href="https://github.com/huggingface/trl" target="_blank">huggingface/trl ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Read the RLVR debate honestly</div>
+          <div class="task-item-desc">This is contested ground and knowing that is the point. Read arXiv 2504.13837 (base models win at large k — does RLVR add capability at all?), then 2506.10947 (Spurious Rewards — random rewards produce large gains on Qwen but not Llama or OLMo), then 2505.24864 (ProRL — prolonged RL does expand the boundary), then 2510.04028, which reconciles them: early training exploits and narrows, prolonged training explores and expands. The two camps were measuring different phases.</div>
+          <div class="task-item-time">Week 39</div>
+          <a class="resource" href="https://arxiv.org/abs/2510.04028" target="_blank">arxiv 2510.04028 ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Learn what actually moves the number</div>
+          <div class="task-item-desc">Read arXiv 2510.13786, The Art of Scaling RL Compute (400k+ GPU-hours), which finds sigmoidal rather than power-law curves — design choices buy compute efficiency, not a higher asymptote. The practical lesson: do not spend this phase collecting GRPO variants. Pick one, scale it, and measure. Then read the RLHF Book and its companion lecture course, currently the best free post-training curriculum available.</div>
+          <div class="task-item-time">Week 40</div>
+          <a class="resource" href="https://rlhfbook.com/course" target="_blank">RLHF Book course ↗</a>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <strong>On-policy distillation is the 2026 recipe.</strong> The current accepted pipeline is SFT-distill for a cold start, then RLVR, then on-policy distillation as a compaction step — reported at roughly a tenth of the GPU-hours of RL alone for comparable reasoning scores. Know the shape of this pipeline even if you only ever run the first two stages yourself.
+      </div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="day-section" id="sec-p3-agent-eval">
+      <div class="day-header">
+        <span class="day-num-badge">Task 03</span>
+        <span class="day-title-text">Evaluations &amp; environments</span>
+        <span class="tag tag-agent">Agents</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p3-agent-eval">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Survey evaluation tooling</div>
+          <div class="task-item-desc">Before building custom, audit the ecosystem: run lm-evaluation-harness on MMLU or GSM8K (understand task abstraction, few-shot handling, normalization). Work through Inspect, the UK AI Safety Institute's framework — tasks, solvers, scorers, trace logging — which is the one an evals candidate is most likely to be asked about. Then look at Prime Intellect's `verifiers` and its Environments Hub, because that is where the field's centre of gravity has moved. Decide what you will use, or justify building custom, and document the decision.</div>
+          <div class="task-item-time">Week 51</div>
+          <a class="resource" href="https://inspect.aisi.org.uk" target="_blank">Inspect (UK AISI) ↗</a>
+          <a class="resource" href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">lm-evaluation-harness ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Learn to criticise a benchmark</div>
+          <div class="task-item-desc">Do not learn leaderboard numbers; learn how benchmarks break. Study the live agentic ones — Terminal-Bench 2.1 and its Harbor harness, τ²/τ³-bench, Mind2Web 2, WorkArena-L2 — and note which are near-saturated (WebArena sits under four points from the human baseline) and which are dead but still cited (WebVoyager never had a leaderboard at all; the original tau-bench repo is deprecated and its README numbers are eighteen months stale). Then check harness protocol compliance yourself: published results have been submitted with raised step limits and a `followed_evaluation_protocol: "No"` flag sitting in the result JSON. Also study Karpathy's autoresearch for how automated experiment loops are structured.</div>
+          <div class="task-item-time">Week 51</div>
+          <a class="resource" href="https://github.com/karpathy/autoresearch" target="_blank">autoresearch ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Design Controlled Experiment</div>
+          <div class="task-item-desc">Task selection is the hardest judgment call — do this before any code. Good criteria: (1) objectively verifiable answers without an LLM judge; (2) meaningful variance across models — not trivially solved or impossible; (3) narrow enough to diagnose specific failure types. Good examples: multi-step arithmetic with hidden state, code generation with execution verification, structured extraction with known ground truth. Then define: baselines, metrics, leakage checks, rubric, ablation variables — before running anything.</div>
+          <div class="task-item-time">Weeks 51–52</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Failure mode analysis</div>
+          <div class="task-item-desc">Run baseline models and systematically classify failures (e.g., extraction errors, reasoning loops, context distraction). Log raw examples, run bootstrap confidence intervals, and graph error rates.</div>
+          <div class="task-item-time">Week 44</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Build an environment</div>
+          <div class="task-item-desc">Package your evaluation as a reusable environment: a task, a programmatic verifier, a reset, and a reward — the interface an RL loop or an agent harness can call. Publish it. Measure and report its run-to-run variance and its reliability, because an environment nobody can trust the numbers from is not an environment. This is the single highest-value artifact in the entire plan.</div>
+          <div class="task-item-time">Week 44</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="day-section" id="sec-p3-lit-review">
+      <div class="day-header">
+        <span class="day-num-badge">Task 04</span>
+        <span class="day-title-text">LLM literature review</span>
+        <span class="tag tag-theory">Theory</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p3-lit-review">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Vlad's Pretraining Lecture</div>
+          <div class="task-item-desc">Study Vlad Feinberg's pretraining logs. Understand context length expansion, dataset mixtures, training objectives, and scaling failures.</div>
+          <div class="task-item-time">Week 45</div>
+          <a class="resource" href="https://vladfeinberg.com/2025/04/24/gemini-flash-pretraining.html" target="_blank">pretraining lecture ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Post-Training Literature</div>
+          <div class="task-item-desc">Read: InstructGPT (RLHF), DPO, Constitutional AI, RLAIF. Write a 2-sentence summary of each paper's core contribution to model alignment. Then read Tulu 3 (arXiv 2411.15124) and Olmo 3 (arXiv 2512.13961) — the two best fully-open post-training recipes, where every checkpoint and decision is public rather than gestured at in an appendix.</div>
+          <div class="task-item-time">Weeks 45–46</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Reasoning, reward models &amp; what replaced PRMs</div>
+          <div class="task-item-desc">Read 'Let's Verify Step by Step' (Lightman et al.) for process vs outcome reward models, then DeepSeek R1 — which is the citable inflection point where PRMs lost for math credit assignment, abandoned for rule-based outcome rewards over training overhead and reward hacking. PRMs were repositioned, not killed: what survived is generative step-level critique (arXiv 2501.07301). The centre of gravity then moved to non-verifiable domains, where rubrics and checklists beat learned reward models — read arXiv 2507.17746, 2507.18624, and HealthBench (2505.08775), whose 48,562 physician-written criteria are the standard rubric testbed. Write a paragraph tracing RLHF → DPO → GRPO → rubric rewards: what each fixed, what is still open.</div>
+          <div class="task-item-time">Week 46</div>
+          <a class="resource" href="https://arxiv.org/abs/2501.12948" target="_blank">DeepSeek R1 ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestone -->
+    <div class="day-section" id="sec-p3-milestone">
+      <div class="day-header">
+        <span class="day-num-badge">Milestone</span>
+        <span class="day-title-text">Phase 3 complete</span>
+        <span class="tag tag-exercise">Deliverable</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p3-milestone">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="milestone-box">
+        <h3>What you ship at end of Phase 3</h3>
+        <ul class="checklist">
+          <li>A published environment — task, verifier, reset, reward — with measured run-to-run variance and stated reliability</li>
+          <li>A public GitHub repo containing a reproducible agent evaluation pipeline, dataset card, raw run logs, baselines, ablations, uncertainty estimates, and systematic failure analysis</li>
+          <li>A GRPO-family training run on a verifiable task, with reward curves logged and the DAPO-default loss explained rather than accepted</li>
+          <li>A separate notes repo containing your literature review (RLHF → DPO → GRPO → rubric rewards documented, plus where you land on the RLVR capability debate)</li>
+          <li>Your own scratch-built LoRA module verified on your transformer in code</li>
+          <li>You know lm-evaluation-harness, Inspect, and verifiers, and can explain what each handles and where custom code is still needed</li>
+          <li>You can name three agentic benchmarks that are effectively dead and say why they are still being cited</li>
+        </ul>
+        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); font-size:12px; color:var(--muted2)">
+          Next: <a href="#phase4" style="color:var(--blue)">Phase 4 — Capstone Research Project →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASE 4 VIEW PANEL -->
+<div id="view-phase4" class="view-panel">
+  <div class="container-sm">
+    <div class="breadcrumb">
+      <a href="#overview">Overview</a>
+      <a href="#phase0">Phase 0</a>
+      <span>›</span>
+      <span>Phase 4</span>
+    </div>
+
+    <div class="page-hero">
+      <div class="page-hero-eyebrow">Phase 04 · Weeks 47–52+</div>
+      <h1>Capstone Research<br>Project</h1>
+      <p>Ship a public asset that demonstrates applied research and evaluation capability. Turn your strongest study into a reproducible report with reviewer feedback, reruns, limitations, and an open-source contribution where practical.</p>
+    </div>
+
+    <div class="progress-header">
+      <div style="flex: 1;">
+        <progress-bar id="progress-bar-p4" value="0"></progress-bar>
+      </div>
+      <span class="progress-label" id="progress-label-p4">0% complete</span>
+    </div>
+
+    <div class="callout callout-tip" style="margin-bottom:2rem">
+      <strong>The capstone is about contribution.</strong> Your work must be structured clearly enough that other researchers in the field can immediately read, verify, and build on it. The PDF paper preprint is your primary calling card.
+    </div>
+
+    <!-- Task 1 -->
+    <div class="day-section" id="sec-p4-capstone-project">
+      <div class="day-header">
+        <span class="day-num-badge">Task 01</span>
+        <span class="day-title-text">Write a preprint paper</span>
+        <span class="tag tag-agent">Agents</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p4-capstone-project">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Formalize your study</div>
+          <div class="task-item-desc">Elevate your Phase 3 agent evaluation or fine-tuning study. Formalize the abstract, methodology, dataset card, metrics, baselines, results, limitations, and reproducibility appendix.</div>
+          <div class="task-item-time">Weeks 47–49</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Incorporate peer feedback</div>
+          <div class="task-item-desc">Get targeted review from researchers, practitioners, or strong engineers. Revise methodology, rerun key experiments, include negative results, and then optionally share publicly for broader critique.</div>
+          <div class="task-item-time">Weeks 49–50</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="day-section" id="sec-p4-open-source">
+      <div class="day-header">
+        <span class="day-num-badge">Task 02</span>
+        <span class="day-title-text">Open Source Contribution</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p4-open-source">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Identify framework PRs</div>
+          <div class="task-item-desc">Find open issues, missing evaluation metrics, or testing gaps in `lm-evaluation-harness`, `inspect_ai`, `verifiers`, `axolotl`, or `trl`. Publishing an environment to Prime Intellect's Environments Hub is the highest-signal and least contested option.</div>
+          <div class="task-item-time">Week 51</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Submit code &amp; merge PR</div>
+          <div class="task-item-desc">Write clean, tested code resolving the issue. Submit your pull request, address reviewer comments, and get it successfully merged.</div>
+          <div class="task-item-time">Weeks 51–52</div>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>PR merge is high-variance — plan for it.</strong> "Good first issue" tags on major repos are often stale or already claimed. Reviewer response can take weeks. Treat this as best-effort: a clean, substantive PR in-review with no response still counts as portfolio evidence. Fallback: add a new benchmark task to a personal fork of lm-evaluation-harness, polish it, and link the work. The goal is a reviewable public code contribution, not specifically a merge.
+      </div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="day-section" id="sec-p4-cold-email">
+      <div class="day-header">
+        <span class="day-num-badge">Task 03</span>
+        <span class="day-title-text">Submit application pack</span>
+        <span class="tag tag-exercise">Deliverable</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p4-cold-email">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Prepare the email</div>
+          <div class="task-item-desc">Target the roles that name this work explicitly: Anthropic's Research Engineer, Universes (agentic environments); OpenAI's Frontier Evals and Environments; Meta's evals roles, which name benchmarks and RL environments together. Add 2–3 backups at other labs and eval-minded ML engineering roles. Customize each message — same portfolio links, different framing for role fit. Lead with the environment and its reliability numbers, then the reproducible study, run logs, scaling report, and merged PRs. Also watch structured entry points such as the Anthropic Fellows programme, which runs on fixed application windows — check deadlines early rather than discovering them a week late.</div>
+          <div class="task-item-time">Week 52</div>
+          <a class="resource" href="https://vladfeinberg.com/about" target="_blank">vladfeinberg.com/about ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestone -->
+    <div class="day-section" id="sec-p4-milestone">
+      <div class="day-header">
+        <span class="day-num-badge">Milestone</span>
+        <span class="day-title-text">The full portfolio</span>
+        <span class="tag tag-exercise">Done</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p4-milestone">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="milestone-box">
+        <h3>The complete portfolio — six public assets</h3>
+        <ul class="checklist">
+          <li><strong>The environment</strong>: a published task + verifier + reward with measured variance and stated reliability (from Phase 3, hardened in Phase 4) — lead with this one</li>
+          <li>GitHub repo 1: transformer from scratch passing CS336 tests, plus your nanochat speedrun writeup and video walkthrough (from Phase 1)</li>
+          <li>GitHub repo 2: JAX/Flax transformer + toy scaling report with hardware notes and limitations (from Phase 2)</li>
+          <li>GitHub repo 3: Reproducible agentic evaluation pipeline, dataset card, raw run logs, and failure analysis (from Phase 3)</li>
+          <li>PDF Report: A reviewer-tested study explaining your evaluation, its limitations, and its reruns (from Phase 4)</li>
+          <li>Merged PR: A contribution to a major open-source evaluation, environment, or fine-tuning library (from Phase 4)</li>
+        </ul>
+        <div style="margin-top:1.25rem; padding:1rem; border:1px solid var(--border); background:var(--bg); font-size:12px; color:var(--muted2); line-height:1.7">
+          <strong style="color:var(--text)">Keep shipping and iterating.</strong> A preprint alone is now table stakes rather than a differentiator — what distinguishes a candidate in 2026 is a working artifact other people can run, with honest numbers attached. Lead every application with the environment, and use the preprint and merged PRs as evidence that you can be trusted with it.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="resources_db.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
