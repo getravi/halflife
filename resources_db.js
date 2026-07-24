@@ -231,8 +231,8 @@ window.RESOURCES_DB = {
             "url": "https://www.youtube.com/watch?v=rfscVS0vtbw"
           },
           {
-            "name": "Intermediate Python (Real Python Course)",
-            "url": "https://realpython.com/learning-paths/intermediate-python-programming/"
+            "name": "Intermediate Python (free online book by Muhammad Yasoob Ullah Khalid)",
+            "url": "https://book.pythontips.com/en/latest/"
           },
           {
             "name": "Free alternative: Automate the Boring Stuff with Python",
@@ -274,6 +274,12 @@ window.RESOURCES_DB = {
             "title": "Context Managers and the 'with' statement (mCoding)",
             "url": "https://www.youtube.com/watch?v=LBJlGwJ899Y"
           }
+        ],
+        "podcasts": [
+          {
+            "title": "Talk Python To Me #141: Python Tricks (Michael Kennedy with Dan Bader)",
+            "url": "https://talkpython.fm/episodes/show/141/python-tricks"
+          }
         ]
       },
       "Type annotations & tooling": {
@@ -286,8 +292,8 @@ window.RESOURCES_DB = {
         ],
         "courses": [
           {
-            "name": "Python Type Hints & Static Typing (Real Python Course)",
-            "url": "https://realpython.com/courses/python-type-hints/"
+            "name": "Type Hints Cheat Sheet (official mypy documentation, mypy 2.x)",
+            "url": "https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html"
           },
           {
             "name": "Free alternative: Python Typing Documentation",
@@ -320,6 +326,12 @@ window.RESOURCES_DB = {
           {
             "title": "Type Checking in Python with Mypy (mCoding)",
             "url": "https://www.youtube.com/watch?v=mvJuxowIwIc"
+          }
+        ],
+        "podcasts": [
+          {
+            "title": "Talk Python To Me #400: Ruff - The Fast, Rust-based Python Linter (with Charlie Marsh, Astral)",
+            "url": "https://talkpython.fm/episodes/show/400/ruff-the-fast-rust-based-python-linter"
           }
         ]
       },
@@ -369,8 +381,8 @@ window.RESOURCES_DB = {
         ],
         "courses": [
           {
-            "name": "Introduction to NumPy (DataCamp Course)",
-            "url": "https://www.datacamp.com/courses/introduction-to-numpy"
+            "name": "NumPy Quickstart (official NumPy documentation, NumPy developers)",
+            "url": "https://numpy.org/doc/stable/user/quickstart.html"
           },
           {
             "name": "Free alternative: NumPy Absolute Beginners Tutorial",
@@ -656,8 +668,8 @@ window.RESOURCES_DB = {
         ],
         "docs": [
           {
-            "name": "Real Python Profiling Guide",
-            "url": "https://realpython.com/python-profiling/"
+            "name": "Optimizing Code: timeit, cProfile & line_profiler (Scientific Python Lectures)",
+            "url": "https://lectures.scientific-python.org/advanced/optimizing/index.html"
           },
           {
             "name": "Free alternative: Python Profilers Documentation",
@@ -1370,6 +1382,12 @@ window.RESOURCES_DB = {
           {
             "title": "Hugging Face Transformers Tutorial",
             "url": "https://www.youtube.com/watch?v=QEaBAZQCtwE"
+          }
+        ],
+        "podcasts": [
+          {
+            "title": "Latent Space: How to train your own Large Multimodal Model - with Hugo Laurencon & Leo Tronchon of HuggingFace M4 Research",
+            "url": "https://www.latent.space/p/idefics"
           }
         ]
       },
@@ -2639,6 +2657,12 @@ window.RESOURCES_DB = {
           {
             "title": "The Rise of Reasoning Models — RLHF & Post-training Course, Lecture 5",
             "url": "https://www.youtube.com/watch?v=o4AB5xHIDdM"
+          }
+        ],
+        "podcasts": [
+          {
+            "title": "Latent Space: The RLVR Revolution - with Nathan Lambert (AI2, Interconnects.ai)",
+            "url": "https://www.latent.space/p/the-rlvr-revolution-with-nathan-lambert"
           }
         ]
       }
