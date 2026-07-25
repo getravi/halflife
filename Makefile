@@ -1,7 +1,8 @@
-.PHONY: all check render build serve links help
+.PHONY: all check test render build serve links help
 
 help:
 	@echo "make check    verify index.html, app.js and resources_db.js still agree (run before committing)"
+	@echo "make test     run the unit tests (scheduler, store, server)"
 	@echo "make render   regenerate index.html panels from data/panels/*.json"
 	@echo "make build    regenerate resources_db.js + app.js registries from data/resources/*.json"
 	@echo "make all      render, build, then check"
@@ -10,6 +11,9 @@ help:
 
 check:
 	@node tools/check.js
+
+test:
+	@node --test 'test/*.test.js'
 
 render:
 	@python3 tools/render.py

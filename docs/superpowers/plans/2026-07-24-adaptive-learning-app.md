@@ -201,8 +201,16 @@ Create `server/scheduler.js`:
  */
 const DAY_MS = 86400000;
 
-const FIRST = { again: 1, hard: 2, good: 4, easy: 7 };
-const MULT = { again: 0.3, hard: 1.2, good: 2.2, easy: 3.5 };
+const GRADES = ['again', 'hard', 'good', 'easy'];
+const FIRST = { hard: 2, good: 4, easy: 7 };
+const MULT = { hard: 1.2, good: 2.2, easy: 3.5 };
+
+// A lapse resets rather than shrinks. Multiplying an existing stability would
+// leave a card you just forgot scheduled days out — an 8.8-day card times 0.3
+// is still 2.6 days away. Forgotten means back tomorrow, whatever it was
+// worth yesterday. Resetting also keeps dueAt derived from stability, which is
+// what makes R exactly 0.9 on the due date.
+const LAPSE_STABILITY = 1;
 
 let seq = 0;
 
@@ -225,12 +233,14 @@ function newCard(fields, now) {
 }
 
 function review(card, grade, now) {
-  if (!Object.prototype.hasOwnProperty.call(MULT, grade)) {
+  if (!GRADES.includes(grade)) {
     throw new Error(`unknown grade "${grade}"`);
   }
-  const stability = card.reps === 0
-    ? FIRST[grade]
-    : Math.max(1, card.stability * MULT[grade]);
+  const stability = grade === 'again'
+    ? LAPSE_STABILITY
+    : card.reps === 0
+      ? FIRST[grade]
+      : Math.max(1, card.stability * MULT[grade]);
 
   return {
     ...card,
@@ -279,8 +289,11 @@ In `Makefile`, add `test` to the `.PHONY` line, add a help line, and add the tar
 
 ```make
 test:
-	@node --test test/
+	@node --test 'test/*.test.js'
 ```
+
+The glob must be quoted so Node expands it rather than the shell. `node --test
+test/` fails on Node 24 — it resolves the directory as a module path.
 
 Help line to add inside the `help` target, after the `check` line:
 

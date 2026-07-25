@@ -180,10 +180,18 @@ in capture debt where it costs honestly. No modal, no nag at the tick itself.
 
 | grade | first review | subsequent |
 |---|---|---|
-| again | 1 day | `S × 0.3`, `lapses++` |
+| again | 1 day | resets to 1 day, `lapses++` |
 | hard | 2 days | `S × 1.2` |
 | good | 4 days | `S × 2.2` |
 | easy | 7 days | `S × 3.5` |
+
+A lapse resets rather than shrinks. An earlier draft of this table multiplied
+by 0.3, which contradicts the sentence above it: an 8.8-day card times 0.3 is
+still 2.6 days away, so a card you had just forgotten would not return for two
+and a half days. Forgotten means back tomorrow, whatever it was worth
+yesterday. Resetting also keeps `dueAt` derived from stability, which is what
+makes the `R = 0.9` identity below hold; capping `dueAt` separately would have
+broken it.
 
 **Retrievability**: `R = 0.9 ^ (Δdays / S)`, where `Δdays` is days since
 `lastReviewedAt`. `R = 0.9` exactly when `Δ = S`, which is the definition of
