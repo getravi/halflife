@@ -1,0 +1,528 @@
+[
+  {
+    "id": "phase3",
+    "num": "03",
+    "weeks": "Weeks 35–48",
+    "title": "Evals, RL &amp;<br>environments",
+    "intro": "This is the phase the job req is actually written about. You start with the statistics that decide whether an eval number means anything, then write your own tool-calling loop, then do the minimum fine-tuning and RL needed to understand what you are evaluating. From week 42 the work is infrastructure and judgement: a job queue that runs evals across checkpoints, an LLM judge you have validated against your own labels, a published benchmark result you reproduce and disagree with, safety evals you can discuss without notes, and finally the environment itself. Two of the three flagship deliverables start here. Budget 25 h/week and expect $150–600 of API and compute across the fourteen weeks.",
+    "callouts": [
+      {
+        "type": "tip",
+        "html": "<strong>Everything here is public.</strong> Each task in this phase produces something a stranger can run: a stats notebook, a harness, a queue, a judge validation report, an audit, an environment. Push each one as you finish it and write the two-week post. By week 48 the portfolio should already be readable — Phase 4 hardens it, it does not create it."
+      },
+      {
+        "type": "warn",
+        "html": "<strong>Do not let this phase become a paper-reading phase.</strong> The reading list is real but it is support. If at the end of any week the only artifact is notes, you have spent the week wrong. Every task below names code or a report as its output."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "p3-stats",
+        "badge": "Task 01",
+        "title": "Statistics &amp; experimental design",
+        "tag": "theory",
+        "items": [
+          {
+            "title": "Decide the sample size before you run anything",
+            "desc": "Work through power analysis for the comparisons you actually make: two models on one benchmark, one model before and after a change. Compute the minimum detectable effect for n = 100, 500, 2000 questions and see how brutal the small-n case is. The reflex you want is refusing to run an eval until you know what difference it could even detect.",
+            "time": "Week 35",
+            "resource": {
+              "label": "statsmodels power ↗",
+              "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.TTestPower.html"
+            }
+          },
+          {
+            "title": "Read the error-bars paper and apply it the same day",
+            "desc": "Read Anthropic's \"Adding Error Bars to Evals\" end to end. It gives you the standard error for a mean over questions, the clustered case when questions come in groups, and the paired analysis that makes model comparisons far tighter. Then recompute error bars on a real eval result you already have.",
+            "time": "Week 35",
+            "resource": {
+              "label": "arXiv 2411.00640 ↗",
+              "url": "https://arxiv.org/abs/2411.00640"
+            }
+          },
+          {
+            "title": "Paired comparison and variance decomposition",
+            "desc": "Two models scored on the same questions are paired data — analysing them as independent samples throws away most of your power. Implement the paired difference test, then decompose total variance into question difficulty, sampling temperature, and seed. Report which source dominates; usually it is question variance and that changes what you should buy more of.",
+            "time": "Week 36",
+            "resource": {
+              "label": "scipy.stats.bootstrap ↗",
+              "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
+            }
+          },
+          {
+            "title": "Multiple comparisons and effect sizes",
+            "desc": "Once you run twelve ablations against one baseline, one of them is significant by accident. Implement Benjamini–Hochberg and Bonferroni corrections and see what survives. Then stop reporting p-values as the headline: report the effect size with a bootstrap confidence interval, because a real but tiny difference and a large uncertain one are different findings.",
+            "time": "Week 36",
+            "resource": {
+              "label": "statsmodels multipletests ↗",
+              "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.multitest.multipletests.html"
+            }
+          },
+          {
+            "title": "Exit check: redo an old result honestly",
+            "desc": "Take the single-variable change you measured in the nanochat week and redo the analysis: paired where possible, bootstrap CI, stated n, stated seeds. Write one paragraph saying whether the difference you reported survives. If it does not, say so publicly — that paragraph is worth more in an interview than the original result.",
+            "time": "Week 36",
+            "resource": {
+              "label": "A statistical approach to model evals ↗",
+              "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>Resampling seeds is not resampling questions.</strong> Running the same 50 questions ten times tells you about decoding variance and nothing about whether your benchmark generalises. Both matter, they are different error bars, and conflating them is the single most common mistake in public eval reports."
+          },
+          {
+            "type": "tip",
+            "html": "<strong>\"Statistics and experimental design\" is a named minimum qualification</strong> on Anthropic's Research Engineer, Model Evaluations req. Two weeks here is the cheapest qualification-matching you will do all year, and every later task in this phase reuses it."
+          }
+        ]
+      },
+      {
+        "id": "p3-agent-harness",
+        "badge": "Task 02",
+        "title": "Write your own agent harness",
+        "tag": "agent",
+        "items": [
+          {
+            "title": "The loop, from a blank file",
+            "desc": "No framework. Write the while loop yourself: send messages, parse the tool call out of the response, dispatch to a Python function, append the result as a tool-result message, repeat until the model stops or you hit a limit. Two hundred lines gets you a working agent, and afterwards every agent framework reads as a config file rather than magic.",
+            "time": "Week 37",
+            "resource": {
+              "label": "Building effective agents ↗",
+              "url": "https://www.anthropic.com/engineering/building-effective-agents"
+            }
+          },
+          {
+            "title": "Tool schema design is the actual skill",
+            "desc": "Write five tools and then rewrite them. Names and descriptions are prompt, not documentation; the model fails on ambiguous parameters far more than on hard reasoning. Return errors as content the model can act on rather than as exceptions, and keep tool outputs small enough that ten calls do not blow the context.",
+            "time": "Week 37",
+            "resource": {
+              "label": "Writing tools for agents ↗",
+              "url": "https://www.anthropic.com/engineering/writing-tools-for-agents"
+            }
+          },
+          {
+            "title": "Multi-turn state, error recovery, hard limits",
+            "desc": "Add the things that keep a harness alive over 50 turns: bounded concurrency with the asyncio patterns from Phase 0, retries with backoff on transient API errors, a step limit, a wall-clock limit, and a cost cap that aborts the run. Then deliberately break a tool and watch whether your agent loops forever — most first drafts do.",
+            "time": "Week 38"
+          },
+          {
+            "title": "Context compaction",
+            "desc": "Long agentic runs die from context, not capability. Implement one strategy and measure it: summarise older turns, drop stale tool outputs while keeping their identifiers, or offload results to files the agent can re-read. Compare task success with and without compaction on the same tasks so you have a number, not a preference.",
+            "time": "Week 38",
+            "resource": {
+              "label": "Effective context engineering ↗",
+              "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
+            }
+          },
+          {
+            "title": "Speak MCP",
+            "desc": "Wrap two of your tools as an MCP server and connect your harness to it as a client. Read enough of the spec to know what a tool, a resource, and a prompt are, and how transport and capability negotiation work. Interview-relevant and directly relevant to shipping an environment other people's harnesses can call.",
+            "time": "Week 38",
+            "resource": {
+              "label": "MCP introduction ↗",
+              "url": "https://modelcontextprotocol.io/docs/getting-started/intro"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>This harness is a tool you will use for the rest of the plan.</strong> The benchmark audit in weeks 45–46 needs a scaffold you fully control, and the environment in week 48 needs a client you can point at it. Build it well now and you stop paying for it later."
+          },
+          {
+            "type": "warn",
+            "html": "<strong>Put the cost cap in on day one.</strong> An agent loop that retries a failing tool call can burn a hundred dollars overnight without producing a single completed task. Cap tokens per run and total spend per experiment before you leave anything unattended."
+          }
+        ]
+      },
+      {
+        "id": "p3-finetuning",
+        "badge": "Task 03",
+        "title": "Fine-tuning: LoRA and one SFT run",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "LoRA from scratch — it is two matrices and a scale factor",
+            "desc": "Implement a LoRA layer in PyTorch: A initialised Gaussian, B initialised to zero, output scaled by alpha over r. Inject it into the transformer you built in Phase 1, verify the trainable parameter count drops by the factor you predicted, check gradients flow only into A and B, and merge the adapter back into the base weights.",
+            "time": "Week 39",
+            "resource": {
+              "label": "arXiv 2106.09685 ↗",
+              "url": "https://arxiv.org/abs/2106.09685"
+            }
+          },
+          {
+            "title": "One real SFT run with peft and trl",
+            "desc": "Fine-tune a small open-weights model on an instruction dataset using peft plus TRL's SFTTrainer. One run, logged properly: loss curve, hyperparameters, hardware, wall-clock, cost. The point is to have executed the standard pipeline once so you can reason about post-training, not to produce a good model.",
+            "time": "Week 39",
+            "resource": {
+              "label": "TRL SFTTrainer ↗",
+              "url": "https://huggingface.co/docs/trl/en/sft_trainer"
+            }
+          },
+          {
+            "title": "Dataset card and leakage check",
+            "desc": "Write the dataset card before you publish the adapter: provenance, licence, size, splits, known limitations. Then actually check for train/eval contamination — exact-match and near-duplicate search between your training set and whatever you plan to evaluate on. Report the overlap number even when it is zero.",
+            "time": "Week 39",
+            "resource": {
+              "label": "Dataset cards ↗",
+              "url": "https://huggingface.co/docs/hub/en/datasets-cards"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>One week, not four.</strong> Fine-tuning is a commodity skill and the old plan over-weighted it. Do not start anything new on torchtune, which has been wound down, or torchforge, which is paused — PyTorch is consolidating on torchtitan. TRL or Axolotl for this week; then move on."
+          }
+        ]
+      },
+      {
+        "id": "p3-rl-posttraining",
+        "badge": "Task 04",
+        "title": "RL with verifiable rewards",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Run a GRPO-family loop on a verifiable task",
+            "desc": "Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. Note that TRL v1.9.0 flipped the default loss_type to \"dapo\" and marks plain grpo as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.",
+            "time": "Week 40",
+            "resource": {
+              "label": "TRL GRPOTrainer ↗",
+              "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+            }
+          },
+          {
+            "title": "Know where GRPO and DAPO came from",
+            "desc": "GRPO is introduced in the DeepSeekMath paper: drop the value model, normalise advantage within a sampled group. DAPO then fixes four concrete failures — clip-higher, dynamic sampling, token-level loss, overlong-reward shaping — and the token-level loss is exactly the length-bias fix behind TRL's new default. Read both and you can explain your own config line by line.",
+            "time": "Week 40",
+            "resource": {
+              "label": "arXiv 2503.14476 ↗",
+              "url": "https://arxiv.org/abs/2503.14476"
+            }
+          },
+          {
+            "title": "Read the RLVR capability debate honestly",
+            "desc": "This is contested ground and knowing that is the point. Read 2504.13837 (base models win at large k), 2506.10947 (Spurious Rewards — random rewards help Qwen but not Llama or OLMo), 2505.24864 (ProRL — prolonged RL does expand the boundary), then 2510.04028, which reconciles them: early training exploits and narrows, prolonged training explores and expands. The camps were measuring different phases.",
+            "time": "Week 41",
+            "resource": {
+              "label": "arXiv 2510.04028 ↗",
+              "url": "https://arxiv.org/abs/2510.04028"
+            }
+          },
+          {
+            "title": "Learn what actually moves the number",
+            "desc": "\"The Art of Scaling RL Compute\" spends 400k+ GPU-hours and finds sigmoidal rather than power-law curves: design choices buy compute efficiency, they do not raise the asymptote. The practical lesson for you is to stop collecting GRPO variants. Pick one, scale it as far as your budget goes, and measure the curve you get.",
+            "time": "Week 41",
+            "resource": {
+              "label": "arXiv 2510.13786 ↗",
+              "url": "https://arxiv.org/abs/2510.13786"
+            }
+          },
+          {
+            "title": "Fill in the post-training map",
+            "desc": "Work through the RLHF Book alongside the runs: reward modelling, PPO versus policy-gradient variants, DPO and why it was adopted then partly displaced, regularisation and KL control. Finish with a written paragraph tracing RLHF to DPO to GRPO to rubric rewards — what each fixed and what is still open.",
+            "time": "Week 41",
+            "resource": {
+              "label": "The RLHF Book ↗",
+              "url": "https://rlhfbook.com"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>On-policy distillation is the 2026 shape.</strong> The accepted pipeline is SFT-distill for a cold start, then RLVR, then on-policy distillation as a compaction step — reported at roughly a tenth of the GPU-hours of RL alone for comparable reasoning scores. Know the shape even if you only run the first two stages."
+          },
+          {
+            "type": "warn",
+            "html": "<strong>Your RL run will be small and that is fine.</strong> Nobody hiring for evals expects you to have trained a frontier reasoning model. They expect you to explain why your reward curve went up while your eval did not, and to have a verifiable task and a checker you wrote yourself."
+          }
+        ]
+      },
+      {
+        "id": "p3-eval-infra",
+        "badge": "Task 05",
+        "title": "Eval infrastructure",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "A job queue over checkpoints",
+            "desc": "Build the thing the job req lists first: submit (model, task, sample) jobs to a persistent queue, run them with bounded concurrency, retry transient failures with backoff, and resume cleanly after you kill the process halfway through. Idempotent job keys are the whole design — get them right and everything else is bookkeeping.",
+            "time": "Week 42"
+          },
+          {
+            "title": "Caching and dedupe that you can trust",
+            "desc": "Cache completed samples keyed on model id, prompt, decode parameters, and harness version. Deduplicate identical work inside a batch. Then test the failure mode deliberately: change a prompt template and confirm the cache misses instead of silently serving last week's answers. Study how Inspect scopes its cache before you invent your own.",
+            "time": "Week 42",
+            "resource": {
+              "label": "Inspect caching ↗",
+              "url": "https://inspect.aisi.org.uk/caching.html"
+            }
+          },
+          {
+            "title": "Sandbox the agentic tasks",
+            "desc": "Agentic evals run untrusted model-generated code. Run each sample in a container with no network by default, an explicit allowlist when a task needs one, CPU and memory limits, a timeout, and guaranteed cleanup even when the run crashes. Inspect's sandbox model is the reference implementation to copy rather than reinvent.",
+            "time": "Week 43",
+            "resource": {
+              "label": "Inspect sandboxing ↗",
+              "url": "https://inspect.aisi.org.uk/sandboxing.html"
+            }
+          },
+          {
+            "title": "Per-sample cost and token accounting",
+            "desc": "Record input tokens, output tokens, cached tokens, tool calls, wall-clock, and dollar cost for every sample — not per run, per sample. This is how you answer \"what would it cost to run this eval on the next model\" without guessing, and how you find the one task that is eating 40% of your budget.",
+            "time": "Week 43"
+          },
+          {
+            "title": "A dashboard someone else can read",
+            "desc": "Ship a view that shows score per task per checkpoint with confidence intervals from Task 01, run status and failure counts, cost to date, and a link from any number to the raw sample logs behind it. Test it by handing it to someone who did not build it and watching where they get confused.",
+            "time": "Week 43",
+            "resource": {
+              "label": "Inspect eval logs ↗",
+              "url": "https://inspect.aisi.org.uk/eval-logs.html"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>A stale cache is worse than no cache.</strong> The classic failure is a cache key that omits the prompt template or the harness version, so a code change produces identical numbers and you conclude the change did nothing. Version the key and write the test that proves it invalidates."
+          },
+          {
+            "type": "tip",
+            "html": "<strong>Distributed-systems judgement is the differentiator here.</strong> Plenty of candidates can write an eval script. Far fewer can run 20,000 samples across checkpoints, survive a crash, and produce a per-sample cost table afterwards. That is the top bullet of the real req."
+          }
+        ]
+      },
+      {
+        "id": "p3-judge-validation",
+        "badge": "Task 06",
+        "title": "LLM-as-judge validation",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Label the gold set yourself first",
+            "desc": "Hand-label at least 100 samples before the judge sees them, writing down the decision rule as you go. Then measure judge–human agreement properly: raw agreement, Cohen's kappa, and per-class breakdown, because a judge that is 90% accurate overall can be useless on the 10% of cases you care about.",
+            "time": "Week 44",
+            "resource": {
+              "label": "cohen_kappa_score ↗",
+              "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cohen_kappa_score.html"
+            }
+          },
+          {
+            "title": "Run the bias battery",
+            "desc": "Test the known failure modes on your own judge: position bias (swap A and B, measure how often the verdict flips), length bias (pad a response without adding content), and self-preference. The MT-Bench paper is where these were characterised and gives you the experimental designs to copy.",
+            "time": "Week 44",
+            "resource": {
+              "label": "arXiv 2306.05685 ↗",
+              "url": "https://arxiv.org/abs/2306.05685"
+            }
+          },
+          {
+            "title": "Rubrics and checklists, not scalar scores",
+            "desc": "In non-verifiable domains, explicit criteria beat learned reward models — see Rubrics as Rewards (2507.17746) and Checklists Are Better Than Reward Models (2507.18624). HealthBench is the standard testbed: 48,562 physician-written criteria attached to individual conversations. Rewrite one of your judge prompts as a checklist and re-measure agreement.",
+            "time": "Week 44",
+            "resource": {
+              "label": "arXiv 2505.08775 ↗",
+              "url": "https://arxiv.org/abs/2505.08775"
+            }
+          },
+          {
+            "title": "Calibration drift and version pinning",
+            "desc": "A judge is a model and it changes under you. Pin the exact judge model version in your results, keep the gold set in the repo, and re-run it whenever the judge model, its prompt, or its decode parameters change. Record the agreement number per version so you can tell a real score move from a judge move.",
+            "time": "Week 44"
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>An unvalidated judge is not a metric, it is a vibe.</strong> The old plan explicitly avoided judges by only using verifiable tasks. That dodges the most-demanded eval skill in the field: almost everything worth evaluating in 2026 is partly non-verifiable, and someone has to say how much to trust the grader."
+          },
+          {
+            "type": "tip",
+            "html": "<strong>Judge accuracy has error bars too.</strong> Agreement measured on 100 samples has a confidence interval wide enough to matter. Reuse the Week 35–36 machinery on the judge itself and report the interval, not the point estimate."
+          }
+        ]
+      },
+      {
+        "id": "p3-benchmark-audit",
+        "badge": "Task 07",
+        "title": "Benchmark protocol-compliance audit",
+        "tag": "agent",
+        "items": [
+          {
+            "title": "Pick a live benchmark and a specific published result",
+            "desc": "Choose from the benchmarks that are actually alive: Terminal-Bench 2.1 with the Harbor harness, τ²-bench, Mind2Web 2, or WorkArena-L2. Then pick one reported number from one submission — a named model, a named scaffold, a date. Auditing \"a benchmark\" is not a project; auditing one number is.",
+            "time": "Week 45",
+            "resource": {
+              "label": "Terminal-Bench leaderboard ↗",
+              "url": "https://www.tbench.ai/leaderboard"
+            }
+          },
+          {
+            "title": "Read the protocol before you read the numbers",
+            "desc": "Write down what the benchmark's own rules say: step limits, retries and pass@k, allowed tools, scaffold constraints, model version, and which splits count. τ²-bench is a good one to study because its dual-control setup makes the protocol assumptions explicit rather than implicit. You cannot detect a violation you never wrote down.",
+            "time": "Week 45",
+            "resource": {
+              "label": "arXiv 2506.07982 ↗",
+              "url": "https://arxiv.org/abs/2506.07982"
+            }
+          },
+          {
+            "title": "Reproduce it with your own harness",
+            "desc": "Run the same model on the same tasks through the harness you built in weeks 37–38, with your queue, sandbox, and cost accounting from weeks 42–43. Log every trajectory. Set a budget cap first — this is the most expensive single task in the phase, and a partial reproduction with honest coverage beats a full one you cannot afford.",
+            "time": "Week 45"
+          },
+          {
+            "title": "Report the discrepancy",
+            "desc": "Write up your number against the published one with confidence intervals, and separate the explanations: protocol deviation, scaffold difference, model version drift, or genuine irreproducibility. Check the submitted result JSON for protocol-compliance flags — published results have shipped with raised step limits and followed_evaluation_protocol set to \"No\". File an issue with the maintainers.",
+            "time": "Week 46",
+            "resource": {
+              "label": "Harbor harness ↗",
+              "url": "https://github.com/laude-institute/harbor"
+            }
+          },
+          {
+            "title": "Learn which benchmarks are dead and still cited",
+            "desc": "Part of the writeup is a short survey of what not to trust. WebArena sits within a few points of its human baseline. WebVoyager never had a leaderboard at all. AssistantBench and WebGames are still cited long past usefulness, and the original τ-bench repo is deprecated with README numbers roughly eighteen months stale. Being able to name three dead benchmarks and why they persist is an interview answer.",
+            "time": "Week 46",
+            "resource": {
+              "label": "arXiv 2307.13854 ↗",
+              "url": "https://arxiv.org/abs/2307.13854"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>Flagship deliverable 2.</strong> Almost nobody applying for evals roles has reproduced someone else's agentic result and reported the gap. It demonstrates the exact skill the work requires — reading a protocol, running it faithfully, and being willing to publish a number that disagrees with a leaderboard."
+          },
+          {
+            "type": "warn",
+            "html": "<strong>Be precise and be fair.</strong> Say what you ran, what you could not run, and what your own uncertainty is, and contact the maintainers before publishing anything that reads as an accusation. The goal is a credible discrepancy report, not a takedown; most gaps turn out to be scaffold and version differences rather than misconduct."
+          }
+        ]
+      },
+      {
+        "id": "p3-safety-evals",
+        "badge": "Task 08",
+        "title": "Safety &amp; dangerous-capability evals",
+        "tag": "theory",
+        "items": [
+          {
+            "title": "Read one frontier safety framework properly",
+            "desc": "Read Anthropic's Responsible Scaling Policy end to end, then skim Google DeepMind's Frontier Safety Framework for contrast. Learn the vocabulary that structures the whole field: capability thresholds, safety cases, evaluation triggers, and what it means for a model to be deployed under a specific safety level.",
+            "time": "Week 47",
+            "resource": {
+              "label": "Anthropic RSP ↗",
+              "url": "https://www.anthropic.com/rsp"
+            }
+          },
+          {
+            "title": "Sandbagging: when the eval is adversarial",
+            "desc": "A model that underperforms on purpose breaks the core assumption of capability evaluation. Read the sandbagging paper for the threat model and the demonstrations, and understand why this makes elicitation — not measurement — the hard part of a dangerous-capability eval.",
+            "time": "Week 47",
+            "resource": {
+              "label": "arXiv 2406.07358 ↗",
+              "url": "https://arxiv.org/abs/2406.07358"
+            }
+          },
+          {
+            "title": "Evaluation awareness",
+            "desc": "Frontier models often detect that they are being evaluated, which means behaviour under test may not be behaviour in deployment. Read the evaluation-awareness paper, then look at your own agentic transcripts from Task 07 for the tells: unusually cautious refusals, meta-commentary about the task being a test, suspiciously tidy tool use.",
+            "time": "Week 47",
+            "resource": {
+              "label": "arXiv 2505.23836 ↗",
+              "url": "https://arxiv.org/abs/2505.23836"
+            }
+          },
+          {
+            "title": "Run one real safety eval and measure the elicitation gap",
+            "desc": "Pick a task from inspect_evals, run it, then improve the scaffold — better prompting, more tools, more attempts — and measure how much the score moves. That delta is the elicitation gap, and it is the reason a single number from a weak scaffold is a lower bound on capability rather than a measurement of it.",
+            "time": "Week 47",
+            "resource": {
+              "label": "inspect_evals ↗",
+              "url": "https://github.com/UKGovernmentBEIS/inspect_evals"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>You get asked this in the first twenty minutes.</strong> Any evals interview at a lab, at UK AISI, METR, or Apollo will probe whether you understand that measured capability is a function of elicitation effort. One week of reading plus one real run is enough to answer well."
+          }
+        ]
+      },
+      {
+        "id": "p3-environment",
+        "badge": "Task 09",
+        "title": "Build the environment (begins)",
+        "tag": "agent",
+        "items": [
+          {
+            "title": "Choose the task, and write the verifier first",
+            "desc": "Task selection is the hardest judgement call in the plan. You want programmatic verification, meaningful spread across models (not saturated, not impossible), and narrow enough scope to diagnose specific failure types. Write the verifier before the task content — if you cannot state the pass condition as code, the task is not ready.",
+            "time": "Week 48"
+          },
+          {
+            "title": "Implement the four interfaces",
+            "desc": "An environment is a task, a reset, a step-and-reward, and a verifier. Build it against Prime Intellect's verifiers, whose v1 restructured around taskset, harness, and runtime — matching that structure now saves a rewrite in Phase 4. Reset is the part people get wrong: state must not leak between episodes.",
+            "time": "Week 48",
+            "resource": {
+              "label": "verifiers ↗",
+              "url": "https://github.com/PrimeIntellect-ai/verifiers"
+            }
+          },
+          {
+            "title": "Measure run-to-run variance and reliability",
+            "desc": "Run the same model on the same tasks n times and report the spread, not the best number. Separately, quantify how often the environment itself fails — timeouts, container errors, verifier crashes — because a task that flakes 8% of the time cannot detect a 3% capability difference. An environment nobody can trust the numbers from is not an environment.",
+            "time": "Week 48"
+          },
+          {
+            "title": "Make it callable from someone else's harness",
+            "desc": "Write the README, the install path, and one runnable example that a stranger can execute in under ten minutes. Check what publishing to the Environments Hub requires now, and look at how Inspect structures tasks and scorers so your environment can be wrapped either way. Phase 4 hardens and publishes it; this week ends with something that runs.",
+            "time": "Week 48",
+            "resource": {
+              "label": "Environments Hub ↗",
+              "url": "https://app.primeintellect.ai/dashboard/environments"
+            }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>Flagship deliverable 1, and it does not finish this week.</strong> Week 48 is the start: task, verifier, reset, reward, and a first variance measurement. Weeks 49–50 harden it, get a stranger to install it, and publish. Plan the scope accordingly — small and reliable beats ambitious and flaky."
+          },
+          {
+            "type": "warn",
+            "html": "<strong>Reliability is the contribution.</strong> Anyone can write a task. The reason environments are scarce is that most of them silently leak state between episodes, depend on a network resource that changes, or score inconsistently. Your variance and failure-rate numbers are what make yours worth using."
+          }
+        ]
+      }
+    ],
+    "milestone": {
+      "id": "p3-milestone",
+      "badge": "Milestone",
+      "title": "Phase 3 complete",
+      "heading": "What you ship at end of Phase 3",
+      "items": [
+        "SHIP: An environment that runs — task, programmatic verifier, reset, reward — with measured run-to-run variance and a stated environment failure rate",
+        "SHIP: A benchmark protocol-compliance audit: one published agentic result reproduced, the discrepancy quantified with confidence intervals, and an issue filed with the maintainers",
+        "SHIP: Your own agent harness — tool loop, schema design, error recovery, step and cost limits, context compaction, and an MCP server wrapping two of your tools",
+        "SHIP: Eval infrastructure that survives a crash: job queue over checkpoints, retries, versioned cache, container sandboxing, per-sample cost and token accounting, and a dashboard someone else can read",
+        "SHIP: A judge validation report — 100+ self-labelled gold samples, agreement with confidence intervals, position and length bias measurements, and a rubric rewrite that improved agreement",
+        "SHIP: A statistics notebook you reuse everywhere: power analysis, paired comparison, bootstrap CIs, multiple-comparison correction — plus one earlier result you re-analysed and publicly corrected",
+        "SHIP: A GRPO-family run on a verifiable task with reward curves logged and the DAPO-default loss explained rather than accepted",
+        "SHIP: A scratch-built LoRA layer verified on your Phase 1 transformer, plus one SFT run with a dataset card and a stated contamination check",
+        "SHIP: Written positions you can defend out loud: where you land on the RLVR capability debate, why elicitation effort bounds any capability number, and three agentic benchmarks that are dead but still cited"
+      ],
+      "next": {
+        "href": "#phase4",
+        "label": "Phase 4 — Ship &amp; apply →"
+      }
+    }
+  }
+]

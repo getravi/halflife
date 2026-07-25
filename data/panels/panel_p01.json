@@ -1,0 +1,494 @@
+[
+  {
+    "id": "phase0",
+    "num": "00",
+    "weeks": "Weeks 1–8",
+    "title": "Programming<br>foundations",
+    "intro": "This phase assumes you are starting close to zero. You will learn Python properly, then async Python, then array thinking, then the math deep learning is actually made of. Nothing here is optional — every later phase silently assumes all of it, and the two things people most often skip (async concurrency and sampling variance) are exactly the two that block Phase 3. Eight weeks at 25 hours is about 200 hours. Spend them on your own keyboard.",
+    "callouts": [
+      {
+        "type": "warn",
+        "html": "<strong>No AI-generated code in this phase.</strong> An assistant will produce working programs and leave you unable to debug a shape mismatch in Phase 1. Explainer and tutor use is always allowed; a code generator is banned on exit checks and on first attempts. This ban <em>lifts at the end of Phase 0</em> — from Phase 1 onward, driving a coding agent well is an explicit skill you are graded on, not a shortcut you are avoiding."
+      },
+      {
+        "type": "tip",
+        "html": "<strong>Go public in week 1, not week 22.</strong> Create the public repo on day one and commit to it every week. Post a short public build log every two weeks — what you built, what broke, what the number was. Twelve months of visible work beats one polished capstone with no history behind it."
+      },
+      {
+        "type": "tip",
+        "html": "<strong>Check the structured-program calendars in week 1.</strong> ARENA, MATS and the Anthropic Fellows programme run on fixed application windows, and the windows do not wait for you to feel ready. Put every deadline inside the next 52 weeks in your calendar now, and apply to all of them &mdash; including the ones you think you will fail."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "p0-python-basics",
+        "badge": "Task 01",
+        "title": "Python from zero",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Set up, go public, write your first programs",
+            "desc": "Install Python 3.13 and Astral's uv. Create your project with uv init, run scripts, live in the REPL. Learn variables, numbers, strings, f-strings and print debugging, then write 20 tiny programs from a blank file — no tutorial on autopilot, type every line. Create the public GitHub repo today and push week 1's work to it.",
+            "time": "Week 1",
+            "resource": { "label": "docs.astral.sh/uv ↗", "url": "https://docs.astral.sh/uv/" }
+          },
+          {
+            "title": "Data structures and control flow",
+            "desc": "Lists, dicts, sets, tuples. if/for/while, slicing, iteration, nesting. Learn what mutability means and why it bites — mutate a list inside a function and watch the caller's copy change. Build a word-frequency counter, a to-do list and a text-file parser from an empty file, not from a template.",
+            "time": "Week 2",
+            "resource": { "label": "docs.python.org tutorial ↗", "url": "https://docs.python.org/3/tutorial/" }
+          },
+          {
+            "title": "Functions, files, errors, and classes",
+            "desc": "Function arguments and return values, scope, exceptions and try/except, reading and writing files, modules and imports, and basic classes with __init__. Learn to read a traceback from the bottom up and fix the actual line it names instead of guessing. Every program from here on gets a function per step.",
+            "time": "Week 3"
+          },
+          {
+            "title": "Exit check: word frequencies from an empty file",
+            "desc": "From a blank file, write a program that reads a text file, counts word frequencies, sorts by count, and writes the top 20 to a new file — a function per step, with error handling for a missing input file. No copying, no AI assistance. It passes when the output is correct on a file you did not write and it fails cleanly on a path that does not exist.",
+            "time": "Week 3"
+          }
+        ]
+      },
+      {
+        "id": "p0-python-fluency",
+        "badge": "Task 02",
+        "title": "Python fluency and async",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "The idioms you will actually read",
+            "desc": "List, dict and set comprehensions, generators and yield, decorators, context managers, *args and **kwargs, and dataclasses. Write each one by hand until you stop reaching for the docs. You are not learning these to write clever code — you are learning them so that other people's ML code stops looking like noise.",
+            "time": "Week 3"
+          },
+          {
+            "title": "Type annotations and tooling",
+            "desc": "Set up ruff and mypy and make both run on save in your editor. Annotate everything you write from here on, including return types. Strong typing and linting habits are what make a large evals codebase reviewable; adding them later is much more work than starting with them.",
+            "time": "Week 4",
+            "resource": { "label": "docs.astral.sh/ruff ↗", "url": "https://docs.astral.sh/ruff/" }
+          },
+          {
+            "title": "Async Python: asyncio and TaskGroup",
+            "desc": "Learn async def, await, the event loop, asyncio.run, gather, and TaskGroup for structured concurrency. Understand precisely why a blocking call inside a coroutine stalls every other task on the loop, and prove it to yourself with time.sleep versus asyncio.sleep. This is the single highest-leverage thing in Phase 0.",
+            "time": "Week 4",
+            "resource": { "label": "docs.python.org asyncio ↗", "url": "https://docs.python.org/3/library/asyncio.html" }
+          },
+          {
+            "title": "Bounded concurrency, retries and backoff",
+            "desc": "Write an async client that fans out N requests against a rate-limited endpoint with a Semaphore capping in-flight calls, exponential backoff with jitter on 429s and 5xxs, and a per-request timeout. Make partial failure explicit: return results and errors, never silently drop a task. Every eval harness in Phase 3 is this loop with a scorer bolted on.",
+            "time": "Week 4",
+            "resource": { "label": "python-httpx.org async ↗", "url": "https://www.python-httpx.org/async/" }
+          },
+          {
+            "title": "Exit check: typed LRU cache and a concurrent fetcher",
+            "desc": "Write a generic, fully typed LRU cache from scratch using only the standard library — no functools.lru_cache. Then write an async fetcher that runs 100 tasks with a concurrency cap of 10 and retries transient failures. Both pass when mypy is clean and your own tests cover eviction order and the retry path.",
+            "time": "Week 4"
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>Async is not a nice-to-have.</strong> Phase 3 asks you to run thousands of model calls against checkpoints with retries, caching and cost accounting. If <code>asyncio</code> is still uncomfortable then, you will write a threaded mess and spend a week debugging it. Learn it here where the stakes are a toy fetcher."
+          }
+        ]
+      },
+      {
+        "id": "p0-numpy",
+        "badge": "Task 03",
+        "title": "NumPy array thinking",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Think in arrays, not loops",
+            "desc": "Work the NumPy 100 exercises. Concentrate on broadcasting rules, fancy indexing, axis semantics and einsum. Ban Python for-loops over array elements entirely — if you catch yourself writing one, that is the exercise telling you which concept you skipped.",
+            "time": "Week 5",
+            "resource": { "label": "github.com/rougier/numpy-100 ↗", "url": "https://github.com/rougier/numpy-100" }
+          },
+          {
+            "title": "Core ops by hand",
+            "desc": "Implement matrix multiply, softmax and layer norm from scratch in NumPy. Make softmax numerically stable by subtracting the row max and be able to say what happens if you do not. Verify each against a reference implementation to 1e-6.",
+            "time": "Week 5",
+            "resource": { "label": "numpy broadcasting ↗", "url": "https://numpy.org/doc/stable/user/basics.broadcasting.html" }
+          },
+          {
+            "title": "Exit check: attention in einsum",
+            "desc": "Implement scaled dot-product attention (Q, K, V to output, with a causal mask) using only np.einsum and np.exp. No loops, no reshape gymnastics you cannot explain. It passes when it matches a PyTorch reference to 1e-5 and you can state what each index letter in your einsum string means.",
+            "time": "Week 5",
+            "resource": { "label": "numpy.einsum ↗", "url": "https://numpy.org/doc/stable/reference/generated/numpy.einsum.html" }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>Array thinking is non-negotiable.</strong> PyTorch and JAX are both high-dimensional array transform languages wearing a neural-network costume. If shapes and axes are not fluent here, every model you touch later becomes a shape-error guessing game."
+          }
+        ]
+      },
+      {
+        "id": "p0-math-refresh",
+        "badge": "Task 04",
+        "title": "Math refresh",
+        "tag": "theory",
+        "items": [
+          {
+            "title": "Linear algebra warmup",
+            "desc": "Eigendecomposition, SVD, matrix rank, projections and change of basis. Work ten problems by hand on paper before touching NumPy, then check each numerically. Low-rank structure is the whole idea behind LoRA in Phase 3, and rank is where it starts.",
+            "time": "Week 6",
+            "resource": { "label": "mml-book.github.io ↗", "url": "https://mml-book.github.io/" }
+          },
+          {
+            "title": "Calculus and backprop by hand",
+            "desc": "Chain rule in vector form, Jacobians, and why reverse-mode is the cheap direction for scalar losses. Derive backpropagation for a 2-layer MLP on paper, including the shapes of every intermediate. Then implement it in NumPy and verify against a finite-difference gradient check.",
+            "time": "Week 6",
+            "resource": { "label": "cs231n backprop notes ↗", "url": "https://cs231n.github.io/optimization-2/" }
+          },
+          {
+            "title": "Probability, entropy and cross-entropy",
+            "desc": "Entropy, cross-entropy, KL divergence and perplexity. Derive the softmax-plus-cross-entropy gradient by hand and notice how much it simplifies — that simplification is why every language model trains this way. Be able to convert between a loss in nats and a perplexity without looking it up.",
+            "time": "Week 7"
+          },
+          {
+            "title": "Sampling variance and the bootstrap",
+            "desc": "Learn what a standard error actually is, how it shrinks with n, and how to build a bootstrap confidence interval from resampled data. Simulate it: draw 200 samples from a known distribution, bootstrap the mean, and check the interval covers the truth about 95% of the time. Then do the same for a paired difference between two conditions.",
+            "time": "Week 7",
+            "resource": { "label": "scipy.stats.bootstrap ↗", "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html" }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>The bootstrap is the single most reused tool in this plan.</strong> Every eval number you report from Phase 1 onward &mdash; nanochat variance, benchmark scores, judge agreement &mdash; needs an interval attached. Learning it now costs a day; not learning it means a year of point estimates nobody can trust."
+          }
+        ]
+      },
+      {
+        "id": "p0-algorithms",
+        "badge": "Task 05",
+        "title": "Optimizer math",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Complexity intuition, not interview prep",
+            "desc": "Read a loop nest and state its time and space complexity without thinking. Cover the handful of patterns you actually meet in ML code: sorting, hashing, sliding windows, and the difference between an O(n²) attention and an O(n) scan. That is all the algorithms content this plan needs.",
+            "time": "Week 7"
+          },
+          {
+            "title": "Derive and implement SGD, momentum, Adam and AdamW",
+            "desc": "Write each update rule on paper first, including the bias correction terms in Adam and why they exist. Then implement all four in NumPy and verify Adam matches torch.optim.Adam step for step on a fixed seed. Finish by explaining what decoupled weight decay in AdamW changes versus L2 added to the loss.",
+            "time": "Week 7",
+            "resource": { "label": "arXiv 1412.6980 — Adam ↗", "url": "https://arxiv.org/abs/1412.6980" }
+          },
+          {
+            "title": "Watch the optimizer misbehave",
+            "desc": "Take your Adam implementation and break it deliberately: drop the bias correction, set epsilon to zero, set beta2 to 0.9, crank the learning rate. Plot the loss curve for each. Recognising these shapes on sight saves days of debugging in Phase 1 and Phase 2.",
+            "time": "Week 7",
+            "resource": { "label": "arXiv 1711.05101 — AdamW ↗", "url": "https://arxiv.org/abs/1711.05101" }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>Zero LeetCode.</strong> Earlier versions of this plan budgeted five mediums. They are cut &mdash; nothing in evals or applied research hiring is gated on them, and the hours buy far more here. The optimizer math is the deliverable, and you will use it in every training loop for the next 44 weeks."
+          }
+        ]
+      },
+      {
+        "id": "p0-git-tooling",
+        "badge": "Task 06",
+        "title": "Git, Linux and remote boxes",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "The git you will actually use",
+            "desc": "Branch, commit, push, pull, resolve a merge conflict, read a diff, and write a commit message that says why. Learn git bisect properly by running one on a repo with a deliberately planted bug. Skip the exotica — interactive rebase mastery, cherry-pick and worktrees are not what is stopping you.",
+            "time": "Week 8",
+            "resource": { "label": "git-scm.com/docs/git-bisect ↗", "url": "https://git-scm.com/docs/git-bisect" }
+          },
+          {
+            "title": "Linux, ssh and tmux hygiene",
+            "desc": "You will rent GPU boxes starting in Phase 1, and everything you do on them happens over ssh. Learn key-based auth and ~/.ssh/config aliases, scp and rsync for moving checkpoints, and tmux so a dropped connection does not kill a training run. Practise the whole loop on a cheap CPU instance before there is a GPU bill attached to your mistakes.",
+            "time": "Week 8",
+            "resource": { "label": "missing.csail.mit.edu ↗", "url": "https://missing.csail.mit.edu/" }
+          },
+          {
+            "title": "Workspace and profiling",
+            "desc": "Set up uv-managed environments, a working VS Code Python setup, and pytest running on your own code. Then learn cProfile: profile a deliberately bottlenecked loop, find the slow call, fix it, and measure the difference. Never optimise anything you have not profiled.",
+            "time": "Week 8",
+            "resource": { "label": "docs.python.org profile ↗", "url": "https://docs.python.org/3/library/profile.html" }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>Set a billing alert before you rent anything.</strong> The most common way this plan goes wrong financially is an instance left running over a weekend. Configure the alert, and make <code>tmux</code> plus an explicit shutdown command part of the muscle memory now, while the box costs cents an hour."
+          }
+        ]
+      }
+    ],
+    "milestone": {
+      "id": "p0-milestone",
+      "badge": "Milestone",
+      "title": "Phase 0 complete",
+      "heading": "You're ready for Phase 1 when…",
+      "items": [
+        "From an empty file, you can write a correct word-frequency program with a function per step and clean handling of a missing input file",
+        "You can read a traceback and fix the line it names, without guessing and without pasting it anywhere",
+        "You can write a generic typed LRU cache from the standard library alone, and mypy is clean on it",
+        "You can write an async fan-out that caps concurrency, retries transient failures with backoff, and reports partial failure explicitly",
+        "You can implement scaled dot-product attention with a causal mask in NumPy using only einsum and exp, matching a PyTorch reference to 1e-5",
+        "You have derived backprop for a 2-layer MLP on paper and confirmed it against a finite-difference gradient check",
+        "You have implemented SGD, momentum, Adam and AdamW from scratch and verified Adam against torch.optim.Adam on a fixed seed",
+        "You can compute a bootstrap confidence interval for a mean and for a paired difference, and say what it does and does not claim",
+        "Your public repo exists, has weekly commits going back to week 1, and at least three public build-log posts",
+        "You can ssh to a rented box, run a long job under tmux, pull results back with rsync, and shut the instance down"
+      ],
+      "next": { "href": "#phase1", "label": "Phase 1 — Deep learning & transformers →" }
+    }
+  },
+  {
+    "id": "phase1",
+    "num": "01",
+    "weeks": "Weeks 9–20",
+    "title": "Deep learning<br>& transformers",
+    "intro": "Twelve weeks to go from no autograd to a trained chat model you paid for yourself. You build micrograd, then makemore, then the boring PyTorch engineering nobody teaches, then CS336 assignment 1 against a real test suite, then read what changed in architectures since 2023, then run and dissect nanochat. The transformer gets built once, properly, and graded by tests rather than by your own optimism.",
+    "callouts": [
+      {
+        "type": "tip",
+        "html": "<strong>The AI code ban lifts here — and inverts.</strong> Driving a coding agent well is now an explicit skill: scoping a task, reviewing a diff you did not write, and catching the plausible-but-wrong change. The rule that survives is narrower. On your <em>first</em> attempt at any from-scratch implementation, and on every exit check, you write the code. Everywhere else, use the agent and review it like a colleague's PR."
+      },
+      {
+        "type": "tip",
+        "html": "<strong>Start applying at week 20, not week 52.</strong> The first structured-program window inside your 52 weeks probably closes before Phase 2 ends. Apply with what you have &mdash; a green CS336 assignment and an honest nanochat writeup is already more than most applicants show. Rejections at week 20 cost you nothing and calibrate everything."
+      }
+    ],
+    "tasks": [
+      {
+        "id": "p1-karpathy-hero",
+        "badge": "Task 01",
+        "title": "Karpathy's Zero to Hero",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Build micrograd first",
+            "desc": "Watch the micrograd lecture and implement scalar-level reverse-mode autograd from scratch: a Value node, a backward closure per operation, and a topological sort for the backward pass. Then train a tiny MLP on a two-class toy dataset with it. Do this before makemore — the whole series assumes you already know what .backward() is doing, and building it first is what makes every later framework bug legible.",
+            "time": "Week 9",
+            "resource": { "label": "github.com/karpathy/micrograd ↗", "url": "https://github.com/karpathy/micrograd" }
+          },
+          {
+            "title": "Then makemore, all the way through",
+            "desc": "Build bigram, MLP, and the deeper character-level models in sequence. The payload is not the models — it is initialisation scale, batch normalisation, and the activation and gradient diagnostics Karpathy plots. Learn to look at a histogram of activations and say which layer is saturating.",
+            "time": "Week 10",
+            "resource": { "label": "github.com/karpathy/makemore ↗", "url": "https://github.com/karpathy/makemore" }
+          },
+          {
+            "title": "Diagnostics you keep",
+            "desc": "Extract the diagnostic tooling from makemore into your own small module: activation and gradient histograms per layer, update-to-weight ratio, and a loss curve with a moving average. You will reuse this in every training run for the rest of the plan. Push it to the public repo.",
+            "time": "Week 11",
+            "resource": { "label": "Neural Networks: Zero to Hero ↗", "url": "https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ" }
+          },
+          {
+            "title": "Exit check: autograd from memory",
+            "desc": "Close every tab and reimplement scalar autograd from scratch: add, multiply, tanh, and a backward pass that handles a node used twice. It passes when the gradients match a PyTorch reference on a small expression graph, including the reused-node case that catches people who accumulate instead of overwrite.",
+            "time": "Week 11"
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>Type the code, do not paste it.</strong> This is the one place where copying costs the most, because backprop intuition is the thing you are actually buying. Watch, pause, write it yourself, and let it break. The series has had no new lectures since Aug 2024 and none are coming &mdash; but micrograd and makemore remain the best on-ramp that exists."
+          }
+        ]
+      },
+      {
+        "id": "p1-pytorch-engineering",
+        "badge": "Task 02",
+        "title": "PyTorch engineering",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Input pipelines that do not starve the GPU",
+            "desc": "Learn Dataset, DataLoader, num_workers, pin_memory, collate_fn and why a slow collate silently caps your throughput. Instrument a training step to measure data-wait time versus compute time. If the GPU is idle a third of the time, you have a data bug, not a model bug.",
+            "time": "Week 12",
+            "resource": { "label": "pytorch.org DataLoader ↗", "url": "https://pytorch.org/docs/stable/data.html" }
+          },
+          {
+            "title": "Mixed precision and gradient accumulation",
+            "desc": "Run a training loop in bf16 and in fp16 with a GradScaler, and know why bf16 usually needs no scaler while fp16 does. Then implement gradient accumulation to reach an effective batch size your card cannot hold, and confirm the loss curve matches the equivalent large-batch run. Get the accumulation-versus-scheduler-step interaction right — stepping the scheduler per micro-batch is a classic silent bug.",
+            "time": "Week 12",
+            "resource": { "label": "pytorch.org AMP examples ↗", "url": "https://pytorch.org/docs/stable/notes/amp_examples.html" }
+          },
+          {
+            "title": "Checkpoint, resume, and survive OOM",
+            "desc": "Save and restore model, optimizer, scheduler, scaler and RNG state, then prove it: kill a run mid-epoch, resume, and show the loss curve is continuous across the seam. Separately, reproduce a CUDA OOM on purpose and work through the standard fixes — smaller micro-batch, activation checkpointing, freeing stale references, and reading the allocator summary.",
+            "time": "Week 12",
+            "resource": { "label": "pytorch.org saving & loading ↗", "url": "https://pytorch.org/tutorials/beginner/saving_loading_models.html" }
+          },
+          {
+            "title": "Numerical debugging",
+            "desc": "Learn the standard first moves when a loss goes NaN: check for inf in the inputs, look for a division by a near-zero norm, verify the softmax is max-subtracted, and clip the gradient norm. Practise gradcheck on a custom autograd function. Build the habit of overfitting a single batch to zero loss before ever launching a real run — if it cannot memorise 8 examples, the bug is in your code, not your hyperparameters.",
+            "time": "Week 13",
+            "resource": { "label": "karpathy.github.io recipe ↗", "url": "http://karpathy.github.io/2019/04/25/recipe/" }
+          },
+          {
+            "title": "Experiment tracking and reproducibility",
+            "desc": "Wire up a tracker — Weights & Biases or an equivalent — and log config, git SHA, loss curves, learning rate, grad norm and throughput for every run. Seed everything and read what PyTorch does and does not guarantee about determinism. A run you cannot reproduce or point at is not a result, and you will need this discipline for the benchmark audit in Phase 3.",
+            "time": "Week 13",
+            "resource": { "label": "docs.wandb.ai ↗", "url": "https://docs.wandb.ai/guides/track/" }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>This task is the one nobody teaches and everybody needs.</strong> Tutorials end at <code>loss.backward()</code>; jobs start there. Checkpoint/resume, OOM triage and honest experiment logs are what separates someone who has run a training job from someone who has watched one."
+          }
+        ]
+      },
+      {
+        "id": "p1-cs336-basics",
+        "badge": "Task 03",
+        "title": "Stanford CS336 · assignment 1",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Watch the lectures before touching the code",
+            "desc": "CS336 'Language Modeling from Scratch' is the best structured treatment of this material and the course materials are public — lectures, slides and assignments. Watch the first five lectures and take notes by hand before you open the assignment. The paid Stanford Online certificate track is a separate product you do not need.",
+            "time": "Week 14",
+            "resource": { "label": "stanford-cs336.github.io ↗", "url": "https://stanford-cs336.github.io/spring2025/" }
+          },
+          {
+            "title": "BPE tokenizer, green",
+            "desc": "Implement byte-level BPE training and encoding against the course test suite. Get the special-token handling and the pre-tokenization regex right; that is where most of the failures live. Then train it on the assignment's corpus and inspect the merges — you should be able to explain why the vocabulary looks the way it does.",
+            "time": "Week 14",
+            "resource": { "label": "cs336 assignment1-basics ↗", "url": "https://github.com/stanford-cs336/assignment1-basics" }
+          },
+          {
+            "title": "Transformer, green",
+            "desc": "Build the model end to end: RMSNorm, RoPE, multi-head self-attention with causal masking, SwiGLU feed-forward, and the residual structure that ties them together. Run the provided tests until every transformer test passes. This is the one from-scratch transformer in the entire plan — earlier drafts built it four times, which was three times too many.",
+            "time": "Week 15",
+            "resource": { "label": "arXiv 1910.07467 — RMSNorm ↗", "url": "https://arxiv.org/abs/1910.07467" }
+          },
+          {
+            "title": "Optimizer, training loop, and a real run",
+            "desc": "Implement AdamW, cosine schedule with warmup, and gradient clipping against the tests, then train the model on TinyStories or OpenWebText and log the loss curve. Aim to get a sample of generated text that is recognisably English. Record wall-clock time, hardware and cost alongside the loss.",
+            "time": "Week 16"
+          },
+          {
+            "title": "Exit check with explicit partial credit",
+            "desc": "You pass this task when the tokenizer tests and the transformer tests are green — those two are mandatory and non-negotiable. The optimizer and training-loop tests are optional: if they are still red at the end of week 17, write down exactly which assertions fail and what you think is wrong, commit that note, and move on. Do not let week 18 slip.",
+            "time": "Week 17"
+          }
+        ],
+        "callouts": [
+          {
+            "type": "tip",
+            "html": "<strong>Four weeks, and partial credit is the plan.</strong> Earlier versions budgeted two weeks for this and were wrong by roughly 2.5&times;. A public test suite that fails loudly is worth more than a tutorial you believe you understood &mdash; but a green tokenizer and a green transformer already carry the portfolio value. Shipping partial with an honest note beats stalling the phase."
+          }
+        ]
+      },
+      {
+        "id": "p1-modern-arch",
+        "badge": "Task 04",
+        "title": "What changed since 2023",
+        "tag": "theory",
+        "items": [
+          {
+            "title": "Attention, and the three fixes that stuck",
+            "desc": "Read 'Attention Is All You Need' properly — you should be able to diagram every component from memory. Then read the three modifications that are now universal: FlashAttention for why attention is memory-bandwidth-bound rather than compute-bound, RoPE for why learned positional embeddings were replaced, and GQA for how the KV cache shrinks. Trace KV-cache mechanics by hand: what gets stored, at which layer, and when it invalidates.",
+            "time": "Week 18",
+            "resource": { "label": "arXiv 1706.03762 ↗", "url": "https://arxiv.org/abs/1706.03762" }
+          },
+          {
+            "title": "FlashAttention and the memory hierarchy",
+            "desc": "Read FlashAttention-2 for the tiling and work-partitioning argument, and understand why never materialising the N×N attention matrix is the whole trick. Be able to state, roughly, the arithmetic intensity of an attention layer and why that number decides whether you are compute-bound or bandwidth-bound. This is the direct on-ramp to the Triton work in Phase 2.",
+            "time": "Week 18",
+            "resource": { "label": "arXiv 2307.08691 — FlashAttention-2 ↗", "url": "https://arxiv.org/abs/2307.08691" }
+          },
+          {
+            "title": "Mixture of experts and load balancing",
+            "desc": "Read Switch Transformer for top-k routing, the auxiliary load-balancing loss and capacity factors, then Mixtral for what a shipped sparse model actually looks like. The question to hold onto is why routing collapse happens and what the balancing loss is really buying. Sparse models are now the default at frontier scale, so this is not optional background.",
+            "time": "Week 18",
+            "resource": { "label": "arXiv 2101.03961 — Switch Transformer ↗", "url": "https://arxiv.org/abs/2101.03961" }
+          },
+          {
+            "title": "MLA and long context",
+            "desc": "Read the DeepSeek-V2 paper for multi-head latent attention — compressing the KV cache into a low-rank latent instead of sharing heads — and compare its tradeoff against GQA. Then read YaRN for how context windows get extended past the training length. Both are about the same underlying constraint: the KV cache is what makes long-context inference expensive.",
+            "time": "Week 18",
+            "resource": { "label": "arXiv 2405.04434 — DeepSeek-V2 ↗", "url": "https://arxiv.org/abs/2405.04434" }
+          },
+          {
+            "title": "Hybrid and linear attention",
+            "desc": "Read Mamba for selective state-space models and the linear-attention framing that preceded it. Understand what a fixed-size recurrent state buys you at inference and what it costs you in recall. Most 2026 production models are hybrids rather than pure attention or pure SSM, so know why the mix exists rather than which one 'won'.",
+            "time": "Week 18",
+            "resource": { "label": "arXiv 2312.00752 — Mamba ↗", "url": "https://arxiv.org/abs/2312.00752" }
+          },
+          {
+            "title": "Quantization for people who run evals",
+            "desc": "Read GPTQ and AWQ for post-training weight quantization, and learn the practical vocabulary: int8 versus int4, per-channel versus per-group scales, weight-only versus activation quantization, and KV-cache quantization. The reason this matters to you is evals: a quantized checkpoint is a different model, and comparing an int4 serve against an fp16 baseline without saying so is a reproducibility failure you will meet in Phase 3.",
+            "time": "Week 18",
+            "resource": { "label": "arXiv 2210.17323 — GPTQ ↗", "url": "https://arxiv.org/abs/2210.17323" }
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>This week is reading, and that is deliberate.</strong> Do not try to implement MoE routing or an SSM here &mdash; you would spend three weeks and learn less. The deliverable is a short public post explaining each of these six in your own words, with the tradeoff each one makes. If you cannot write the tradeoff down, you have not read it yet."
+          }
+        ]
+      },
+      {
+        "id": "p1-nanochat",
+        "badge": "Task 05",
+        "title": "nanochat: the full pipeline",
+        "tag": "exercise",
+        "items": [
+          {
+            "title": "Run the speedrun first",
+            "desc": "Rent the box and execute the speedrun end to end before reading a single file. You will not understand most of it, and that is the point — you now have a working chat model, a wall-clock number, a bill, and a set of logs to explain. Reading a codebase you have already run is a completely different experience from reading one you have not.",
+            "time": "Week 19",
+            "resource": { "label": "github.com/karpathy/nanochat ↗", "url": "https://github.com/karpathy/nanochat" }
+          },
+          {
+            "title": "Then read the whole repo",
+            "desc": "Now read every file: tokenization, pretraining, midtraining, SFT, RL, eval, and inference with the web UI. It is the one readable codebase that covers the entire stack, and a single --depth knob sets most of the hyperparameters. For each stage, find the line in the log you produced last week that corresponds to it.",
+            "time": "Week 19"
+          },
+          {
+            "title": "Change one thing and measure it",
+            "desc": "Pick a single variable — depth, learning rate schedule, data mixture, or the SFT set — change only that, rerun, and write down what moved and by how much. Then rerun the baseline with a different seed so you can say whether your effect is larger than run-to-run noise. Report the number with a bootstrap interval, not as a point estimate.",
+            "time": "Week 20"
+          },
+          {
+            "title": "Write it up honestly",
+            "desc": "Publish a writeup with real costs, real wall-clock times, the hardware you used, the eval numbers, and the variance. Include what went wrong and what you would spend differently. This is the second half of flagship deliverable three, alongside the green CS336 assignment, and honest numbers are what make it credible.",
+            "time": "Week 20"
+          }
+        ],
+        "callouts": [
+          {
+            "type": "warn",
+            "html": "<strong>Budget $150&ndash;400, not $48.</strong> The README's headline figure covers one clean speedrun on 8&times;H100 at on-demand pricing. Your real spend includes a failed launch, a config you got wrong, the baseline rerun for variance, and the ablation. Set a hard cap, set a billing alert, use spot where you can, and never leave an instance running overnight."
+          }
+        ]
+      }
+    ],
+    "milestone": {
+      "id": "p1-milestone",
+      "badge": "Milestone",
+      "title": "Phase 1 complete",
+      "heading": "You're ready for Phase 2 when…",
+      "items": [
+        "You can implement scalar reverse-mode autograd from scratch with correct gradients for a node used more than once",
+        "Your CS336 assignment 1 tokenizer and transformer tests are green in a public repo; any remaining red tests have a written diagnosis committed next to them",
+        "You have trained a model you wrote yourself to the point where its samples are recognisably English, with the loss curve, hardware and cost logged",
+        "You can checkpoint and resume a run and show the loss curve is continuous across the restart",
+        "You can debug a NaN loss by method rather than by guessing, and you overfit a single batch before every real run",
+        "Every run you have done is tracked with config, git SHA and throughput, and you can pull up any of them",
+        "A completed nanochat speedrun exists with a public writeup: real cost, real wall-clock, eval numbers, and one single-variable change reported against run-to-run variance",
+        "You can explain FlashAttention's tiling, why RoPE replaced learned positions, what the KV cache stores, and what MLA compresses — without notes",
+        "You can explain why MoE needs a load-balancing loss, what a hybrid attention/SSM model buys, and why a quantized checkpoint is a different model for eval purposes",
+        "You have applied to at least one structured programme window, whether or not you felt ready"
+      ],
+      "next": { "href": "#phase2", "label": "Phase 2 — Systems & scaling →" }
+    }
+  }
+]
