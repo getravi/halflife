@@ -197,7 +197,7 @@ for c in o['cards']:
 ''' % (c['href'], c['num'], c['title'], c['weeks'], tags, s, s)
 
 notes = ''.join('\n    <div class="note-box">\n      %s\n    </div>\n' % o[k]
-                for k in ('honesty', 'budget') if o.get(k))
+                for k in ('howto', 'honesty', 'budget') if o.get(k))
 
 overview_panel = '''
 <!-- OVERVIEW VIEW PANEL -->

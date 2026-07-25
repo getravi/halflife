@@ -198,7 +198,7 @@
   "eyebrow": "Self-study roadmap · evals &amp; environments",
   "h1_line1": "From weak Python to a published",
   "h1_accent": "evaluation environment",
-  "intro": "A 52-week plan at 25 hours per week — about 1,300 hours — that ends with work a hiring manager can install and run. It assumes you are starting close to zero and takes you through Python, deep learning and transformers, distributed systems and scaling, then evals, RL and environments. Everything is public from week 1, and applications start at week 20, not week 52.",
+  "intro": "A 52-week plan at 25 hours per week — about 1,300 hours — that ends with work a hiring manager can install and run. It assumes you are starting close to zero: Python and the maths first, then deep learning and transformers, then evaluation and environments from week 21, with systems and scaling last because none of it blocks the work that gets you read. Your first environment is public in week 26 and improves for twelve weeks. Everything is public from week 1, and applications start at week 20, not week 52.",
   "honesty": "<strong>What 1,300 hours actually buys.</strong> Fifty-two weeks at this intensity makes you a credible candidate for evals and environments roles at safety orgs, eval vendors and applied teams. Frontier-lab applied research is a 2–4 year path, and it usually routes through one of those roles or through a fellowship. This plan is the first leg, honestly labelled.",
   "budget": "<strong>Total cost: $700–2,500.</strong> That covers the nanochat speedrun ($150–400 on rented 8×H100), fine-tuning and RL runs, and — the line the old plan omitted entirely — the API cost of eval baselines. Baselines are not one pass: a variance estimate needs five runs of every sample across every model you compare, and that is where the bill lands. Set a hard cap per experiment before you start and never leave an instance running overnight.",
   "cards": [
@@ -252,6 +252,7 @@
     ],
     "href": "#phase4"
    }
-  ]
+  ],
+  "howto": "<strong>How to use this.</strong> Click any subtask card to open its resources — every one has a short brief, four to six concrete steps, and links that were checked rather than remembered. Tick the box on a task to mark the whole thing done, or tick individual steps inside the panel for partial credit. Progress is saved in this browser only, so use the same one, and do not expect it to follow you to another machine."
  }
 }
