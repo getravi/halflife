@@ -860,3 +860,17 @@ weight-badge {
 }
 
 
+
+/* ── Capture on finish ─────────────────────────────────────── */
+.capture-form { border: 1px solid var(--border); border-radius: 3px; padding: 12px; }
+.capture-label { display: block; font-size: 11px; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 0.04em; margin: 10px 0 4px; }
+.capture-input { width: 100%; background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: 2px; color: inherit;
+  font: inherit; font-size: 13px; padding: 6px 8px; resize: vertical; }
+.capture-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.capture-save, .capture-skip { font: inherit; font-size: 12px; padding: 5px 12px;
+  border-radius: 2px; cursor: pointer; border: 1px solid var(--border); }
+.capture-save { background: rgba(255,255,255,0.08); color: inherit; }
+.capture-skip { background: none; color: var(--muted); }
+.capture-status { font-size: 12px; color: var(--muted); }

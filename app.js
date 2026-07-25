@@ -1729,11 +1729,70 @@ function openSidebar(taskId, subtaskTitle) {
       const calc = recalculateAllProgress(pData);
       updatePageUI(calc, pData);
       broadcastProgress();
+
+      const done = calc.subtasks[`${getPageForTask(t)}::${t}::${title}`] === 100;
+      if (cb.checked && done && !hasCardFor(t, title)) {
+        renderCaptureForm(t, title);
+      }
     });
   });
 
   document.getElementById('sidebar-backdrop').classList.add('active');
   document.getElementById('resources-sidebar').classList.add('active');
+}
+
+// ── Capture on finish ────────────────────────────────────────
+// Writing the card is itself the strongest available study act, which is why
+// it happens here — at the moment the work is finished — rather than being
+// authored up front against material not yet learned.
+window.CAPTURE_STATE = { cards: [] };
+
+function hasCardFor(taskId, subtaskTitle) {
+  return window.CAPTURE_STATE.cards.some(
+    c => c.taskId === taskId && c.subtaskTitle === subtaskTitle
+  );
+}
+
+function renderCaptureForm(taskId, subtaskTitle) {
+  const bodyEl = document.getElementById('sidebar-body');
+  if (!bodyEl || bodyEl.querySelector('.capture-form')) return;
+
+  const form = document.createElement('div');
+  form.className = 'capture-form sidebar-section';
+  form.innerHTML = `
+    <div class="sidebar-section-title">Capture what stuck</div>
+    <p class="sidebar-desc">Finished. Write it down now, in your own words —
+      this is the part that makes it survive.</p>
+    <label class="capture-label">What do you now know?</label>
+    <textarea class="capture-input" id="capture-answer" rows="4"></textarea>
+    <label class="capture-label">One question that would catch you if you forgot it</label>
+    <textarea class="capture-input" id="capture-prompt" rows="2"></textarea>
+    <div class="capture-actions">
+      <button class="capture-save" id="capture-save">Save card</button>
+      <button class="capture-skip" id="capture-skip">Skip</button>
+      <span class="capture-status" id="capture-status"></span>
+    </div>
+  `;
+  bodyEl.prepend(form);
+
+  document.getElementById('capture-skip').addEventListener('click', () => form.remove());
+
+  document.getElementById('capture-save').addEventListener('click', async () => {
+    const answer = document.getElementById('capture-answer').value.trim();
+    const prompt = document.getElementById('capture-prompt').value.trim();
+    const status = document.getElementById('capture-status');
+    if (!answer || !prompt) {
+      status.textContent = 'Both fields, or it is not reviewable.';
+      return;
+    }
+    status.textContent = 'Saving…';
+    const card = await API.createCard({
+      page: getPageForTask(taskId), taskId, subtaskTitle, prompt, answer
+    });
+    window.CAPTURE_STATE.cards = await API.getCards();
+    status.textContent = card ? 'Saved.' : 'Queued — server is not running.';
+    setTimeout(() => form.remove(), 1200);
+  });
 }
 
 function closeSidebar() {
@@ -1867,6 +1926,10 @@ function initApp() {
     progressData = migrateLegacyProgress(progressData, window.RESOURCES_DB || {});
     saveProgress(progressData);
   }
+
+  API.flushOutbox()
+    .then(() => API.getCards())
+    .then(cards => { window.CAPTURE_STATE.cards = cards; });
 
   // ── 1. Phase Weight Badges on Overview Phase Cards ──
   const phaseCards = document.querySelectorAll('.phase-card');

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "cms007m651",
+    "page": "phase2.html",
+    "taskId": "p2-environment-v0",
+    "subtaskTitle": "Pick a task you can verify without an LLM",
+    "prompt": "What disqualifies a task family from environment v0?",
+    "answer": "A task family is only usable at v0 if the check can be written as code. If I cannot state the verifier, I am grading, not evaluating.",
+    "createdAt": 1784961870845,
+    "lastReviewedAt": null,
+    "dueAt": 1784961870845,
+    "stability": 0,
+    "reps": 0,
+    "lapses": 0
+  }
+]
