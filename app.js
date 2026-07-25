@@ -1186,25 +1186,44 @@ const STATIC_WEIGHTS = {
 const STORE_KEY = 'flp_progress';
 
 // ── Persistence & Migration ───────────────────────────────────
+// The completions mirror. Every existing call site expects loadProgress() to
+// be synchronous, so the server copy is hydrated once at boot and written
+// through on save. localStorage stays as the offline fallback, not the truth.
+let PROGRESS_MIRROR = null;
+
 function loadProgress() {
+  if (PROGRESS_MIRROR) return PROGRESS_MIRROR;
+
   let raw = null;
   try {
     raw = JSON.parse(localStorage.getItem(STORE_KEY));
   } catch (e) {}
 
-  if (!raw) {
-    return { completions: {} };
-  }
-
-  if (raw.completions) {
-    return { completions: raw.completions };
-  }
-
-  return raw;
+  PROGRESS_MIRROR = raw && raw.completions ? { completions: raw.completions }
+                  : raw ? raw
+                  : { completions: {} };
+  return PROGRESS_MIRROR;
 }
 
 function saveProgress(data) {
-  localStorage.setItem(STORE_KEY, JSON.stringify({ completions: data.completions || {} }));
+  PROGRESS_MIRROR = { completions: data.completions || {} };
+  localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS_MIRROR));
+  if (window.API) API.patchState({ completions: PROGRESS_MIRROR.completions });
+}
+
+// One-time hydration: the server wins if it has completions, because it is the
+// copy that survives a cleared browser profile.
+async function hydrateProgress() {
+  const state = await API.getState();
+  if (state.completions && Object.keys(state.completions).length) {
+    PROGRESS_MIRROR = { completions: state.completions };
+    localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS_MIRROR));
+  } else {
+    const local = loadProgress();
+    if (Object.keys(local.completions).length) {
+      await API.patchState({ completions: local.completions });
+    }
+  }
 }
 
 function migrateLegacyProgress(legacy, db) {
@@ -1928,9 +1947,12 @@ function initApp() {
   }
 
   API.flushOutbox()
+    .then(() => hydrateProgress())
     .then(() => API.getCards())
     .then(cards => {
       window.CAPTURE_STATE.cards = cards;
+      const hydrated = loadProgress();
+      updatePageUI(recalculateAllProgress(hydrated), hydrated);
       if (window.TODAY) window.TODAY.render();
     });
 

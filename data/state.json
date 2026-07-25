@@ -1,3 +1,21 @@
 {
-  "planStartDate": "2026-07-24"
+  "planStartDate": "2026-07-24",
+  "completions": {
+    "phase2.html::p2-environment-v0::Pick a task you can verify without an LLM::0": true,
+    "phase2.html::p2-environment-v0::Pick a task you can verify without an LLM::1": true,
+    "phase2.html::p2-environment-v0::Pick a task you can verify without an LLM::2": true,
+    "phase2.html::p2-environment-v0::Pick a task you can verify without an LLM::3": true,
+    "phase2.html::p2-environment-v0::Pick a task you can verify without an LLM::4": true,
+    "phase2.html::p2-environment-v0::Write the four interfaces and nothing else::0": true,
+    "phase2.html::p2-environment-v0::Write the four interfaces and nothing else::1": true,
+    "phase2.html::p2-environment-v0::Write the four interfaces and nothing else::2": true,
+    "phase2.html::p2-environment-v0::Write the four interfaces and nothing else::3": true,
+    "phase2.html::p2-environment-v0::Write the four interfaces and nothing else::4": true,
+    "phase2.html::p2-environment-v0::Run two models and write down the numbers::0": true,
+    "phase2.html::p2-environment-v0::Run two models and write down the numbers::1": true,
+    "phase2.html::p2-environment-v0::Run two models and write down the numbers::2": true,
+    "phase2.html::p2-environment-v0::Run two models and write down the numbers::3": true,
+    "phase2.html::p2-environment-v0::Run two models and write down the numbers::4": true,
+    "phase2.html::p2-agent-harness::The loop, from a blank file::0": true
+  }
 }
