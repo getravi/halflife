@@ -1584,9 +1584,9 @@
       <div class="task-grid">
         <div class="task-item">
           <div class="task-item-title">Pick a live benchmark and a specific published result</div>
-          <div class="task-item-desc">Choose from the benchmarks that are actually alive: Terminal-Bench 2.1 with the Harbor harness, τ²-bench, Mind2Web 2, or WorkArena-L2. Then pick one reported number from one submission — a named model, a named scaffold, a date. Auditing "a benchmark" is not a project; auditing one number is.</div>
+          <div class="task-item-desc">Pick something live, contested and cheap enough to rerun. AndroidWorld is the best solo target in 2026: 116 tasks on a free local Android emulator, deterministic rewards, no VMware licence and no cloud VM fleet — and its own leaderboard is community-submitted with no independent verification, where the top three all sit at 97.4% with a single trial each. Reproducing one entry at three to five seeds and publishing the per-task variance is a real contribution. OSWorld-Verified is the more prestigious target but costs $2,000–8,000 per run at frontier prices.</div>
           <div class="task-item-time">Week 45</div>
-          <a class="resource" href="https://www.tbench.ai/leaderboard" target="_blank">Terminal-Bench leaderboard ↗</a>
+          <a class="resource" href="https://github.com/google-research/android_world" target="_blank">AndroidWorld ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Read the protocol before you read the numbers</div>
@@ -1600,6 +1600,16 @@
           <div class="task-item-time">Week 45</div>
         </div>
         <div class="task-item">
+          <div class="task-item-title">Learn where computer-use numbers hide</div>
+          <div class="task-item-desc">Computer-use evals are the worst offenders and the best teacher. Step budget is an undeclared free parameter — the same Claude Sonnet scores 42.9%, 58.1% and 62.9% on OSWorld-Verified at 15, 50 and 100 max steps, and one model scored *worse* with more steps. Labs run their own harness and retroactively restate: an Anthropic post claims 84.3% while the maintainer's verified table tops out at 72.1%, same benchmark name, different harness. Best-of-N gets reported as if it were pass@1 — a headline "72.6%, above the 72.36% human baseline" was ten rollouts plus a judge. Read the flag columns before the score column.</div>
+          <div class="task-item-time">Week 46</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Measure what a single number hides</div>
+          <div class="task-item-desc">Rerun your chosen tasks several times and report the spread, because the same task and the same model will succeed once and fail on repeat — execution stochasticity, ambiguous task specs and behavioural variability all contribute, and both single-run and Best-of-N figures conceal it. Price it too: OSWorld 2.0 reports roughly $72 per task at the frontier, so a 108-task run is $2,700–7,800, and on GAIA the top agent costs 23× a cheap model for 42 more points. Cost per solved task belongs next to accuracy in your report.</div>
+          <div class="task-item-time">Week 46</div>
+        </div>
+        <div class="task-item">
           <div class="task-item-title">Report the discrepancy</div>
           <div class="task-item-desc">Write up your number against the published one with confidence intervals, and separate the explanations: protocol deviation, scaffold difference, model version drift, or genuine irreproducibility. Check the submitted result JSON for protocol-compliance flags — published results have shipped with raised step limits and followed_evaluation_protocol set to "No". File an issue with the maintainers.</div>
           <div class="task-item-time">Week 46</div>
@@ -1607,7 +1617,7 @@
         </div>
         <div class="task-item">
           <div class="task-item-title">Learn which benchmarks are dead and still cited</div>
-          <div class="task-item-desc">Part of the writeup is a short survey of what not to trust. WebArena sits within a few points of its human baseline. WebVoyager never had a leaderboard at all. AssistantBench and WebGames are still cited long past usefulness, and the original τ-bench repo is deprecated with README numbers roughly eighteen months stale. Being able to name three dead benchmarks and why they persist is an interview answer.</div>
+          <div class="task-item-desc">Part of the writeup is a short survey of what not to trust. WebArena sits within a few points of its human baseline. WebVoyager never had a leaderboard at all. AssistantBench and WebGames are still cited long past usefulness, and the original τ-bench repo is deprecated with README numbers roughly eighteen months stale. Being able to name three dead benchmarks and why they persist is an interview answer. In the computer-use cluster specifically: WindowsAgentArena has had no real commit since Nov 2024 and never had a leaderboard, OSUniverse was abandoned in May 2025, and Computer Agent Arena's leaderboard is returning 522s. GAIA is effectively saturated and unauditable — 93.4% against a 92% human baseline, with 3,532 submissions including top-ten entries carrying blank model names and no code or trajectories.</div>
           <div class="task-item-time">Week 46</div>
           <a class="resource" href="https://arxiv.org/abs/2307.13854" target="_blank">arXiv 2307.13854 ↗</a>
         </div>
@@ -1617,6 +1627,9 @@
       </div>
       <div class="callout callout-warn">
         <strong>Be precise and be fair.</strong> Say what you ran, what you could not run, and what your own uncertainty is, and contact the maintainers before publishing anything that reads as an accusation. The goal is a credible discrepancy report, not a takedown; most gaps turn out to be scaffold and version differences rather than misconduct.
+      </div>
+      <div class="callout callout-warn">
+        <strong>Human baselines are usually one undocumented number.</strong> OSWorld’s 72.36% and GAIA’s 92% both ship with no variance, no annotator count and no time limit, and both have now been “beaten”. When a system passes a human baseline, your first question is how that baseline was built — not what the system did.
       </div>
     </div>
 

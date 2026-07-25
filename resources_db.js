@@ -4317,6 +4317,71 @@ window.RESOURCES_DB = {
           }
         ]
       },
+      "Learn where computer-use numbers hide": {
+        "desc": "Computer-use benchmarks concentrate every way an agent number can mislead, which makes them the best place to learn to read one. The score column is the least informative part of the table.",
+        "steps": [
+          "Download the OSWorld-Verified results spreadsheet and sort by model rather than by score — the site renders it via JavaScript, so parse the xlsx directly.",
+          "Find the same model at different `Max steps` values and note the spread: one Sonnet release runs 42.9 / 58.1 / 62.9% at 15 / 50 / 100 steps, and at least one model scores worse with more steps.",
+          "Check the `Multiple rollout` flag before believing any headline. A widely-quoted 'above human baseline' result was ten rollouts plus a judge, reported next to pass@1 numbers.",
+          "Compare a lab's self-reported figure against the maintainer's verified table for the same benchmark — a ~12-point gap on the same benchmark name is normal when the harness differs, and labs retroactively restate old scores when they change harnesses.",
+          "Read the OSWorld-Verified postmortem for what rots in a live environment: sites changing HTML, CAPTCHAs, booking tasks that expire as dates pass, over-strict evaluators needing colour tolerance and fuzzy matching.",
+          "Write down, for your chosen benchmark, every free parameter a submitter could vary without lying."
+        ],
+        "docs": [
+          {
+            "name": "OSWorld — leaderboard and verified results",
+            "url": "https://os-world.github.io/"
+          },
+          {
+            "name": "XLANG: OSWorld-Verified — what 300+ community-reported issues actually were",
+            "url": "https://xlang.ai/blog/osworld-verified"
+          },
+          {
+            "name": "AndroidWorld (Google Research) — free local emulator, 116 tasks",
+            "url": "https://github.com/google-research/android_world"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2510.02250 — Scaling Agents for Computer Use (the Best-of-N 'above human' result)",
+            "url": "https://arxiv.org/abs/2510.02250"
+          },
+          {
+            "name": "arXiv 2505.13909 — infeasible-task handling, where always answering FAIL scores free points",
+            "url": "https://arxiv.org/abs/2505.13909"
+          }
+        ]
+      },
+      "Measure what a single number hides": {
+        "desc": "Rerun, report the spread, and price the run. Accuracy without variance and without cost per solved task is a marketing number, not a measurement.",
+        "steps": [
+          "Run your chosen task subset at three to five seeds and report per-task success variance, not just the mean.",
+          "Separate the sources of variation you can see: execution stochasticity, ambiguous task specifications, and genuine behavioural variability.",
+          "Record cost per task and cost per solved task alongside accuracy — at frontier prices a 108-task computer-use run is thousands of dollars, and on GAIA the top agent costs roughly 23x a cheap model for 42 points.",
+          "State your own step budget, harness version, and rollout count in the report, in the terms you wished the original submission had used.",
+          "If your reproduction agrees with the published number, say so plainly — a confirmed result is still a result, and it is evidence you can be trusted with the ones that do not agree."
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2604.17849 — On the Reliability of Computer Use Agents",
+            "url": "https://arxiv.org/abs/2604.17849"
+          },
+          {
+            "name": "arXiv 2606.29537 — OSWorld 2.0 (long-horizon tasks, with per-task cost reporting)",
+            "url": "https://arxiv.org/abs/2606.29537"
+          },
+          {
+            "name": "arXiv 2311.12983 — GAIA (note the human baseline is a single undocumented number)",
+            "url": "https://arxiv.org/abs/2311.12983"
+          }
+        ],
+        "docs": [
+          {
+            "name": "HAL — standardised agent leaderboards with cost on the same axis as accuracy",
+            "url": "https://hal.cs.princeton.edu/gaia"
+          }
+        ]
+      },
       "Report the discrepancy": {
         "desc": "Write your number against the published one with confidence intervals, and separate the explanations: protocol deviation, scaffold difference, model version drift, or genuine irreproducibility. Check the submitted result JSON for protocol-compliance flags — published results have shipped with raised step limits and `followed_evaluation_protocol` set to \"No\". Then file an issue with the maintainers.",
         "steps": [
