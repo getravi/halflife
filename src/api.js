@@ -7,22 +7,23 @@
  * can be recomputed from the review log.
  */
 const CACHE_CARDS = 'flp_cache_cards';
-  const CACHE_STATE = 'flp_cache_state';
-  const OUTBOX = 'flp_outbox';
+const CACHE_PROGRESS = 'flp_cache_progress';
+const CACHE_ME = 'flp_cache_me';
+const OUTBOX = 'flp_outbox';
 
-  const read = (key, fallback) => {
+const read = (key, fallback) => {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
     catch { return fallback; }
-  };
-  const write = (key, value) => {
+};
+const write = (key, value) => {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-  };
+};
 
-  // Outbox entries need an identity that survives a reload and cannot collide.
-  // Date.now() alone does: two mutations in the same millisecond would dequeue
-  // each other, silently dropping one write.
-  let seq = 0;
-  const nextId = () => `${Date.now()}-${++seq}`;
+// Outbox entries need an identity that survives a reload and cannot collide.
+// Date.now() alone does: two mutations in the same millisecond would dequeue
+// each other, silently dropping one write.
+let seq = 0;
+const nextId = () => `${Date.now()}-${++seq}`;
 
 export const API = {
     online: true,
@@ -41,9 +42,43 @@ export const API = {
       return res.json();
     },
 
-    async getCards() {
+    async getMe() {
       try {
-        const cards = await API.request('GET', '/api/cards');
+        const me = await API.request('GET', '/api/me');
+        API.online = true;
+        write(CACHE_ME, me);
+        return me;
+      } catch {
+        API.online = false;
+        return read(CACHE_ME, { user: null, enrollments: [] });
+      }
+    },
+
+    async enrol(pathId, startedOn) {
+      return API.mutate('POST', '/api/enrollments', { pathId, startedOn });
+    },
+
+    async getProgress(pathId) {
+      try {
+        const { nodeIds } = await API.request(
+          'GET', `/api/progress?pathId=${encodeURIComponent(pathId)}`);
+        API.online = true;
+        write(CACHE_PROGRESS, nodeIds);
+        return nodeIds;
+      } catch {
+        API.online = false;
+        return read(CACHE_PROGRESS, []);
+      }
+    },
+
+    async setProgress(pathId, nodeId, done) {
+      return API.mutate('PUT', '/api/progress', { pathId, nodeId, done });
+    },
+
+    async getCards(pathId) {
+      try {
+        const { cards } = await API.request(
+          'GET', `/api/cards?pathId=${encodeURIComponent(pathId)}`);
         API.online = true;
         write(CACHE_CARDS, cards);
         return cards;
@@ -53,28 +88,14 @@ export const API = {
       }
     },
 
-    async getState() {
-      try {
-        const state = await API.request('GET', '/api/state');
-        API.online = true;
-        write(CACHE_STATE, state);
-        return state;
-      } catch {
-        API.online = false;
-        return read(CACHE_STATE, {});
-      }
-    },
-
-    async patchState(patch) {
-      return API.mutate('PATCH', '/api/state', patch);
-    },
-
     async createCard(fields) {
-      return API.mutate('POST', '/api/cards', fields);
+      const res = await API.mutate('POST', '/api/cards', fields);
+      return res ? res.card : null;
     },
 
     async review(cardId, grade, latencyMs) {
-      return API.mutate('POST', '/api/reviews', { cardId, grade, latencyMs });
+      const res = await API.mutate('POST', '/api/reviews', { cardId, grade, latencyMs });
+      return res ? res.card : null;
     },
 
     // Queue first, then send. If the send fails the entry is already durable.

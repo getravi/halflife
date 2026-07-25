@@ -12,12 +12,14 @@ import { defineConfig } from 'vite';
  */
 export default defineConfig({
   root: '.',
-  publicDir: false,
+  // public/ holds the validator's output — the hashed path files and the
+  // catalogue — which Vite copies into dist verbatim.
+  publicDir: 'public',
   server: {
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:8787',
         changeOrigin: false
       }
     }

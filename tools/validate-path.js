@@ -75,6 +75,10 @@ export function validatePath(p, previous) {
 }
 
 export function emit(paths, outDir) {
+  // Clear first. Hashed filenames mean every content edit leaves its
+  // predecessor behind, and the directory would grow without bound. The
+  // catalogue is served no-cache, so no client is left pointing at one.
+  fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir, { recursive: true });
   const catalogue = { paths: [] };
 

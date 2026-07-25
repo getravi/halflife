@@ -1,175 +1,154 @@
 /**
- * The Today view. Rendering only — every piece of state comes through
- * window.API. Shows three things in this order: what is due, what week you
- * are on, and what you finished without capturing.
+ * The Today view and the review runner. Rendering only — every piece of state
+ * comes through the API or the path. Shows three things in this order: what is
+ * due, what week you are on, and what you finished without capturing.
  */
-import {
-  ALL_PHASES,
-  CAPTURE_STATE,
-  loadProgress,
-  recalculateAllProgress,
-  hasCardFor,
-  getStaticSubtaskWeight,
-  getStaticTaskWeight,
-  getStaticPhaseWeight
-} from './app.js';
 import { API } from './api.js';
-import { RESOURCES_DB } from './resources_db.js';
-import * as SCHEDULER from './server/scheduler.js';
+import { CAPTURE_STATE, hasCardFor, refreshTaskBadges } from './sidebar.js';
+import { rollup, allDone } from './progress.js';
+import * as SCHEDULER from '../worker/scheduler.js';
 
-{
-  const DAY_MS = 86400000;
-  const DAILY_CAP = 30;
+const DAY_MS = 86400000;
+const DAILY_CAP = 30;
 
-  // Plan dates are calendar days in the user's own timezone. toISOString would
-  // hand back the UTC day, so clicking "start today" on a July evening in the
-  // Americas records tomorrow and every week number is off by one from then on.
-  function localDate(d) {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
+// Plan dates are calendar days in the user's own timezone. toISOString would
+// hand back the UTC day, so clicking "start today" on a July evening in the
+// Americas records tomorrow and every week number is off by one from then on.
+function localDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
-  function parseLocalDate(s) {
-    const [y, m, d] = s.split('-').map(Number);
-    return new Date(y, m - 1, d).getTime();
-  }
+function parseLocalDate(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d).getTime();
+}
 
-  function weightOf(card) {
-    return getStaticSubtaskWeight(card.page, card.taskId, card.subtaskTitle) || 1;
-  }
+const el = id => document.getElementById(id);
+
+export function initToday(ctx) {
+  let queue = [];
+  let shownAt = 0;
+
+  const weightOf = card => ctx.weights.subtasks[card.subtask_id] ?? 1;
 
   function dueCards() {
     const now = Date.now();
-    return SCHEDULER
-      .orderQueue(CAPTURE_STATE.cards, weightOf, now)
-      .slice(0, DAILY_CAP);
+    return SCHEDULER.orderQueue(CAPTURE_STATE.cards, weightOf, now).slice(0, DAILY_CAP);
   }
 
-  // The plan's week labels are validated by make check, so deriving the week
-  // from a start date is safe. Drift is shown rather than hidden — a tracker
-  // that conceals drift is the one that already exists.
-  function renderWeek(state) {
-    const el = document.getElementById('today-week');
-    if (!state.planStartDate) {
-      el.innerHTML = `<button class="today-review-btn" id="today-set-start">Set plan start date to today</button>`;
-      document.getElementById('today-set-start').addEventListener('click', async () => {
-        await API.patchState({ planStartDate: localDate(new Date()) });
-        render();
-      });
-      return;
-    }
-    const start = parseLocalDate(state.planStartDate);
-    const planWeek = Math.floor((Date.now() - start) / (7 * DAY_MS)) + 1;
-
-    const calc = recalculateAllProgress(loadProgress());
-    const workedWeek = currentWorkWeek(calc);
-
-    el.innerHTML = workedWeek === null
-      ? `Plan week ${planWeek}. Nothing started yet.`
-      : `Plan week ${planWeek} · you're working week ${workedWeek}` +
-        (planWeek > workedWeek ? ` <span class="today-drift">(${planWeek - workedWeek} behind)</span>` : '');
-  }
-
-  // The furthest-along task with any incomplete work, read off the week label
-  // that render.py already put in the DOM.
+  // The furthest-along task with any incomplete work, read off the week range
+  // the path carries. Milestones have no weeks and are skipped.
   function currentWorkWeek(calc) {
-    for (const ph of Object.keys(ALL_PHASES)) {
-      for (const taskId of ALL_PHASES[ph].tasks) {
-        if ((calc.tasks[taskId] || 0) >= 100) continue;
-        const section = document.getElementById('sec-' + taskId);
-        const timeEl = section && section.querySelector('.task-item-time');
-        const n = timeEl && timeEl.textContent.match(/\d+/);
-        if (n) return Number(n[0]);
+    for (const ph of ctx.path.phases ?? []) {
+      for (const t of ph.tasks ?? []) {
+        if ((calc.tasks[t.id] ?? 0) >= 100) continue;
+        if (t.weeks) return t.weeks[0];
       }
     }
     return null;
   }
 
-  function renderDebt() {
-    const el = document.getElementById('today-debt');
-    const calc = recalculateAllProgress(loadProgress());
-    const db = RESOURCES_DB;
+  function renderWeek(me, calc) {
+    const target = el('today-week');
+    const enrolment = (me.enrollments ?? []).find(e => e.pathId === ctx.pathId);
+
+    if (!enrolment) {
+      target.innerHTML =
+        `<button class="today-review-btn" id="today-set-start">Set plan start date to today</button>`;
+      el('today-set-start').addEventListener('click', async () => {
+        await API.enrol(ctx.pathId, localDate(new Date()));
+        render();
+      });
+      return;
+    }
+
+    const planWeek = Math.floor(
+      (Date.now() - parseLocalDate(enrolment.startedOn)) / (7 * DAY_MS)) + 1;
+    const workedWeek = currentWorkWeek(calc);
+
+    target.innerHTML = workedWeek === null
+      ? `Plan week ${planWeek}. Nothing started yet.`
+      : `Plan week ${planWeek} · you're working week ${workedWeek}` +
+        (planWeek > workedWeek
+          ? ` <span class="today-drift">(${planWeek - workedWeek} behind)</span>` : '');
+  }
+
+  function renderDebt(calc) {
+    const target = el('today-debt');
     const debt = [];
 
-    for (const ph of Object.keys(ALL_PHASES)) {
-      const page = ALL_PHASES[ph].page;
-      for (const taskId of ALL_PHASES[ph].tasks) {
-        for (const title of Object.keys(db[page]?.[taskId] || {})) {
-          const pct = calc.subtasks[`${page}::${taskId}::${title}`] || 0;
-          if (pct === 100 && !hasCardFor(taskId, title)) debt.push({ taskId, title });
+    for (const ph of ctx.path.phases ?? []) {
+      for (const t of ph.tasks ?? []) {
+        for (const s of t.subtasks ?? []) {
+          if ((calc.subtasks[s.id] ?? 0) === 100 && !hasCardFor(s.id)) {
+            debt.push({ phaseId: ph.id, title: s.title });
+          }
         }
       }
     }
 
-    el.innerHTML = debt.length === 0
+    target.innerHTML = debt.length === 0
       ? `<span class="today-clear">None — everything you finished is captured.</span>`
       : `<div class="today-debt-count">${debt.length} finished without a card</div>` +
         debt.slice(0, 8).map(d =>
-          `<a class="today-debt-item" href="#${d.taskId}">${d.title}</a>`).join('') +
-        (debt.length > 8 ? `<div class="today-debt-more">…and ${debt.length - 8} more</div>` : '');
+          `<a class="today-debt-item" href="#${d.phaseId}">${d.title}</a>`).join('') +
+        (debt.length > 8
+          ? `<div class="today-debt-more">…and ${debt.length - 8} more</div>` : '');
   }
 
   /**
-   * Retained = weighted mean retrievability across every subtask in the plan.
-   * A subtask with no cards contributes zero: unverified is not the same as
-   * known, and that gap is the whole point of the second number.
+   * Retained runs the same hierarchical bubble-up as Covered, substituting mean
+   * retrievability for completion at the leaves. A flat weighted mean over
+   * subtasks normalises over a different denominator and reads HIGHER than
+   * Covered, which makes the pair meaningless — two numbers shown side by side
+   * have to be on one scale or they are worse than one number.
    */
   function retained() {
     const now = Date.now();
-    const db = RESOURCES_DB;
     const byCard = {};
     for (const c of CAPTURE_STATE.cards) {
-      const key = `${c.page}::${c.taskId}::${c.subtaskTitle}`;
-      (byCard[key] = byCard[key] || []).push(SCHEDULER.retrievability(c, now));
+      (byCard[c.subtask_id] = byCard[c.subtask_id] || [])
+        .push(SCHEDULER.retrievability(c, now));
     }
 
-    // This mirrors recalculateAllProgress exactly — same nesting, same weights,
-    // same normalisation at each level — substituting mean retrievability for
-    // completion at the leaves. A flat weighted mean over subtasks is a
-    // different denominator, and it can read HIGHER than Covered, which makes
-    // the pair meaningless. Two numbers shown side by side have to be on one
-    // scale or they are worse than one number.
-    let overallWeightedSum = 0, overallWeightTotal = 0;
+    let overallSum = 0, overallTotal = 0;
     const byPhase = {};
 
-    for (const [phaseId, phaseInfo] of Object.entries(ALL_PHASES)) {
-      const page = phaseInfo.page;
-      let phaseWeightedSum = 0, phaseWeightTotal = 0;
+    for (const ph of ctx.path.phases ?? []) {
+      let phaseSum = 0, phaseTotal = 0;
 
-      for (const taskId of phaseInfo.tasks) {
-        let taskWeightedSum = 0, taskWeightTotal = 0;
-        const titles = Object.keys(db[page]?.[taskId] || {});
+      for (const t of ph.tasks ?? []) {
+        const subs = t.subtasks ?? [];
+        let taskPct = 0;
 
-        if (titles.length > 0) {
-          for (const title of titles) {
-            const rs = byCard[`${page}::${taskId}::${title}`] || [];
-            const subtaskPct = rs.length ? (rs.reduce((a, b) => a + b, 0) / rs.length) * 100 : 0;
-            const w = getStaticSubtaskWeight(page, taskId, title);
-            taskWeightedSum += subtaskPct * w;
-            taskWeightTotal += w;
+        if (subs.length) {
+          let taskSum = 0, taskTotal = 0;
+          for (const s of subs) {
+            const rs = byCard[s.id] ?? [];
+            const pct = rs.length ? (rs.reduce((a, b) => a + b, 0) / rs.length) * 100 : 0;
+            const sw = ctx.weights.subtasks[s.id] ?? 1;
+            taskSum += pct * sw;
+            taskTotal += sw;
           }
-        } else {
-          // A milestone has no subtasks and so nothing to hold in memory. It
-          // still occupies its weight, the same way it does in Covered.
-          taskWeightTotal += 1;
+          taskPct = taskTotal > 0 ? taskSum / taskTotal : 0;
         }
+        // A milestone holds nothing in memory, so it contributes zero while
+        // still occupying its weight — the same way it does in Covered.
 
-        const taskPct = taskWeightTotal > 0 ? taskWeightedSum / taskWeightTotal : 0;
-        const taskW = getStaticTaskWeight(taskId);
-        phaseWeightedSum += taskPct * taskW;
-        phaseWeightTotal += taskW;
+        const tw = ctx.weights.tasks[t.id] ?? 1;
+        phaseSum += taskPct * tw;
+        phaseTotal += tw;
       }
 
-      const phasePct = phaseWeightTotal > 0 ? phaseWeightedSum / phaseWeightTotal : 0;
-      byPhase[phaseId] = phasePct;
-      const phaseW = getStaticPhaseWeight(phaseId);
-      overallWeightedSum += phasePct * phaseW;
-      overallWeightTotal += phaseW;
+      const phasePct = phaseTotal > 0 ? phaseSum / phaseTotal : 0;
+      byPhase[ph.id] = phasePct;
+
+      const pw = ctx.weights.phases[ph.id] ?? 1;
+      overallSum += phasePct * pw;
+      overallTotal += pw;
     }
 
-    return {
-      overall: overallWeightTotal > 0 ? overallWeightedSum / overallWeightTotal : 0,
-      byPhase
-    };
+    return { overall: overallTotal > 0 ? overallSum / overallTotal : 0, byPhase };
   }
 
   /**
@@ -177,52 +156,53 @@ import * as SCHEDULER from './server/scheduler.js';
    * that rotted most and the cards that recover the most of it.
    */
   function renderPressure(ret) {
-    const el = document.getElementById('today-retention-pressure');
-    const started = Object.keys(ALL_PHASES).filter(ph => ret.byPhase[ph] > 0);
-    if (started.length === 0) { el.textContent = ''; return; }
+    const target = el('today-retention-pressure');
+    const started = Object.keys(ret.byPhase).filter(id => ret.byPhase[id] > 0);
+    if (started.length === 0) { target.textContent = ''; return; }
 
     const worst = started.sort((a, b) => ret.byPhase[a] - ret.byPhase[b])[0];
-    const page = ALL_PHASES[worst].page;
     const now = Date.now();
+    const subtaskIds = new Set();
+    for (const ph of ctx.path.phases ?? []) {
+      if (ph.id !== worst) continue;
+      for (const t of ph.tasks ?? []) for (const s of t.subtasks ?? []) subtaskIds.add(s.id);
+    }
     const stale = CAPTURE_STATE.cards
-      .filter(c => c.page === page && SCHEDULER.isDue(c, now))
-      .sort((a, b) => a.dueAt - b.dueAt);
+      .filter(c => subtaskIds.has(c.subtask_id) && SCHEDULER.isDue(c, now));
 
-    el.innerHTML = stale.length === 0
-      ? `Phase ${worst.slice(1)} retention ${Math.round(ret.byPhase[worst])}% — nothing due yet.`
-      : `Phase ${worst.slice(1)} retention ${Math.round(ret.byPhase[worst])}% — ` +
+    const pct = Math.round(ret.byPhase[worst]);
+    target.innerHTML = stale.length === 0
+      ? `${worst.toUpperCase()} retention ${pct}% — nothing due yet.`
+      : `${worst.toUpperCase()} retention ${pct}% — ` +
         `${stale.length} card${stale.length === 1 ? '' : 's'} would recover most of it.`;
   }
 
   async function render() {
-    CAPTURE_STATE.cards = await API.getCards();
-    const state = await API.getState();
+    const me = await API.getMe();
+    const calc = rollup(ctx.path, ctx.weights, allDone());
 
-    document.getElementById('today-offline').hidden = API.online;
+    el('today-offline').hidden = API.online;
+
     const due = dueCards().length;
-    document.getElementById('today-due-count').textContent = due;
-    document.getElementById('today-due-noun').textContent = due === 1 ? 'card' : 'cards';
+    el('today-due-count').textContent = due;
+    el('today-due-noun').textContent = due === 1 ? 'card' : 'cards';
 
     // Live only once there is something to review. Covers both the load race
     // and a genuinely empty queue, which would otherwise both read as a button
     // that does nothing when pressed.
-    const btn = document.getElementById('today-start-review');
+    const btn = el('today-start-review');
     btn.disabled = due === 0;
     btn.textContent = due === 0 ? 'Nothing due' : 'Start review';
 
-    const calc = recalculateAllProgress(loadProgress());
     const ret = retained();
-    document.getElementById('today-covered').textContent = Math.round(calc.overall) + '%';
-    document.getElementById('today-retained').textContent = Math.round(ret.overall) + '%';
+    el('today-covered').textContent = Math.round(calc.overall) + '%';
+    el('today-retained').textContent = Math.round(ret.overall) + '%';
     renderPressure(ret);
-    renderWeek(state);
-    renderDebt();
+
+    renderWeek(me, calc);
+    renderDebt(calc);
+    refreshTaskBadges();
   }
-
-  let queue = [];
-  let shownAt = 0;
-
-  const el = id => document.getElementById(id);
 
   function startReview() {
     queue = dueCards();
@@ -253,28 +233,38 @@ import * as SCHEDULER from './server/scheduler.js';
     const updated = await API.review(card.id, g, Date.now() - shownAt);
     if (updated) {
       const i = CAPTURE_STATE.cards.findIndex(c => c.id === updated.id);
-      if (i !== -1) CAPTURE_STATE.cards[i] = updated;
+      if (i !== -1) {
+        // The route answers in the scheduler's camelCase; the cached rows are
+        // snake_case, and the queue is rebuilt from them.
+        CAPTURE_STATE.cards[i] = {
+          ...CAPTURE_STATE.cards[i],
+          last_reviewed_at: updated.lastReviewedAt,
+          due_at: updated.dueAt,
+          stability: updated.stability,
+          reps: updated.reps,
+          lapses: updated.lapses
+        };
+      }
     }
     // A forgotten card that is not seen again the same session is theatre.
-    if (g === 'again') queue.push(updated || card);
+    if (g === 'again') queue.push(card);
     next();
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    el('today-start-review').addEventListener('click', startReview);
-    el('runner-close').addEventListener('click', () => {
-      el('runner').hidden = true;
-      render();
-    });
-    el('runner-reveal').addEventListener('click', () => {
-      el('runner-answer').hidden = false;
-      el('runner-grades').hidden = false;
-      el('runner-reveal').hidden = true;
-    });
-    el('runner-grades').querySelectorAll('button').forEach(b => {
-      b.addEventListener('click', () => grade(b.dataset.grade));
-    });
+  el('today-start-review').addEventListener('click', startReview);
+  el('runner-close').addEventListener('click', () => {
+    el('runner').hidden = true;
+    render();
+  });
+  el('runner-reveal').addEventListener('click', () => {
+    el('runner-answer').hidden = false;
+    el('runner-grades').hidden = false;
+    el('runner-reveal').hidden = true;
+  });
+  el('runner-grades').querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => grade(b.dataset.grade));
   });
 
   window.TODAY = { render, dueCards, startReview, retained };
+  return window.TODAY;
 }
