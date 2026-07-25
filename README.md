@@ -1,8 +1,9 @@
 # Frontier Lab Learning Plan
 
-A static, single-page tracker for a 52-week self-study plan aimed at evals and
-environments roles. Open `index.html` through a local server — `make serve` —
-because `app.js` fetches `resources_db.js` and `file://` blocks it.
+A single-page tracker for a 52-week self-study plan aimed at evals and
+environments roles, with a spaced-repetition review loop over it. Run it with
+`make serve` — a small Node server that hosts the page and the `/api` routes.
+It is no longer openable as `file://`, and no longer purely static.
 
 ## The plan
 
@@ -29,6 +30,37 @@ a pretraining or performance track open and sharpens cost reasoning, but
 nothing in it blocks the work that gets someone hired. It is the phase to
 compress if you fall behind — not the environment.
 
+## The review loop
+
+The tracker records that work happened; it cannot record that the work
+survived. So the app also holds **cards**: retrieval prompts you write by hand,
+in your own words, at the moment you finish a subtask. Finishing the last step
+opens a two-field form in the sidebar. Skipping is cheap in the moment and
+shows up as capture debt on **Today**, which is the default view.
+
+Today shows Covered beside Retained. Covered is the weighted progress bar and
+only goes up. Retained is mean retrievability over your cards, decays without
+review, and counts a subtask with no cards as zero — unverified is not the same
+as known. The gap between the two numbers is the honest one.
+
+Grades are `again` / `hard` / `good` / `easy`. Stability is one number per card,
+in days; retrievability is `0.9 ^ (elapsed / stability)`, so `R` is exactly 0.9
+on the due date. A lapse resets stability to one day rather than shrinking it —
+forgotten means back tomorrow, whatever the card was worth yesterday.
+
+Three files hold this state and all three are committed, because they are a
+year of hand-written notes:
+
+| file | holds |
+|---|---|
+| `data/cards.json` | the cards themselves |
+| `data/reviews.jsonl` | append-only review log; card state is replayable from it |
+| `data/state.json` | plan start date and subtask completions |
+
+`server/store.js` is the only module that touches them. Writes rename into
+place, and the server refuses to boot on an unparseable file rather than
+starting empty and overwriting it.
+
 ## The one thing to know before editing
 
 Three files have to agree exactly:
@@ -46,6 +78,9 @@ saved `localStorage` progress.
 Rename a subtask title by hand and nothing throws: the sidebar silently opens
 empty and the progress bar quietly stops counting that subtask. That failure
 mode is why `make check` exists. **Run it before every commit.**
+
+Cards are keyed by the same title, so a rename would orphan hand-written notes
+too. `make check` now fails on any card whose subtask no longer resolves.
 
 Two files are generated. Do not hand-edit them:
 
@@ -87,10 +122,11 @@ keys that drifted.
 
 ```
 make check    invariants: the three files agree, weeks are sane, DOM hooks exist
+make test     unit tests for the scheduler, the store and the server routes
 make render   rebuild index.html panels from data/panels/
 make build    rebuild resources_db.js + app.js registries from data/resources/
 make all      render, build, check
-make serve    http://localhost:8000
+make serve    http://localhost:8000 — the page and the /api routes
 make links    sweep every URL for liveness (slow, hits the network)
 ```
 
