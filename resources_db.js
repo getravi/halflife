@@ -6,6 +6,118 @@
 
 window.RESOURCES_DB = {
   "phase0.html": {
+    "p0-operating-rhythm": {
+      "Go public on day one": {
+        "desc": "Create the public artifact trail before you have anything impressive to put in it. Visible, dated, continuous work is what converts a self-taught candidate; a private repo revealed at week 52 converts nobody.",
+        "steps": [
+          "Create a public GitHub repo named for the plan, with a README stating what you are doing, why, and the date you started.",
+          "Commit something every week you work — code, notes, a failed experiment. Continuity matters more than quality here.",
+          "Write a short public post every two weeks about what broke, not what you learned. Broken things are specific and readable; lessons are generic.",
+          "Add a plain-text log file recording hours spent and what you actually did, so week 30 you can see the trend rather than guess at it.",
+          "Never make the repo private later to 'clean it up'. The history is the evidence."
+        ],
+        "docs": [
+          {
+            "name": "GitHub: About READMEs",
+            "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes"
+          }
+        ]
+      },
+      "Join one community and actually show up": {
+        "desc": "Pick one community and become a familiar name in it. Substantive open-source contributions and referrals almost always follow months of presence, which is why this belongs in week 1 and not week 50.",
+        "steps": [
+          "Choose exactly one: EleutherAI, Prime Intellect, or the Inspect/AISI community. One you attend beats four you lurk in.",
+          "Read the channels for a week before posting so you learn the register.",
+          "Answer questions slightly below your current level — that is the fastest route to being known and it consolidates what you just learned.",
+          "Post your two-weekly writeup there and ask one specific question about it.",
+          "By week 20, identify two people whose work you follow closely enough to email with a real question."
+        ],
+        "docs": [
+          {
+            "name": "EleutherAI",
+            "url": "https://www.eleuther.ai/"
+          },
+          {
+            "name": "Prime Intellect — Environments Hub",
+            "url": "https://app.primeintellect.ai/dashboard/environments"
+          },
+          {
+            "name": "Inspect (UK AISI)",
+            "url": "https://inspect.aisi.org.uk"
+          }
+        ]
+      },
+      "Book your feedback checkpoints": {
+        "desc": "Buy external correction on a fixed schedule. A solo learner's most expensive failure is confidently practising something wrong for six weeks.",
+        "steps": [
+          "Book a paid mentor hour now for weeks 6, 12, 18, 26, 36 and 44 — roughly $900 total.",
+          "Send work in advance of each session: code, a derivation, a result you cannot explain. Do not use the hour for career chat.",
+          "Ask 'what would you have done differently' rather than 'is this good'.",
+          "Write down every correction and revisit the list at the next session.",
+          "Recruit your Phase 4 peer reviewers from these conversations by week 20, not week 49."
+        ],
+        "docs": [
+          {
+            "name": "MATS — mentorship programme structure",
+            "url": "https://www.matsprogram.org/"
+          }
+        ]
+      },
+      "Make your practice machine-graded": {
+        "desc": "Put a test suite between you and your own optimism. Every exit check in Phase 0 is self-judged, and self-judgement is generous exactly when it should not be.",
+        "steps": [
+          "Work one Exercism Python exercise every week alongside the main track.",
+          "Use the community solutions afterwards to compare your version against idiomatic ones — this is where the fluency comes from, not from passing.",
+          "During December, substitute Advent of Code; the early days are well-scoped and end with a hard, unambiguous verdict.",
+          "When an exit check in this plan says 'you are done when', convert it into something a test can answer.",
+          "Track which exercises you had to look things up for; those are your real gaps, not the ones you felt shaky about."
+        ],
+        "courses": [
+          {
+            "name": "Exercism — Python track (free, mentored)",
+            "url": "https://exercism.org/tracks/python"
+          },
+          {
+            "name": "Advent of Code",
+            "url": "https://adventofcode.com/"
+          }
+        ]
+      },
+      "Put the buffer and the reviews in the calendar": {
+        "desc": "Reserve slack you will certainly need, and schedule the review that stops six-month-old material evaporating. A plan with no slack turns the first two-week slip into permanent failure.",
+        "steps": [
+          "Mark weeks 13, 26 and 39 as catch-up in your calendar now, and refuse to schedule content into them.",
+          "Spend 90 minutes of each re-deriving from a blank page: backprop, scaled dot-product attention, the Adam update, cross-entropy, and a sharded training step.",
+          "If you are behind, use the whole week to catch up rather than declaring yourself behind permanently.",
+          "Keep a list of things you have derived once; anything untouched for eight weeks goes into the next review.",
+          "Expect to lose four to eight weeks across the year to work, illness and travel. That is normal and the buffer is why it is survivable."
+        ]
+      },
+      "Diary the application deadlines today": {
+        "desc": "The structured programmes are the actual funnel into this work, and they run on fixed windows that do not care where you are in the plan. Missing one costs a year.",
+        "steps": [
+          "Look up the current application windows for ARENA, MATS and the Anthropic Fellows programme, and put every date inside your 52 weeks into the calendar today.",
+          "Apply to every window that opens, including the ones you feel unready for — the applications are research tasks and they come with feedback.",
+          "Set a reminder to re-check each programme's page quarterly; dates and formats move.",
+          "From week 20, apply to real roles in parallel to calibrate what the loop actually asks. Expect it to take three to six months.",
+          "Track applications and outcomes in the same public repo — the pattern of rejections tells you what to fix."
+        ],
+        "docs": [
+          {
+            "name": "Anthropic Fellows programme",
+            "url": "https://alignment.anthropic.com/2025/anthropic-fellows-program-2026/"
+          },
+          {
+            "name": "MATS",
+            "url": "https://www.matsprogram.org/"
+          },
+          {
+            "name": "ARENA",
+            "url": "https://www.arena.education/"
+          }
+        ]
+      }
+    },
     "p0-python-basics": {
       "Set up, go public, write your first programs": {
         "desc": "Get Python 3.13 and uv 0.11 working, then close the loop between having an idea and seeing output in a terminal. The public repo is created today, not later — a year of visible history is the thing you cannot backfill.",

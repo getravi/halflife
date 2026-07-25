@@ -1,1347 +1,1347 @@
 {
-  "phase2.html": {
-    "p2-jax-core": {
-      "Purity and the tracing model": {
-        "desc": "JAX's transformations work by tracing your function with abstract values, so anything that is not a pure function of the declared inputs either silently disappears or blows up with an error you have never seen before. The goal of this item is not to memorise rules but to burn the three canonical error messages into recognition memory.",
-        "steps": [
-          "Read \"How to think in JAX\" end to end, then re-read the section on tracers until you can say in one sentence what a `Traced<ShapedArray>` object actually is.",
-          "Deliberately leak a tracer: store the value of an intermediate inside a Python list from within a `jit`-ed function, then use it outside. Record the `UnexpectedTracerError` text verbatim.",
-          "Deliberately mutate in place: write `x[0] = 1.0` on a `jax.Array` and read the error; then rewrite it with `x.at[0].set(1.0)` and confirm it returns a new array rather than mutating.",
-          "Deliberately branch on a traced boolean: `if x > 0:` inside a `jit`-ed function. Read the `ConcretizationTypeError`, then fix it with `jnp.where` and note which fix applies when (`where` for values, `lax.cond` for expensive branches).",
-          "Work the JAX Sharp Bits notebook's PRNG section: replace a global `np.random` seed with explicit `jax.random.key` splitting and understand why JAX refuses implicit global state.",
-          "Write a one-page cheat sheet in your notes mapping each error string to its cause and its fix. This is the artifact — you will consult it for the rest of the phase."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Quickstart: How to think in JAX",
-            "url": "https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html"
-          },
-          {
-            "name": "JAX — 🔪 The Sharp Bits 🔪 (common gotchas)",
-            "url": "https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html"
-          },
-          {
-            "name": "JAX — Errors reference (UnexpectedTracerError, ConcretizationTypeError)",
-            "url": "https://docs.jax.dev/en/latest/errors.html"
-          },
-          {
-            "name": "JAX — Stateful computations (why purity is enforced)",
-            "url": "https://docs.jax.dev/en/latest/stateful-computations.html"
-          },
-          {
-            "name": "JAX — Frequently asked questions",
-            "url": "https://docs.jax.dev/en/latest/faq.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Intro to JAX: Accelerating Machine Learning research (TensorFlow)",
-            "url": "https://www.youtube.com/watch?v=WdTeDXsOSj4"
-          }
-        ]
-      },
-      "grad, value_and_grad, and jit": {
-        "desc": "Autodiff and compilation are the two transformations you will see in literally every JAX snippet. `grad` differentiates with respect to the first argument by default and happily takes a whole parameter pytree; `jit` caches compiled code on a key made of shapes and dtypes, which is the single fact that explains most JAX performance surprises.",
-        "steps": [
-          "Write a scalar loss over a nested dict of parameters and take `jax.grad(loss)(params, batch)`. Confirm the returned gradient is a pytree with exactly the same structure as `params`.",
-          "Swap to `jax.value_and_grad(loss)` and verify you get the loss and the gradient from a single forward pass; time both versions to see the saving.",
-          "Use `argnums` to differentiate with respect to something other than argument 0, and `has_aux=True` to return per-step metrics alongside the gradient.",
-          "Wrap a training step in `jax.jit` and time call 1 and call 2 separately with `block_until_ready()`. The delta is the compile cost — write the number down.",
-          "Trigger a recompile on purpose by changing the batch size, and confirm it with `jax.jit(f).lower(x).compile()` or by watching the timing jump. Then pass a Python int as a config flag and mark it `static_argnums` so it stops recompiling every call.",
-          "Read the autodiff cookbook's sections on `jvp` and `vjp` so you know what `grad` is built out of, even though you will rarely call them directly."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Just-in-time compilation",
-            "url": "https://docs.jax.dev/en/latest/jit-compilation.html"
-          },
-          {
-            "name": "JAX API — jax.grad",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.grad.html"
-          },
-          {
-            "name": "JAX API — jax.value_and_grad",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.value_and_grad.html"
-          },
-          {
-            "name": "JAX — The Autodiff Cookbook (jvp, vjp, and what grad is made of)",
-            "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
-          },
-          {
-            "name": "JAX — Pytrees (how grad traverses parameter trees)",
-            "url": "https://docs.jax.dev/en/latest/pytrees.html"
-          }
-        ]
-      },
-      "vmap": {
-        "desc": "`vmap` is a program transformation, not a loop: it rewrites the traced computation so a leading batch axis is pushed into every primitive. Reading `in_axes` and `out_axes` fluently is a prerequisite for reading anyone else's JAX, and `vmap(grad(...))` is the pattern that makes per-example gradients trivial.",
-        "steps": [
-          "Write a single-example loss, then get per-example gradients with `jax.vmap(jax.grad(loss))(params, xs, ys)` — no batch dimension anywhere in the loss body.",
-          "Use `in_axes=(None, 0, 0)` to broadcast the parameter pytree while mapping over data, and confirm what happens if you get the `None` wrong.",
-          "Write a pairwise-distance function for a single pair, then build the full N×N matrix with nested `vmap` and compare it against a hand-broadcast NumPy version for both correctness and readability.",
-          "Play with `out_axes` to move the mapped axis somewhere other than position 0, and check the resulting shape.",
-          "Compose the three: `jax.jit(jax.vmap(jax.grad(loss)))`, and confirm the composition order does not change the result.",
-          "Read the autodiff cookbook's per-example-gradient section so you can explain why `vmap(grad(f))` is cheaper than a Python loop over `grad(f)`."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Automatic vectorization",
-            "url": "https://docs.jax.dev/en/latest/automatic-vectorization.html"
-          },
-          {
-            "name": "JAX API — jax.vmap (in_axes / out_axes reference)",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.vmap.html"
-          },
-          {
-            "name": "JAX — The Autodiff Cookbook (per-example gradients)",
-            "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
-          }
-        ]
-      },
-      "lax.scan and structured control flow": {
-        "desc": "Python control flow runs at trace time and gets baked into the graph; `lax` control flow runs at execution time inside XLA. Getting this distinction wrong is the difference between a 3-second compile and a 10-minute one, and `lax.scan` is how every real JAX training loop is written.",
-        "steps": [
-          "Write a jit-ed function with a Python `for` loop of 500 iterations, time the compile, then rewrite it with `jax.lax.scan` and time the compile again. Record both numbers.",
-          "Build a scan-based training step where `carry = (params, opt_state)` and the per-step outputs are the metrics you want stacked; confirm the output leading axis equals the number of steps.",
-          "Get the scan signature right by hand: `f(carry, x) -> (carry, y)`. Deliberately return a carry whose dtype differs from the input carry and read the error you get.",
-          "Write one `lax.cond` where both branches are traced, and note that unlike Python `if`, both branches must return the same pytree structure and shapes.",
-          "Write one `lax.while_loop` and confirm you cannot reverse-differentiate through it — this is the reason `scan` is preferred wherever the trip count is known.",
-          "Use `jax.lax.scan`'s `length` and `unroll` arguments once each so you recognise them when you meet them in the scaling book or in MaxText."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Control flow and logical operators with JIT",
-            "url": "https://docs.jax.dev/en/latest/control-flow.html"
-          },
-          {
-            "name": "JAX API — jax.lax.scan",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html"
-          },
-          {
-            "name": "JAX API — jax.lax.cond",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.cond.html"
-          },
-          {
-            "name": "JAX API — jax.lax.while_loop",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.while_loop.html"
-          }
-        ]
-      },
-      "Explicit sharding and meshes": {
-        "desc": "Since JAX 0.9.0 explicit sharding is the default: `jax.make_mesh` creates axes typed `AxisType.Explicit`, shardings propagate through the type system, and a communication the compiler cannot infer is an error rather than a silent all-gather. This is the concept that maps one-for-one onto PyTorch's DeviceMesh and DTensor placements in Task 03.",
-        "steps": [
-          "Before importing anything else, run `jax.config.update(\"jax_num_cpu_devices\", 8)` so you have eight devices to mesh, then check `jax.devices()`.",
-          "Build a mesh with `mesh = jax.make_mesh((4, 2), ('data', 'model'))` and activate it with `jax.set_mesh(mesh)` — do not use `with mesh:`, which was deprecated in 0.10.1.",
-          "Annotate arrays with `jax.P` (the top-level PartitionSpec alias): shard a batch as `jax.P('data', None)` and replicate parameters as `jax.P()`. Inspect the result with `jax.debug.visualize_array_sharding`.",
-          "Write one full training step that replicates parameters and shards the batch along `'data'`, and print `x.sharding` at three points inside the step to watch the sharding propagate.",
-          "Deliberately combine two arrays with incompatible specs and read the error explicit mode raises — then fix it by resharding one of them instead of letting a compiler guess.",
-          "Write down the mapping you will need in week 27: mesh → DeviceMesh, `jax.P('data')` → `Shard(0)`, `jax.P()` → `Replicate()`."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Distributed arrays and automatic parallelization (canonical parallelism doc)",
-            "url": "https://docs.jax.dev/en/latest/parallel.html"
-          },
-          {
-            "name": "JAX API — jax.make_mesh",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.make_mesh.html"
-          },
-          {
-            "name": "JAX API — jax.set_mesh",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.set_mesh.html"
-          },
-          {
-            "name": "JAX API — jax.sharding module (Mesh, PartitionSpec, NamedSharding)",
-            "url": "https://docs.jax.dev/en/latest/jax.sharding.html"
-          },
-          {
-            "name": "Scaling book — Programming TPUs in JAX (meshes and specs in context)",
-            "url": "https://jax-ml.github.io/scaling-book/jax-stuff/"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Intro to Parallel Programming in JAX, all 3 flavors (Nodematic Tutorials)",
-            "url": "https://www.youtube.com/watch?v=wADzdMOZbF8"
-          }
-        ]
-      },
-      "Collectives and shard_map": {
-        "desc": "`shard_map` is JAX's manual mode: inside it you write the program a single device runs, and you place the collectives yourself. Every parallelism strategy in the scaling book is ultimately a question of which axis you `psum` over and when — so this is the item that makes chapter 3 legible.",
-        "steps": [
-          "Read the shard_map notebook, then write a toy `jax.shard_map` (top-level import — not `jax.experimental.shard_map`) that shards a matrix along `'data'` and does nothing but return its own shard, printing the local shape to confirm it is the per-device slice.",
-          "Add `jax.lax.psum(x, 'data')` and verify by hand that the result equals the global sum; then swap it for `lax.pmean` and check it equals the global mean.",
-          "Implement a data-parallel gradient step manually: compute per-shard grads inside `shard_map`, `pmean` them over `'data'`, and apply the update.",
-          "Implement one collective matmul that requires `lax.all_gather` or `lax.psum_scatter`, and reason about how many bytes cross the interconnect versus how many FLOPs you do.",
-          "Trigger the 0.9.1 behaviour on purpose: pass an array whose sharding does not match `in_specs` under explicit mode, read the assertion, and fix it by calling `jax.reshard` first rather than relying on an implicit reshard.",
-          "Read the shard_map JEP for the design rationale — it is the clearest statement of why manual mode exists alongside automatic sharding."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Manual parallelism with shard_map",
-            "url": "https://docs.jax.dev/en/latest/notebooks/shard_map.html"
-          },
-          {
-            "name": "JAX API — jax.shard_map",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.shard_map.html"
-          },
-          {
-            "name": "JAX API — jax.lax.psum",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.psum.html"
-          },
-          {
-            "name": "JAX API — jax.lax.pmean",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.pmean.html"
-          },
-          {
-            "name": "JAX enhancement proposal — shmap (shard_map) for simple per-device code",
-            "url": "https://docs.jax.dev/en/latest/jep/14273-shard-map.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Sharding the Sphere with jax.shard_map — JAX/OpenXLA DevLab Fall 2025 (OpenXLA)",
-            "url": "https://www.youtube.com/watch?v=jVWSuEj9hWE"
-          }
-        ]
-      },
-      "Read pmap, never write it": {
-        "desc": "The JAX corpus on the public internet is overwhelmingly pmap-era, and JAX 0.10.0 removed the C++ pmap infrastructure. `jax.pmap` survives only as a thin wrapper over `jit(shard_map)`; `PmapSharding`, `device_put_sharded` and `device_put_replicated` now raise AttributeError. You need to read this code and date it, not write it.",
-        "steps": [
-          "Skim the changelog for the 0.9.x–0.11 entries and pull out the removals by name: the pmap C++ path, `PmapSharding`, `device_put_sharded`, `device_put_replicated`. Paste them into your notes with version numbers.",
-          "Read the `jax.pmap` API page and note what it now says about being implemented on top of `shard_map` — this is the sentence that tells you the semantics you actually get.",
-          "Take any pmap-era tutorial snippet you can find and translate it on paper: `pmap(f)` over the leading axis becomes a mesh with one axis plus `jax.P('devices', ...)` specs; `axis_name='batch'` becomes the mesh axis name; `lax.pmean(g, 'batch')` stays exactly the same.",
-          "Do the same for the setup code: `device_put_replicated(params, devices)` becomes `jax.device_put(params, NamedSharding(mesh, jax.P()))`.",
-          "Write a three-line rule in your notes for dating a snippet on sight: `pmap` + `device_put_replicated` = pre-0.10; `with mesh:` = pre-0.10.1; `jax.experimental.shard_map` import = pre-top-level promotion.",
-          "Sanity-check the rule against two real repos you find in the wild and record which era each is from."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Change log (search for the pmap removals)",
-            "url": "https://docs.jax.dev/en/latest/changelog.html"
-          },
-          {
-            "name": "JAX API — jax.pmap (now a wrapper over jit(shard_map))",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.pmap.html"
-          },
-          {
-            "name": "JAX — Distributed arrays and automatic parallelization (what to translate pmap into)",
-            "url": "https://docs.jax.dev/en/latest/parallel.html"
-          }
-        ]
-      },
-      "Get devices without a budget": {
-        "desc": "You do not need to spend anything to do the mesh and sharding work in this task. Eight fake CPU devices behave identically for every exercise here; Kaggle and the TPU Research Cloud are the free paths to a real accelerator if you want one. Colab no longer hands out TPU slices, so do not plan around it.",
-        "steps": [
-          "Put `jax.config.update(\"jax_num_cpu_devices\", 8)` at the very top of a fresh script — before the first JAX call, or it silently has no effect — then print `jax.devices()` and confirm you see eight.",
-          "Re-run one mesh exercise and one `shard_map` exercise from this task against the fake devices to prove they behave the same as real ones.",
-          "Register a Kaggle account and start one TPU notebook session so you know the quota, the session limits and the accelerator selector before you need them under time pressure.",
-          "Read the TPU Research Cloud page and decide whether to apply; if you do, apply now, because approval is not instant.",
-          "If you want a paid fallback, price a small GCP TPU slice and write the hourly number in the same budget note you made for the multi-GPU box in Task 03.",
-          "Record in your repo README exactly what each JAX exercise actually ran on — fake CPU devices, Kaggle TPU, or rented hardware. Future-you and any interviewer will ask."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Installation (CPU, GPU and TPU wheels)",
-            "url": "https://docs.jax.dev/en/latest/installation.html"
-          },
-          {
-            "name": "JAX API — jax.config (jax_num_cpu_devices and friends)",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.config.html"
-          },
-          {
-            "name": "Kaggle — Tensor Processing Units (TPUs) documentation",
-            "url": "https://www.kaggle.com/docs/tpu"
-          },
-          {
-            "name": "Google TPU Research Cloud — about and application",
-            "url": "https://sites.research.google/trc/about/"
-          },
-          {
-            "name": "JAX — Introduction to multi-controller (multi-process/multi-host) JAX",
-            "url": "https://docs.jax.dev/en/latest/multi_process.html"
-          }
-        ]
-      }
-    },
-    "p2-scaling-book": {
-      "Chapters 1–2: rooflines and the hardware": {
-        "desc": "The roofline chapter is the highest-value reading in the whole phase: it teaches you to answer \"is this compute-bound or memory-bound?\" with division instead of a profiler. Chapter 2 attaches real numbers — FLOP/s, HBM bandwidth, interconnect bandwidth — so the arithmetic produces predictions you can check.",
-        "steps": [
-          "Read chapter 1 and derive arithmetic intensity for three ops by hand: a big square matmul, an elementwise GELU, and a layernorm. Classify each as compute- or memory-bound before reading the answer.",
-          "Compute the crossover intensity for one accelerator you can actually rent (peak FLOP/s ÷ HBM bandwidth) and write the number on a sticky note — it is the constant you will use all phase.",
-          "Read chapter 2 for the TPU numbers, then read chapter 12 (GPUs) only far enough to pull the equivalent GPU numbers into the same table.",
-          "Do the chapter exercises with pencil and paper first. Record every answer you got wrong plus the corrected working — that log is a deliverable at the milestone.",
-          "Predict the time for a single large matmul on your hardware from the roofline, then measure it. Write down the ratio of predicted to measured and a one-line theory for the gap.",
-          "Repeat the prediction-then-measure loop for one memory-bound op so you have both sides of the roofline calibrated."
-        ],
-        "docs": [
-          {
-            "name": "Scaling book — All About Rooflines (chapter 1)",
-            "url": "https://jax-ml.github.io/scaling-book/roofline/"
-          },
-          {
-            "name": "Scaling book — How to Think About TPUs (chapter 2)",
-            "url": "https://jax-ml.github.io/scaling-book/tpus/"
-          },
-          {
-            "name": "Scaling book — table of contents",
-            "url": "https://jax-ml.github.io/scaling-book/"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
-          }
-        ]
-      },
-      "Chapters 3–4: sharding and transformer math": {
-        "desc": "Chapter 3 is the cost model: for every sharding strategy, what gets communicated, how much, and at what point the communication dominates. Chapter 4 is the accounting: parameters, FLOPs and activation memory for a transformer forward and backward. Together they let you size a run on paper, which is the stated deliverable of this task.",
-        "steps": [
-          "Read chapter 3 and build a table with one row per strategy — data parallel, FSDP/ZeRO-3, tensor parallel, pipeline parallel — and columns for what is communicated per step, how much, and what breaks it.",
-          "Derive the 6ND training-FLOP estimate from scratch: 2ND for the forward matmuls, 4ND for the backward. Then list what it ignores — attention's quadratic term, layernorms, the embedding/unembedding, activation recompute — and estimate at what sequence length the attention term stops being negligible.",
-          "Count activation memory per layer for a concrete config (hidden size, heads, sequence length, batch, dtype) and compare it against parameter plus optimizer-state memory. Note which one dominates and when.",
-          "Read chapter 5 on parallelising a transformer for training so the strategies in your table have a worked example attached.",
-          "Size one specific run end to end: pick a model, a batch size and a two-GPU box, and predict memory per device and step time. Put the prediction in your repo before you touch a GPU in Task 03.",
-          "Cross-check your tensor-parallel row against the Megatron-LM papers so you can name the original source of the column-then-row MLP trick."
-        ],
-        "docs": [
-          {
-            "name": "Scaling book — Sharded Matrices and How to Multiply Them (chapter 3)",
-            "url": "https://jax-ml.github.io/scaling-book/sharding/"
-          },
-          {
-            "name": "Scaling book — All the Transformer Math You Need to Know (chapter 4)",
-            "url": "https://jax-ml.github.io/scaling-book/transformers/"
-          },
-          {
-            "name": "Scaling book — How to Parallelize a Transformer for Training (chapter 5)",
-            "url": "https://jax-ml.github.io/scaling-book/training/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1909.08053 — Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism",
-            "url": "https://arxiv.org/abs/1909.08053"
-          },
-          {
-            "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM",
-            "url": "https://arxiv.org/abs/2104.04473"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
-          }
-        ]
-      },
-      "Chapter 12: how to think about GPUs": {
-        "desc": "Chapter 12 is the newest chapter and the one about hardware you can rent this afternoon. It covers the NVIDIA memory hierarchy, NVLink versus InfiniBand, what collectives actually cost on a GPU fabric, and how the whole GPU picture maps back onto the TPU model the rest of the book uses.",
-        "steps": [
-          "Read the chapter and extract a numbers table for one GPU you plan to rent: SM count, tensor-core FLOP/s at bf16, HBM capacity and bandwidth, NVLink bandwidth, and node-to-node bandwidth.",
-          "Work through the collectives section and compute the wall-clock cost of one all-reduce of your model's gradients at your parameter count, both intra-node over NVLink and inter-node over the network.",
-          "Write down where the GPU and TPU stories genuinely differ — topology, collective implementation, the role of the compiler — rather than treating the chapters as interchangeable.",
-          "Redo the chapter 1 roofline crossover with GPU numbers and confirm it agrees with the table you built in the previous item.",
-          "Read the Ultra-Scale Playbook's parallelism chapter immediately after, and note every place its GPU-measured guidance contradicts or refines the book's arithmetic.",
-          "End with one paragraph in your notes: given a 2×A100 or 2×L40S box, which parallelism strategy you would reach for first and why. You will test that answer next week."
-        ],
-        "docs": [
-          {
-            "name": "Scaling book — How to Think About GPUs (chapter 12)",
-            "url": "https://jax-ml.github.io/scaling-book/gpus/"
-          },
-          {
-            "name": "Scaling book — All About Rooflines (the arithmetic this chapter grounds)",
-            "url": "https://jax-ml.github.io/scaling-book/roofline/"
-          },
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          },
-          {
-            "name": "NVIDIA NCCL — environment variables (the fabric knobs the chapter describes)",
-            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
-          }
-        ]
-      },
-      "Chinchilla as the anchor": {
-        "desc": "Chinchilla is the reference point everyone quotes and few people state correctly. The actual claim is narrow: for a fixed training-compute budget, model size and training tokens should scale roughly in proportion, landing near 20 tokens per parameter. It says nothing about inference cost and it assumes you never run out of unique data.",
-        "steps": [
-          "Read the paper and identify the three separate estimation approaches — fixed model size, IsoFLOP, and the parametric loss fit — and note that they broadly agree, which is why the result stuck.",
-          "Write the compute-optimal claim in your own words in two sentences, then write the two assumptions it rests on in two more.",
-          "Read the earlier Kaplan et al. scaling-laws paper so you can say exactly which choice (the learning-rate schedule and the treatment of embedding parameters) made its exponents differ from Chinchilla's.",
-          "Skim the replication attempt paper for the fitted-parameter dispute; the point is not to adjudicate it but to know that the exact coefficients are contested while the shape is not.",
-          "Compute the Chinchilla-optimal token count for three parameter counts you care about, then look up how many tokens a recent open model of that size was actually trained on and note the ratio.",
-          "Keep that ratio handy — the next item explains why it is 10× or more."
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (Chinchilla)",
-            "url": "https://arxiv.org/abs/2203.15556"
-          },
-          {
-            "name": "arXiv 2001.08361 — Scaling Laws for Neural Language Models (Kaplan et al.)",
-            "url": "https://arxiv.org/abs/2001.08361"
-          },
-          {
-            "name": "arXiv 2404.10102 — Chinchilla Scaling: A replication attempt",
-            "url": "https://arxiv.org/abs/2404.10102"
-          }
-        ]
-      },
-      "Inference-aware and data-constrained scaling": {
-        "desc": "Two results explain why nobody trains Chinchilla-optimal any more. Put inference demand in the objective and the optimum moves to a smaller model trained on far more data. Put a cap on unique data and repeated epochs start decaying in value until extra compute buys essentially nothing.",
-        "steps": [
-          "Read arXiv 2401.00448 and identify what changed in the objective: total cost is now training compute plus inference compute over an expected serving volume, not training compute alone.",
-          "Work one concrete example from that framing — pick a model size and an expected lifetime token volume, and show which of two training configurations is cheaper overall.",
-          "Read arXiv 2305.16264 and extract the two headline numbers: how many epochs of repeated data are roughly as good as fresh data, and where the returns flatten out.",
-          "Write one paragraph reconciling the two: inference-awareness pushes you to more tokens, data-constraints cap how many useful tokens exist, and the intersection is where 2025–2026 models actually sit.",
-          "Revisit the ratios you computed in the Chinchilla item and explain each one using these two papers rather than hand-waving about \"overtraining\".",
-          "Add the whole argument to your written scaling-book notes; being able to deliver it out loud in two minutes is the deliverable."
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2401.00448 — Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws",
-            "url": "https://arxiv.org/abs/2401.00448"
-          },
-          {
-            "name": "arXiv 2305.16264 — Scaling Data-Constrained Language Models",
-            "url": "https://arxiv.org/abs/2305.16264"
-          },
-          {
-            "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (the baseline being attacked)",
-            "url": "https://arxiv.org/abs/2203.15556"
-          }
-        ]
-      },
-      "The GPU counterpart": {
-        "desc": "The Ultra-Scale Playbook is the PyTorch-and-GPU twin of the scaling book: 5D parallelism, ZeRO stages, activation recomputation, kernel fusion, all backed by thousands of measured runs up to 512 GPUs. Where the scaling book gives you arithmetic, this gives you the empirical failure modes with the exact error you will see.",
-        "steps": [
-          "Read the memory chapter first and reproduce its memory breakdown for your own model config: parameters, gradients, optimizer states, activations.",
-          "Read the parallelism chapters — data parallel, ZeRO, tensor parallel, sequence/context parallel, pipeline parallel — and add a \"measured gotcha\" column to the strategy table you built for chapter 3.",
-          "Note every place the playbook's measured guidance sharpens the book's arithmetic, especially around overlap of communication and compute.",
-          "Skim the activation-recomputation and kernel-fusion sections so the levers in Task 03 have names before you pull them.",
-          "Skim the Smol Training Playbook for the operational side — the decisions and debugging that surround a real run rather than the parallelism theory.",
-          "Keep both tabs open through weeks 27–29 and add your own measured numbers next to theirs."
-        ],
-        "docs": [
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          },
-          {
-            "name": "Hugging Face — The Smol Training Playbook",
-            "url": "https://huggingface.co/spaces/HuggingFaceTB/smol-training-playbook"
-          },
-          {
-            "name": "Scaling book — How to Think About GPUs (the arithmetic side of the same material)",
-            "url": "https://jax-ml.github.io/scaling-book/gpus/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
-            "url": "https://arxiv.org/abs/1910.02054"
-          }
-        ]
-      }
-    },
-    "p2-pytorch-distributed": {
-      "FSDP2": {
-        "desc": "FSDP2 (`fully_shard`) shards each parameter on dim-0 into a DTensor rather than flattening everything into one per-rank buffer the way FSDP1 did. That single design change is what makes per-parameter mixed precision, per-parameter optimizer state and resharded checkpointing behave sanely — and it is why FSDP1 blog posts will mislead you.",
-        "steps": [
-          "Initialise the process group first, then apply `fully_shard` to your Phase 1 transformer bottom-up: each block, then the root module. Print `p.shape` and `p.to_local().shape` for one parameter to see the DTensor.",
-          "Run on two GPUs and record peak memory with `torch.cuda.max_memory_allocated()` before and after sharding; check the saving against the parameters + gradients + optimizer-state arithmetic from chapter 4.",
-          "Trace one step: which parameters get all-gathered in forward, when they are freed, and which gradients get reduce-scattered in backward. Confirm with `TORCH_DISTRIBUTED_DEBUG` or a profiler trace rather than by assumption.",
-          "Change the wrapping granularity — whole model versus per-block versus per-layer — and measure peak memory and step time at each. Explain the trade-off in terms of all-gather size versus all-gather count.",
-          "Turn on mixed precision via `MixedPrecisionPolicy` and confirm which tensors are bf16 (params, reduce) and which stay fp32 (master weights, optimizer state).",
-          "Read torchtitan's fsdp.md to see how a production codebase configures the same API."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Getting Started with Fully Sharded Data Parallel (FSDP2)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed.fsdp.fully_shard",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.fsdp.fully_shard.html"
-          },
-          {
-            "name": "torchtitan — docs/fsdp.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
-          },
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook (ZeRO stages and measured behaviour)",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
-            "url": "https://arxiv.org/abs/1910.02054"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Too Big to Train 2: PyTorch's Upgraded Interface for Fully Sharded Data Parallel (Sharcnet HPC)",
-            "url": "https://www.youtube.com/watch?v=SgRKWKwQbQE"
-          },
-          {
-            "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
-            "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
-          }
-        ]
-      },
-      "DTensor and DeviceMesh": {
-        "desc": "DTensor is the substrate: a local tensor, plus a DeviceMesh, plus a placement per mesh axis (`Shard(dim)`, `Replicate()`, `Partial()`). FSDP2, tensor parallel and distributed checkpointing are all expressed in it. This is the exact analogue of the JAX mesh and `jax.P` work from Task 01, and building the mapping explicitly saves you a week.",
-        "steps": [
-          "Initialise the process group before you construct a DeviceMesh — a mesh built on uninitialised process groups will fail later under `torch.compile`, and the failure surfaces far from the cause.",
-          "Build a 1D mesh with `init_device_mesh`, distribute a tensor with `Shard(0)`, and print `.to_local().shape` on each rank to confirm the split.",
-          "Build a 2D mesh named `('dp', 'tp')`, slice it with `mesh['tp']`, and place a tensor as `[Shard(0), Replicate()]`.",
-          "Call `redistribute` to go from `Shard(0)` to `Replicate()` and back, and read the collectives PyTorch inserted using a profiler trace or `TORCH_DISTRIBUTED_DEBUG=DETAIL`. Name each one — all-gather, reduce-scatter, all-to-all.",
-          "Produce a `Partial()` placement deliberately (an unreduced local partial sum) and watch the all-reduce fire when you redistribute it to `Replicate()`.",
-          "Write the JAX↔PyTorch mapping table in your notes: Mesh↔DeviceMesh, `jax.P('data')`↔`Shard(0)`, `jax.P()`↔`Replicate()`, unreduced psum operand↔`Partial()`."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch API — torch.distributed.tensor (DTensor)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
-          },
-          {
-            "name": "PyTorch — Getting Started with DeviceMesh",
-            "url": "https://docs.pytorch.org/tutorials/recipes/distributed_device_mesh.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed (collectives, process groups, debug flags)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
-          },
-          {
-            "name": "JAX — Distributed arrays and automatic parallelization (the Task 01 counterpart)",
-            "url": "https://docs.jax.dev/en/latest/parallel.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Introduction to PyTorch DeviceMesh and DTensor (Edward Z. Yang's PyTorch and PL)",
-            "url": "https://www.youtube.com/watch?v=yd37O-xu2-4"
-          },
-          {
-            "title": "Two Dimensional Parallelism Using Distributed Tensors — PyTorch Conference 2022 (PyTorch)",
-            "url": "https://www.youtube.com/watch?v=MEx2kJPmjHo"
-          }
-        ]
-      },
-      "Tensor parallel and 2D parallelism": {
-        "desc": "Tensor parallel splits individual matmuls across devices. Done right through an MLP block — column-parallel then row-parallel — only one all-reduce is needed per block instead of two. Compose it with FSDP2 on a second mesh axis and you have 2D parallelism, which is what every real training run above one node looks like.",
-        "steps": [
-          "Apply `parallelize_module` to one transformer block with a plan of `ColwiseParallel` on the up-projection and `RowwiseParallel` on the down-projection, and verify by inspecting weight shapes per rank.",
-          "Count the collectives per block with a profiler and confirm you see one all-reduce, not two. If you see two, your column/row ordering is wrong — fix it and re-measure.",
-          "Extend the plan to attention (colwise on q/k/v, rowwise on the output projection) and note how the head dimension constrains the TP degree.",
-          "Build a 2D mesh `('dp', 'tp')`, apply TP on the `tp` axis and `fully_shard` on the `dp` axis, and confirm both are active by printing placements.",
-          "Measure step time at TP=2 versus pure data parallel at the same device count, and explain the difference using the chapter 3 cost model — communication volume per step, not vibes.",
-          "Read torchtitan's composability.md to see the ordering constraints a production stack imposes when TP, FSDP and compile are combined."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Large Scale Transformer model training with Tensor Parallel (TP)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
-          },
-          {
-            "name": "PyTorch API — Tensor Parallelism (torch.distributed.tensor.parallel)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.parallel.html"
-          },
-          {
-            "name": "torchtitan — docs/composability.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
-          },
-          {
-            "name": "Scaling book — Sharded Matrices and How to Multiply Them (the cost model)",
-            "url": "https://jax-ml.github.io/scaling-book/sharding/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1909.08053 — Megatron-LM (the original column-then-row MLP split)",
-            "url": "https://arxiv.org/abs/1909.08053"
-          },
-          {
-            "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters",
-            "url": "https://arxiv.org/abs/2104.04473"
-          }
-        ]
-      },
-      "Read torchtitan": {
-        "desc": "torchtitan is PyTorch's own reference training stack: FSDP2, tensor parallel, pipeline parallel, float8, distributed checkpointing and compile, in a codebase small enough to read end to end. With torchtune wound down, it is the answer to \"how would you set up a real pretraining run\" that a PyTorch-shop interviewer expects.",
-        "steps": [
-          "Clone the repo and read the training loop first, top to bottom, without chasing every helper. Note where parallelism is applied relative to model construction and optimizer creation.",
-          "Read the parallelism application code and map each strategy back to the API you used yourself: `fully_shard`, `parallelize_module`, the pipeline schedule.",
-          "Read the TOML config for one model and list every knob that changes parallelism, precision or checkpointing. Change two of them and predict the effect before running anything.",
-          "Read docs/composability.md and docs/fsdp.md for the ordering rules — which wrapper must be applied before which, and what breaks under `torch.compile` if you get it wrong.",
-          "Read docs/converging.md so you know what a healthy loss curve looks like in their harness and what they consider a convergence regression.",
-          "Write half a page in your notes: how you would configure torchtitan for a 1B model on eight GPUs, and which three settings you would change first if you saw an OOM."
-        ],
-        "docs": [
-          {
-            "name": "github.com/pytorch/torchtitan",
-            "url": "https://github.com/pytorch/torchtitan"
-          },
-          {
-            "name": "torchtitan — docs/composability.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
-          },
-          {
-            "name": "torchtitan — docs/fsdp.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
-          },
-          {
-            "name": "torchtitan — docs/converging.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/converging.md"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Torchtitan: Large-Scale LLM Training Using Native PyTorch 3D Parallelism — Wanchao Liang & Linsong Chu (PyTorch)",
-            "url": "https://www.youtube.com/watch?v=WsNEBxPDljU"
-          },
-          {
-            "title": "GPU MODE Lecture 39: Torchtitan",
-            "url": "https://www.youtube.com/watch?v=VYWRjcUqW6w"
-          }
-        ]
-      },
-      "Activation checkpointing and gradient accumulation": {
-        "desc": "These are the two levers that trade compute for memory, and both have arithmetic you should be able to do in your head. Checkpointing drops stored activations and recomputes them in backward — roughly a 30% compute tax for a large memory cut. Gradient accumulation buys effective batch size for free in memory but costs a reduce per microbatch unless you suppress it.",
-        "steps": [
-          "Measure baseline peak memory and step time, then wrap your transformer blocks in `torch.utils.checkpoint.checkpoint` and measure both again. Compute the actual memory saved and the actual compute tax on your hardware.",
-          "Switch to selective checkpointing — keep the cheap-to-store, expensive-to-recompute ops (matmul outputs) and recompute the rest — and show it beats full checkpointing on the memory-per-unit-slowdown curve.",
-          "Confirm the interaction with autocast: recomputation must run under the same precision context as the original forward, or your numerics drift.",
-          "Implement gradient accumulation over N microbatches and verify the resulting update matches a single large batch to tight tolerance (watch the loss-scaling-by-1/N detail).",
-          "Under FSDP2, suppress the gradient reduce on all but the last microbatch (`set_requires_gradient_sync(False)`), and measure the step time with and without. The delta is the reduce you were paying N times.",
-          "Read the Ultra-Scale Playbook's recomputation section and compare its measured numbers against yours — if you are far off, you measured the wrong thing."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch API — torch.utils.checkpoint",
-            "url": "https://docs.pytorch.org/docs/stable/checkpoint.html"
-          },
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook (activation recomputation and gradient accumulation)",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          },
-          {
-            "name": "PyTorch — Getting Started with FSDP2 (where the no-sync knob lives)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
-          },
-          {
-            "name": "Scaling book — All the Transformer Math You Need to Know (the activation-memory accounting)",
-            "url": "https://jax-ml.github.io/scaling-book/transformers/"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
-            "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
-          }
-        ]
-      },
-      "bf16 and fp8": {
-        "desc": "bf16 is the default training dtype because it keeps fp32's exponent range, which is exactly why it does not need loss scaling and fp16 does. float8 goes a step further with per-tensor scaling and a real speedup on Hopper-class hardware and later — but only on some layers, and the measured number on your box is rarely the marketing number.",
-        "steps": [
-          "Write down the exponent and mantissa bit counts for fp32, bf16 and fp16, then explain in one sentence why fp16 needs a `GradScaler` and bf16 does not.",
-          "Train the same model under autocast bf16 and under fp32 on identical data and seeds, and plot both loss curves. Throughput alone is not the comparison — convergence is.",
-          "Install torchao and convert the linear layers of your model to float8 training, using its filter to skip the layers that are unsafe to cast (typically the embedding, the final projection, and any layer with a small inner dimension).",
-          "Measure tokens/second at bf16 and at float8 on your actual hardware, and check whether the layers you converted are large enough for the tensor cores to benefit at all.",
-          "Plot the float8 loss curve against the bf16 one over the same number of steps. If it diverges, look at the scaling recipe before blaming the dtype.",
-          "Record all three numbers — bf16 throughput, float8 throughput, and the loss-curve difference — in your notes. The honest measured delta is the artifact."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch API — torch.amp (Automatic Mixed Precision)",
-            "url": "https://docs.pytorch.org/docs/stable/amp.html"
-          },
-          {
-            "name": "PyTorch — Automatic Mixed Precision examples (including GradScaler)",
-            "url": "https://docs.pytorch.org/docs/stable/notes/amp_examples.html"
-          },
-          {
-            "name": "github.com/pytorch/ao (torchao)",
-            "url": "https://github.com/pytorch/ao"
-          },
-          {
-            "name": "torchao API — torchao.float8",
-            "url": "https://docs.pytorch.org/ao/stable/api_reference/api_ref_float8.html"
-          },
-          {
-            "name": "torchao tutorial — Pre-training with float8",
-            "url": "https://docs.pytorch.org/ao/stable/eager_tutorials/pretraining.html"
-          }
-        ]
-      },
-      "NCCL and OOM debugging": {
-        "desc": "Distributed jobs fail in two characteristic ways. A hang is almost always a collective that one rank never reached — divergent control flow, an early return, a rank that raised and died quietly. An OOM is either genuine exhaustion or fragmentation, and the memory snapshot tells you which. Cause both on purpose so you have seen the symptom before it costs you a rented hour.",
-        "steps": [
-          "Set `NCCL_DEBUG=INFO` and `TORCH_NCCL_ASYNC_ERROR_HANDLING=1` on a healthy run first, and read the topology and ring-construction output so you know what normal looks like.",
-          "Cause a hang deliberately: make rank 0 take an `if` branch that skips an all-reduce the other rank executes. Watch the watchdog timeout, read which collective it names, and confirm the diagnosis is \"rank divergence\", not \"network\".",
-          "Turn on `TORCH_DISTRIBUTED_DEBUG=DETAIL` and re-run the hang to see the per-rank collective mismatch reported directly.",
-          "Cause a fragmentation OOM: allocate and free alternating large and small tensors until an allocation fails while `memory_reserved` is far above `memory_allocated`. Capture a snapshot with `torch.cuda.memory._record_memory_history()` and `_dump_snapshot()`.",
-          "Load the snapshot in the PyTorch memory visualizer and identify the peak — confirm for yourself that it sits in backward, not forward, and find the allocation that triggered the failure.",
-          "Write the two playbooks up as a page each: symptom, first three commands, the diagnosis that usually holds, and the fix. This writeup is a milestone deliverable."
-        ],
-        "docs": [
-          {
-            "name": "NVIDIA NCCL — environment variables",
-            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
-          },
-          {
-            "name": "NVIDIA NCCL — troubleshooting",
-            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
-          },
-          {
-            "name": "PyTorch — Understanding CUDA Memory Usage (snapshots and the visualizer)",
-            "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed (TORCH_DISTRIBUTED_DEBUG and watchdog behaviour)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
-          },
-          {
-            "name": "torchtitan — docs/debugging.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/debugging.md"
-          },
-          {
-            "name": "PyTorch blog — Understanding GPU Memory 1: Visualizing All Allocations over Time",
-            "url": "https://pytorch.org/blog/understanding-gpu-memory-1/"
-          }
-        ]
-      },
-      "Distributed checkpoint and resume": {
-        "desc": "A run you cannot resume is a run you cannot afford, and resharding on resume is the part that actually breaks. `torch.distributed.checkpoint` saves sharded state in a world-size-independent format — but only if you save the DTensor state dicts correctly, which is exactly what this exercise proves.",
-        "steps": [
-          "Save model and optimizer state with `torch.distributed.checkpoint.save` using the distributed state-dict helpers, not a naive `state_dict()` gather to rank 0.",
-          "Inspect what landed on disk: one file per rank plus metadata. Confirm the metadata describes global shapes, which is what makes resharding possible.",
-          "Kill the job mid-epoch (SIGKILL, not a clean exit) and restart it at the same world size. Verify the loss continues rather than restarting or jumping.",
-          "Now restart at a different world size — 2 ranks saved, 4 ranks loaded, or vice versa — and verify the loss curve is still continuous. This is the test that finds the bug.",
-          "Confirm you also restored the optimizer state and the dataloader position, not just the weights. A resumed run with a fresh optimizer state shows a distinctive loss bump; go and look for it.",
-          "Read torchtitan's checkpoint.md for how a production stack handles async saving and format conversion for later export."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Getting Started with Distributed Checkpoint (DCP)",
-            "url": "https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed.checkpoint",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.checkpoint.html"
-          },
-          {
-            "name": "torchtitan — docs/checkpoint.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/checkpoint.md"
-          },
-          {
-            "name": "PyTorch API — torch.distributed.tensor (what DCP is actually serialising)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
-          }
-        ]
-      }
-    },
-    "p2-cs336-systems": {
-      "Watch the systems lectures": {
-        "desc": "CS336's systems block covers GPU architecture, kernels and Triton, and distributed training in exactly the order assignment 2 needs them. Watching first is not optional — the assignment assumes the lecture content and skipping it costs days. The executable lecture code is as valuable as the video.",
-        "steps": [
-          "Watch the GPUs/TPUs lecture and take notes specifically on the memory hierarchy and occupancy, because the assignment's benchmarking section assumes both.",
-          "Watch the Kernels/Triton lecture and follow along in the corresponding executable lecture file rather than just listening.",
-          "Watch both parallelism lectures back to back, and map each collective they describe onto the PyTorch API you used in Task 03.",
-          "Clone the current lectures repo and run the systems lecture code locally; the lectures are literate Python you can step through, which is the point of the course's format.",
-          "Cross-check the course website's schedule against the video list so you know which lecture number corresponds to which topic in the year you are watching — the numbering shifted between offerings.",
-          "Write a one-paragraph summary per lecture in your notes before starting the assignment. If you cannot write it, you did not watch it closely enough."
-        ],
-        "courses": [
-          {
-            "name": "Stanford CS336 — Language Modeling from Scratch (course site)",
-            "url": "https://cs336.stanford.edu/"
-          }
-        ],
-        "lectures": [
-          {
-            "name": "github.com/stanford-cs336/lectures — current executable lecture code and slides",
-            "url": "https://github.com/stanford-cs336/lectures"
-          },
-          {
-            "name": "github.com/stanford-cs336/spring2025-lectures — Spring 2025 lecture code",
-            "url": "https://github.com/stanford-cs336/spring2025-lectures"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
-          },
-          {
-            "title": "Stanford CS336: Language Modeling from Scratch | Spring 2026 — full playlist (Stanford Online)",
-            "url": "https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"
-          }
-        ]
-      },
-      "Benchmark and profile before optimising": {
-        "desc": "An unsynchronised CUDA timing measures queue submission, not work — this is the single most common benchmarking mistake and it will make every optimisation look free. Get the measurement methodology right first, then profile, then read the trace, and only then change code.",
-        "steps": [
-          "Write a timing harness with explicit warmup iterations and `torch.cuda.synchronize()` on both sides of the timed region. Prove the harness matters by timing the same op with and without sync.",
-          "Time forward, backward and the optimizer step separately across a sweep of model sizes and sequence lengths, and report mean and standard deviation, not a single run.",
-          "Before each measurement, write down a predicted number from your chapter 1 roofline. Keep a prediction-versus-measured log — this is a milestone deliverable.",
-          "Profile with `torch.profiler` using `activities=[CPU, CUDA]` and `record_shapes=True`, export a Chrome trace, and open it. Identify kernel time versus gaps, and whether you are launch-bound or compute-bound.",
-          "Use the profiler's memory profiling to find the peak allocation and confirm it lands in backward.",
-          "Pick the single largest gap or the single hottest kernel and write down what you would change — but do not change it yet. Optimising before this step is the mistake the assignment is teaching against."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — PyTorch Profiler recipe",
-            "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
-          },
-          {
-            "name": "PyTorch — Profiling your PyTorch Module",
-            "url": "https://docs.pytorch.org/tutorials/beginner/profiler.html"
-          },
-          {
-            "name": "Scaling book — All About Rooflines (make the prediction first)",
-            "url": "https://jax-ml.github.io/scaling-book/roofline/"
-          },
-          {
-            "name": "CS336 assignment 2 handout (PDF)",
-            "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
-          },
-          {
-            "name": "PyTorch — Understanding CUDA Memory Usage",
-            "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
-          }
-        ]
-      },
-      "Triton fundamentals": {
-        "desc": "Triton gives you block-level rather than thread-level semantics: you write Python, reason about tiles, and let the compiler handle intra-block scheduling. The official tutorials are the right ladder, and the fused-softmax one in particular teaches the online-normalisation trick FlashAttention is built on — do not skip ahead to attention.",
-        "steps": [
-          "Work tutorial 01 (vector add) and make sure you understand `tl.program_id`, the block-offset computation, and why the mask on `tl.load`/`tl.store` is mandatory for ragged tails.",
-          "Work tutorial 02 (fused softmax) and derive the online max-and-sum update on paper. This is the exact recurrence FlashAttention uses across key blocks — if it is not solid, the next item will fail.",
-          "Work tutorial 03 (matmul) and understand the two-level tiling, the accumulator in fp32, and the L2-friendly program ordering.",
-          "Write one kernel of your own from scratch without copying a tutorial — a fused bias+GELU is a good size — and validate it against PyTorch to tight tolerance.",
-          "Use Triton's autotuner on your kernel over a couple of block sizes and num_warps values, and record the speedup autotuning alone buys.",
-          "Skim the fused-attention tutorial now, purely to see the shape of the target, before writing your own version next week."
-        ],
-        "docs": [
-          {
-            "name": "Triton — Vector Addition tutorial",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
-          },
-          {
-            "name": "Triton — Fused Softmax tutorial (the online-normalisation trick)",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
-          },
-          {
-            "name": "Triton — Matrix Multiplication tutorial",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
-          },
-          {
-            "name": "Triton — Introduction and programming model",
-            "url": "https://triton-lang.org/main/programming-guide/chapter-1/introduction.html"
-          },
-          {
-            "name": "Triton — Fused Attention tutorial (the target)",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 14: Practitioners Guide to Triton",
-            "url": "https://www.youtube.com/watch?v=DdTsX6DQk24"
-          },
-          {
-            "title": "GPU MODE Lecture 29: Triton Internals",
-            "url": "https://www.youtube.com/watch?v=njgow_zaJMw"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
-          }
-        ]
-      },
-      "FlashAttention-2 forward and backward in Triton": {
-        "desc": "This is the hard part of assignment 2 and the part actually worth doing. The tiled forward with online softmax means the N×N attention matrix never materialises; the backward is where most people stop. You summarised the paper in Phase 1 — now you write the kernel and benchmark it honestly.",
-        "steps": [
-          "Re-read the FlashAttention-2 paper's algorithm boxes and write the forward recurrence out by hand, tracking the running max, the running sum, and the rescaling of the accumulator at each key block.",
-          "Implement the forward kernel with query blocks in the program grid and a loop over key blocks. Check it against a naive PyTorch reference at several shapes to a tight tolerance before optimising anything.",
-          "Add causal masking and confirm the early-exit over key blocks past the diagonal — this is where a large chunk of the speedup comes from and where off-by-one masking bugs hide.",
-          "Implement the backward pass, saving the logsumexp from forward rather than recomputing softmax, and validate dQ, dK and dV separately against autograd so a failure localises.",
-          "Benchmark forward and forward+backward against the PyTorch reference across sequence lengths and find the crossover where tiling starts to win. Plot it.",
-          "If the backward defeats you, commit the green forward, the benchmark plot, and an honest written note on exactly where the backward broke. That is a better artifact than a silent gap."
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2205.14135 — FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
-            "url": "https://arxiv.org/abs/2205.14135"
-          },
-          {
-            "name": "arXiv 2307.08691 — FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
-            "url": "https://arxiv.org/abs/2307.08691"
-          }
-        ],
-        "docs": [
-          {
-            "name": "github.com/stanford-cs336/assignment2-systems",
-            "url": "https://github.com/stanford-cs336/assignment2-systems"
-          },
-          {
-            "name": "CS336 assignment 2 handout (PDF)",
-            "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
-          },
-          {
-            "name": "Triton — Fused Attention tutorial (reference implementation to compare against)",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 50: A learning journey — CUDA, Triton, Flash Attention",
-            "url": "https://www.youtube.com/watch?v=4jQTb6sRGLg"
-          }
-        ]
-      },
-      "DDP from scratch, then optimizer state sharding": {
-        "desc": "Build data parallelism yourself on raw collectives and FSDP2 stops being magic. Broadcast the initial parameters, all-reduce the gradients, then make it fast by bucketing so communication overlaps with the backward pass instead of queueing behind it. Then shard the optimizer state — that is ZeRO stage 1, by hand.",
-        "steps": [
-          "Initialise a process group with `init_process_group`, broadcast the initial parameters from rank 0, and confirm all ranks agree bit for bit.",
-          "Write the naive version: full backward, then one `all_reduce` per parameter, then the optimizer step. Measure the step time and the fraction spent in communication.",
-          "Flatten the gradients into a single contiguous buffer and issue one all-reduce instead of thousands. Re-measure — most of your naive overhead was launch cost, not bandwidth.",
-          "Add overlap: register post-accumulate gradient hooks that fire an async all-reduce as soon as a bucket fills, and wait on the handles before the optimizer step. Measure the overlap benefit and sweep the bucket size.",
-          "Implement ZeRO stage 1: each rank owns a disjoint slice of the optimizer state, updates only its slice, then all-gathers the updated parameters. Measure the memory saved and confirm it matches the arithmetic (roughly the optimizer state divided by world size).",
-          "Compare your hand-built version's step time and peak memory against PyTorch DDP and FSDP2 on the same model, and write down where you lose and why."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Writing Distributed Applications with PyTorch (raw collectives)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/dist_tuto.html"
-          },
-          {
-            "name": "PyTorch — Getting Started with Distributed Data Parallel",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed (all_reduce, broadcast, async work handles)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
-          },
-          {
-            "name": "github.com/stanford-cs336/assignment2-systems",
-            "url": "https://github.com/stanford-cs336/assignment2-systems"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
-            "url": "https://arxiv.org/abs/1910.02054"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
-          }
-        ]
-      }
-    },
-    "p2-inference-serving": {
-      "Stand up vLLM": {
-        "desc": "Everything else in this task is a variation on one server. Get `vllm serve` running with a small open model, hit it through the OpenAI-compatible endpoint, and learn the four knobs that actually change behaviour — plus how to read the startup log where the engine tells you how much KV cache it managed to allocate.",
-        "steps": [
-          "Install vLLM and run `vllm serve <small-model>` with an explicit `--max-model-len`, then hit `/v1/models` and `/v1/chat/completions` with plain curl before touching any client library.",
-          "Read the startup log and find the line reporting the number of KV cache blocks and the resulting maximum concurrency. Write that number down; it is the capacity of your endpoint.",
-          "Sweep `--gpu-memory-utilization` from 0.7 to 0.95 and watch the KV block count move. Understand that this is the weights-versus-cache split, not a safety margin.",
-          "Change `--max-num-seqs` and `--max-num-batched-tokens` and observe the effect on the reported concurrency and on a small burst of requests.",
-          "Point the official `openai` Python client at your endpoint with a dummy API key, and confirm both streaming and non-streaming completions work — Phase 3 depends on exactly this.",
-          "Save the working command line in your repo as a script. You will re-run it a dozen times over the next three weeks."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — documentation home",
-            "url": "https://docs.vllm.ai/en/latest/"
-          },
-          {
-            "name": "vLLM — Quickstart",
-            "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
-          },
-          {
-            "name": "vLLM — OpenAI-Compatible Server",
-            "url": "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"
-          },
-          {
-            "name": "vLLM — Server Arguments",
-            "url": "https://docs.vllm.ai/en/latest/configuration/serve_args/"
-          },
-          {
-            "name": "vLLM — Engine Arguments",
-            "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
-          }
-        ],
-        "videos": [
-          {
-            "title": "vLLM Office Hours #22 — Intro to vLLM V1 (Neural Magic)",
-            "url": "https://www.youtube.com/watch?v=jmzIvQZCLZM"
-          }
-        ]
-      },
-      "Continuous batching and paged KV cache": {
-        "desc": "Static batching idles the GPU whenever sequences finish at different times; continuous batching admits new requests at every decode step. PagedAttention is what makes that admission cheap — fixed-size KV blocks plus an indirection table, so there is no contiguous per-sequence reservation to fragment. Preemption under memory pressure is a real behaviour, not a footnote.",
-        "steps": [
-          "Read the paged-attention design doc and draw the block table for two sequences: logical KV positions on one side, physical block IDs on the other.",
-          "Work out the memory waste of the naive alternative — contiguous allocation sized to `max_model_len` — for a workload whose actual outputs are short. The ratio is the whole argument for paging.",
-          "Read how blocks are allocated, shared (copy-on-write for forked sequences) and evicted, and identify what triggers preemption.",
-          "Force preemption: lower `--gpu-memory-utilization` and fire more concurrent long-output requests than the cache can hold. Find the preemption warning in the logs and watch throughput collapse.",
-          "Explain in writing why continuous batching needs paging to be practical — admitting a request mid-flight is only cheap if you can hand it blocks without moving anyone else's cache.",
-          "Note the two knobs that control this in practice (`--gpu-memory-utilization`, `--max-num-seqs`) and what each one does to the failure you just produced."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Paged Attention design",
-            "url": "https://docs.vllm.ai/en/latest/design/paged_attention/"
-          },
-          {
-            "name": "vLLM — Optimization and Tuning",
-            "url": "https://docs.vllm.ai/en/latest/configuration/optimization/"
-          },
-          {
-            "name": "vLLM — Conserving Memory",
-            "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
-          },
-          {
-            "name": "vLLM blog — vLLM: Easy, Fast, and Cheap LLM Serving with PagedAttention",
-            "url": "https://blog.vllm.ai/2023/06/20/vllm.html"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2309.06180 — Efficient Memory Management for LLM Serving with PagedAttention",
-            "url": "https://arxiv.org/abs/2309.06180"
-          }
-        ],
-        "videos": [
-          {
-            "title": "vLLM Office Hours — Advanced Techniques for Maximizing vLLM Performance (Neural Magic)",
-            "url": "https://www.youtube.com/watch?v=vJA1BGkAdNo"
-          }
-        ]
-      },
-      "Read the PagedAttention paper": {
-        "desc": "The original vLLM paper is short and states the problem cleanly: for LLM serving it is KV cache memory, not compute, that bounds throughput, and pre-allocating contiguous cache for the maximum sequence length wastes most of it. The framing and the memory accounting carry over to every serving system built since.",
-        "steps": [
-          "Read the paper start to finish in one sitting — it is short — and write the thesis in one sentence before looking at any commentary.",
-          "Reproduce the memory-waste taxonomy in your own words: internal fragmentation, external fragmentation, and reservation for future tokens. Estimate each for your own serving config.",
-          "Note the sharing mechanisms the paper introduces — shared prefixes for parallel sampling and beam search via copy-on-write blocks — because that is the direct ancestor of prefix caching two items from now.",
-          "Read the evaluation section critically: what baselines, what workloads, and which of its claimed speedups depend on the output-length distribution rather than on paging itself.",
-          "Read the Efficiently Scaling Transformer Inference paper alongside it for the complementary view — the arithmetic of latency versus throughput on sharded hardware.",
-          "Write half a page connecting the paper's accounting to the KV block count your own server reported at startup."
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2309.06180 — Efficient Memory Management for LLM Serving with PagedAttention",
-            "url": "https://arxiv.org/abs/2309.06180"
-          },
-          {
-            "name": "arXiv 2211.05102 — Efficiently Scaling Transformer Inference",
-            "url": "https://arxiv.org/abs/2211.05102"
-          }
-        ],
-        "videos": [
-          {
-            "title": "SOSP '23 — Efficient Memory Management for Large Language Model Serving with PagedAttention (ACM SIGOPS)",
-            "url": "https://www.youtube.com/watch?v=UdNocRPQS3Y"
-          }
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Paged Attention design (the implementation the paper describes)",
-            "url": "https://docs.vllm.ai/en/latest/design/paged_attention/"
-          }
-        ]
-      },
-      "Prefix caching": {
-        "desc": "Automatic prefix caching hashes KV blocks so requests sharing a prefix reuse them instead of recomputing. For eval and RL workloads — hundreds of samples behind one long system prompt and few-shot block — this is the single largest win available, and it is a number worth measuring rather than quoting.",
-        "steps": [
-          "Read the design doc and understand the hashing scheme: blocks are keyed on the hash of their token contents plus the hash of the preceding block, which is what makes reuse safe across requests.",
-          "Build a synthetic eval batch that mirrors your Phase 3 workload — one long shared system prompt and few-shot block, then a short per-sample suffix.",
-          "Run it with prefix caching disabled and record time-to-first-token distribution and total throughput.",
-          "Run the identical batch with prefix caching enabled and record the same two metrics. Compute the speedup and note that it lands almost entirely in TTFT, not in decode.",
-          "Check the cache hit rate the engine reports and confirm it matches your expectation from the prompt structure. A low hit rate usually means your prefix is not byte-identical across requests.",
-          "Sweep the shared-prefix length and plot speedup against it, then write down the prefix length below which caching stops mattering for your workload."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Automatic Prefix Caching (feature guide)",
-            "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
-          },
-          {
-            "name": "vLLM — Automatic Prefix Caching (design and hashing scheme)",
-            "url": "https://docs.vllm.ai/en/latest/design/prefix_caching/"
-          },
-          {
-            "name": "vLLM — Benchmark CLI",
-            "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
-          },
-          {
-            "name": "vLLM — Optimization and Tuning",
-            "url": "https://docs.vllm.ai/en/latest/configuration/optimization/"
-          }
-        ]
-      },
-      "Tensor-parallel and multi-GPU serving": {
-        "desc": "Serving a model too large for one card means `--tensor-parallel-size`. TP splits both the weights and the KV cache, so you get cache headroom as well as compute — but you also pay an all-reduce per layer, so latency improves sub-linearly and per-GPU throughput usually goes down. Measure per-GPU, not aggregate.",
-        "steps": [
-          "Serve the same model at TP=1 and at TP=2 and record the KV block count each reports at startup. The increase is the cache headroom TP buys you.",
-          "Run an identical load at both settings and record tokens/second, then divide by the GPU count. Compare tokens/second per GPU, which is the number that tells you whether TP paid for itself.",
-          "Measure inter-token latency at low concurrency in both configurations — this is where TP should genuinely win, because decode is memory-bandwidth-bound.",
-          "Read the parallelism doc on when to prefer pipeline parallel (across nodes, where the interconnect is slow) versus tensor parallel (within a node over NVLink), and relate it to the fabric numbers from scaling-book chapter 12.",
-          "Deliberately break it: request a TP size that does not divide the attention head count, and read the error so you recognise it later.",
-          "Read the distributed-troubleshooting page and note the two or three environment variables it tells you to set when a multi-GPU server hangs at startup."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Parallelism and Scaling",
-            "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
-          },
-          {
-            "name": "vLLM — Troubleshooting distributed deployments",
-            "url": "https://docs.vllm.ai/en/latest/serving/distributed_troubleshooting/"
-          },
-          {
-            "name": "Scaling book — How to Think About GPUs (interconnect costs)",
-            "url": "https://jax-ml.github.io/scaling-book/gpus/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2211.05102 — Efficiently Scaling Transformer Inference",
-            "url": "https://arxiv.org/abs/2211.05102"
-          }
-        ],
-        "videos": [
-          {
-            "title": "vLLM Office Hours — Distributed Inference with vLLM (Neural Magic)",
-            "url": "https://www.youtube.com/watch?v=LH2QZehVJoc"
-          }
-        ]
-      },
-      "Throughput versus latency, measured": {
-        "desc": "There is one curve every serving engineer should be able to draw from memory: throughput rises with concurrency until the KV cache saturates and then flattens or collapses, while per-request latency degrades from the very first concurrent request. Find the knee on your own endpoint, because Phase 3's eval runs will sit right on it.",
-        "steps": [
-          "Use vLLM's benchmark CLI first to get a trustworthy baseline before writing anything yourself — it already handles warmup and percentile reporting correctly.",
-          "Then write your own small async load generator so you control the request shape: fixed input length, fixed output length, and a concurrency parameter.",
-          "Sweep concurrency across at least six points and record, at each: time-to-first-token (p50 and p95), inter-token latency, and total output tokens/second.",
-          "Plot throughput against concurrency and latency against concurrency on the same x-axis. Mark the knee, and cross-check it against the maximum concurrency the engine reported at startup.",
-          "Push past the knee until you see preemption in the logs, and note what happens to p95 TTFT when it fires.",
-          "Repeat the sweep with a long-input/short-output shape and a short-input/long-output shape, and note that the knee moves. Record the operating point you will actually use in Phase 3."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Benchmark Suites",
-            "url": "https://docs.vllm.ai/en/latest/benchmarking/"
-          },
-          {
-            "name": "vLLM — Benchmark CLI",
-            "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
-          },
-          {
-            "name": "vLLM — Optimization and Tuning",
-            "url": "https://docs.vllm.ai/en/latest/configuration/optimization/"
-          },
-          {
-            "name": "SGLang — Benchmark and Profiling",
-            "url": "https://docs.sglang.ai/docs/developer_guide/benchmark_and_profiling"
-          },
-          {
-            "name": "SGLang — Hyperparameter Tuning (throughput vs latency knobs)",
-            "url": "https://docs.sglang.ai/docs/advanced_features/hyperparameter_tuning"
-          }
-        ]
-      },
-      "Quantization": {
-        "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you already rent. The distinctions that matter in practice are weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and — separately from all of that — whether you quantize the KV cache. The accuracy cost is workload-dependent, so measure yours.",
-        "steps": [
-          "Read the quantization index and write down which schemes your GPU actually supports in hardware; FP8 on pre-Hopper cards is emulated and will not give you the speedup you expect.",
-          "Serve one model at bf16 and the same model at FP8 W8A8, and record tokens/second, KV block count and peak memory for each.",
-          "Separately enable KV cache quantization (FP8 KV) at bf16 weights, and record the increase in KV blocks. Note that this is an independent decision from weight quantization and often the better one for long-context eval workloads.",
-          "Try one 4-bit weight-only scheme and note where it wins (memory-bound single-stream decode) and where it loses (compute-bound large-batch prefill).",
-          "Evaluate all the configurations you served on the same task with the same prompts, and record the accuracy delta alongside the throughput delta. A throughput number without an accuracy number is not a result.",
-          "Write a short recommendation for your own Phase 3 workload with the measured numbers attached, and say explicitly which configuration you rejected and why."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Quantization",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/"
-          },
-          {
-            "name": "vLLM — Quantized KV Cache",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/"
-          },
-          {
-            "name": "vLLM — FP8 W8A8 with llm-compressor",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/"
-          },
-          {
-            "name": "vLLM — INT8 W8A8 with llm-compressor",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/int8_w8a8/"
-          },
-          {
-            "name": "SGLang — Quantization",
-            "url": "https://docs.sglang.ai/docs/advanced_features/quantization"
-          }
-        ]
-      },
-      "Speculative decoding": {
-        "desc": "A draft model, an n-gram lookup or a self-speculation head proposes several tokens; the target model verifies them in a single forward pass and accepts the longest correct prefix. The output distribution is provably unchanged, so it is a pure latency win — but only at high acceptance and small batch. On a throughput-bound eval run it can make things worse.",
-        "steps": [
-          "Read one of the two original papers far enough to convince yourself of the correctness argument: modified rejection sampling makes the output distribution identical to plain sampling from the target.",
-          "Enable n-gram (prompt-lookup) speculation first, since it needs no second model, and measure inter-token latency at concurrency 1 against your baseline.",
-          "Enable a real draft model and measure both acceptance rate and end-to-end latency. Acceptance rate is the number that predicts whether it will help.",
-          "Now re-run the same configuration at high concurrency and show that the benefit shrinks or inverts, because verification FLOPs compete with the batch you are already running.",
-          "Vary the number of speculative tokens and find the optimum for your workload — more proposals help only until the acceptance probability of the last one gets small.",
-          "Write the decision rule you will apply in Phase 3: on for interactive single-stream work, off for throughput-bound batch eval, with your measured numbers as evidence."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Speculative Decoding",
-            "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
-          },
-          {
-            "name": "vLLM — Speculative Decoding with draft models",
-            "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/draft_model/"
-          },
-          {
-            "name": "SGLang — Speculative Decoding",
-            "url": "https://docs.sglang.ai/docs/advanced_features/speculative_decoding"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2211.17192 — Fast Inference from Transformers via Speculative Decoding",
-            "url": "https://arxiv.org/abs/2211.17192"
-          },
-          {
-            "name": "arXiv 2302.01318 — Accelerating Large Language Model Decoding with Speculative Sampling",
-            "url": "https://arxiv.org/abs/2302.01318"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 22: Hacker's Guide to Speculative Decoding in vLLM",
-            "url": "https://www.youtube.com/watch?v=9wNAgpX6z_4"
-          },
-          {
-            "title": "vLLM Office Hours — Speculative Decoding in vLLM (Neural Magic)",
-            "url": "https://www.youtube.com/watch?v=eVJBFajJRIU"
-          }
-        ]
-      },
-      "SGLang and structured generation": {
-        "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which is exactly what branching agent traces produce — and fast constrained decoding for JSON and grammar-bounded output.",
-        "steps": [
-          "Read the SGLang paper for RadixAttention and the LRU eviction policy over the radix tree, and articulate how it differs from vLLM's block-hash prefix caching for a branching workload.",
-          "Install SGLang and serve the same model you used on vLLM, then hit its OpenAI-compatible endpoint to confirm the client code is unchanged.",
-          "Run your own load generator against SGLang at the same concurrency sweep and compare the throughput and latency curves against your vLLM numbers directly.",
-          "Build a branching workload — one shared prompt, several divergent continuations, then further branches — and compare both engines on it. This is where RadixAttention should show its advantage.",
-          "Use SGLang's structured outputs to force a JSON schema and then a small grammar, and measure the latency cost of constrained decoding versus free generation.",
-          "Write the comparison: which engine you would pick for an agentic eval workload, the measured evidence, and the one thing that would change your mind. That writeup is a milestone deliverable."
-        ],
-        "docs": [
-          {
-            "name": "SGLang — documentation home",
-            "url": "https://docs.sglang.ai/"
-          },
-          {
-            "name": "SGLang — Server Arguments",
-            "url": "https://docs.sglang.ai/docs/advanced_features/server_arguments"
-          },
-          {
-            "name": "SGLang — Structured Outputs (JSON and grammar-constrained decoding)",
-            "url": "https://docs.sglang.ai/docs/advanced_features/structured_outputs"
-          },
-          {
-            "name": "SGLang — OpenAI-Compatible APIs",
-            "url": "https://docs.sglang.ai/docs/basic_usage/openai_api"
-          },
-          {
-            "name": "SGLang — Installation",
-            "url": "https://docs.sglang.ai/docs/get-started/install"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2312.07104 — SGLang: Efficient Execution of Structured Language Model Programs",
-            "url": "https://arxiv.org/abs/2312.07104"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 35: SGLang",
-            "url": "https://www.youtube.com/watch?v=XQylGyG7yp8"
-          },
-          {
-            "title": "Lianmin Zheng on Efficient LLM Inference with SGLang (AMD Developer Central)",
-            "url": "https://www.youtube.com/watch?v=G4ZeVP7n0Ik"
-          }
-        ]
-      },
-      "Wire the endpoint to an RL and eval harness": {
-        "desc": "Close the loop that motivates the whole task. Prime Intellect's `verifiers` assumes an OpenAI-compatible endpoint backed by vLLM, so point it at the server you just built and run one trivial rollout. You are not learning the library yet — that is Phase 3 — you are proving the plumbing and finding where the endpoint becomes the bottleneck.",
-        "steps": [
-          "Install `verifiers` and read its overview far enough to know what it expects: a base URL, an API key it will not check, and a model name that matches what your server reports at `/v1/models`.",
-          "Point it at your running vLLM server and execute the smallest built-in environment you can find. Success is a completed rollout, not a good score.",
-          "Turn the concurrency up until the rollout loop stops getting faster, and confirm from the server logs that the endpoint — not the harness — is the limiter.",
-          "Turn prefix caching on and re-run; a rollout loop with a fixed system prompt should show exactly the TTFT win you measured earlier.",
-          "Repeat the same trivial rollout against your SGLang server to prove the harness really is engine-agnostic, and note anything that had to change.",
-          "Write down the endpoint configuration you will standardise on for Phase 3 — model, TP size, max-model-len, prefix caching, quantization — with the measurement that justifies each choice."
-        ],
-        "docs": [
-          {
-            "name": "github.com/willccbb/verifiers (now PrimeIntellect-ai/verifiers)",
-            "url": "https://github.com/willccbb/verifiers"
-          },
-          {
-            "name": "Prime Intellect — verifiers overview",
-            "url": "https://docs.primeintellect.ai/verifiers/overview"
-          },
-          {
-            "name": "vLLM — OpenAI-Compatible Server",
-            "url": "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"
-          },
-          {
-            "name": "SGLang — SGLang for RL Systems",
-            "url": "https://docs.sglang.ai/docs/advanced_features/sglang_for_rl"
-          },
-          {
-            "name": "vLLM — Automatic Prefix Caching (the knob that matters most for rollouts)",
-            "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
-          }
-        ]
-      }
-    }
+ "phase2.html": {
+  "p2-jax-core": {
+   "Purity and the tracing model": {
+    "desc": "JAX's transformations work by tracing your function with abstract values, so anything that is not a pure function of the declared inputs either silently disappears or blows up with an error you have never seen before. The goal of this item is not to memorise rules but to burn the three canonical error messages into recognition memory.",
+    "steps": [
+     "Read \"How to think in JAX\" end to end, then re-read the section on tracers until you can say in one sentence what a `Traced<ShapedArray>` object actually is.",
+     "Deliberately leak a tracer: store the value of an intermediate inside a Python list from within a `jit`-ed function, then use it outside. Record the `UnexpectedTracerError` text verbatim.",
+     "Deliberately mutate in place: write `x[0] = 1.0` on a `jax.Array` and read the error; then rewrite it with `x.at[0].set(1.0)` and confirm it returns a new array rather than mutating.",
+     "Deliberately branch on a traced boolean: `if x > 0:` inside a `jit`-ed function. Read the `ConcretizationTypeError`, then fix it with `jnp.where` and note which fix applies when (`where` for values, `lax.cond` for expensive branches).",
+     "Work the JAX Sharp Bits notebook's PRNG section: replace a global `np.random` seed with explicit `jax.random.key` splitting and understand why JAX refuses implicit global state.",
+     "Write a one-page cheat sheet in your notes mapping each error string to its cause and its fix. This is the artifact — you will consult it for the rest of the phase."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Quickstart: How to think in JAX",
+      "url": "https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html"
+     },
+     {
+      "name": "JAX — 🔪 The Sharp Bits 🔪 (common gotchas)",
+      "url": "https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html"
+     },
+     {
+      "name": "JAX — Errors reference (UnexpectedTracerError, ConcretizationTypeError)",
+      "url": "https://docs.jax.dev/en/latest/errors.html"
+     },
+     {
+      "name": "JAX — Stateful computations (why purity is enforced)",
+      "url": "https://docs.jax.dev/en/latest/stateful-computations.html"
+     },
+     {
+      "name": "JAX — Frequently asked questions",
+      "url": "https://docs.jax.dev/en/latest/faq.html"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Intro to JAX: Accelerating Machine Learning research (TensorFlow)",
+      "url": "https://www.youtube.com/watch?v=WdTeDXsOSj4"
+     }
+    ]
+   },
+   "grad, value_and_grad, and jit": {
+    "desc": "Autodiff and compilation are the two transformations you will see in literally every JAX snippet. `grad` differentiates with respect to the first argument by default and happily takes a whole parameter pytree; `jit` caches compiled code on a key made of shapes and dtypes, which is the single fact that explains most JAX performance surprises.",
+    "steps": [
+     "Write a scalar loss over a nested dict of parameters and take `jax.grad(loss)(params, batch)`. Confirm the returned gradient is a pytree with exactly the same structure as `params`.",
+     "Swap to `jax.value_and_grad(loss)` and verify you get the loss and the gradient from a single forward pass; time both versions to see the saving.",
+     "Use `argnums` to differentiate with respect to something other than argument 0, and `has_aux=True` to return per-step metrics alongside the gradient.",
+     "Wrap a training step in `jax.jit` and time call 1 and call 2 separately with `block_until_ready()`. The delta is the compile cost — write the number down.",
+     "Trigger a recompile on purpose by changing the batch size, and confirm it with `jax.jit(f).lower(x).compile()` or by watching the timing jump. Then pass a Python int as a config flag and mark it `static_argnums` so it stops recompiling every call.",
+     "Read the autodiff cookbook's sections on `jvp` and `vjp` so you know what `grad` is built out of, even though you will rarely call them directly."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Just-in-time compilation",
+      "url": "https://docs.jax.dev/en/latest/jit-compilation.html"
+     },
+     {
+      "name": "JAX API — jax.grad",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.grad.html"
+     },
+     {
+      "name": "JAX API — jax.value_and_grad",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.value_and_grad.html"
+     },
+     {
+      "name": "JAX — The Autodiff Cookbook (jvp, vjp, and what grad is made of)",
+      "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
+     },
+     {
+      "name": "JAX — Pytrees (how grad traverses parameter trees)",
+      "url": "https://docs.jax.dev/en/latest/pytrees.html"
+     }
+    ]
+   },
+   "vmap": {
+    "desc": "`vmap` is a program transformation, not a loop: it rewrites the traced computation so a leading batch axis is pushed into every primitive. Reading `in_axes` and `out_axes` fluently is a prerequisite for reading anyone else's JAX, and `vmap(grad(...))` is the pattern that makes per-example gradients trivial.",
+    "steps": [
+     "Write a single-example loss, then get per-example gradients with `jax.vmap(jax.grad(loss))(params, xs, ys)` — no batch dimension anywhere in the loss body.",
+     "Use `in_axes=(None, 0, 0)` to broadcast the parameter pytree while mapping over data, and confirm what happens if you get the `None` wrong.",
+     "Write a pairwise-distance function for a single pair, then build the full N×N matrix with nested `vmap` and compare it against a hand-broadcast NumPy version for both correctness and readability.",
+     "Play with `out_axes` to move the mapped axis somewhere other than position 0, and check the resulting shape.",
+     "Compose the three: `jax.jit(jax.vmap(jax.grad(loss)))`, and confirm the composition order does not change the result.",
+     "Read the autodiff cookbook's per-example-gradient section so you can explain why `vmap(grad(f))` is cheaper than a Python loop over `grad(f)`."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Automatic vectorization",
+      "url": "https://docs.jax.dev/en/latest/automatic-vectorization.html"
+     },
+     {
+      "name": "JAX API — jax.vmap (in_axes / out_axes reference)",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.vmap.html"
+     },
+     {
+      "name": "JAX — The Autodiff Cookbook (per-example gradients)",
+      "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
+     }
+    ]
+   },
+   "lax.scan and structured control flow": {
+    "desc": "Python control flow runs at trace time and gets baked into the graph; `lax` control flow runs at execution time inside XLA. Getting this distinction wrong is the difference between a 3-second compile and a 10-minute one, and `lax.scan` is how every real JAX training loop is written.",
+    "steps": [
+     "Write a jit-ed function with a Python `for` loop of 500 iterations, time the compile, then rewrite it with `jax.lax.scan` and time the compile again. Record both numbers.",
+     "Build a scan-based training step where `carry = (params, opt_state)` and the per-step outputs are the metrics you want stacked; confirm the output leading axis equals the number of steps.",
+     "Get the scan signature right by hand: `f(carry, x) -> (carry, y)`. Deliberately return a carry whose dtype differs from the input carry and read the error you get.",
+     "Write one `lax.cond` where both branches are traced, and note that unlike Python `if`, both branches must return the same pytree structure and shapes.",
+     "Write one `lax.while_loop` and confirm you cannot reverse-differentiate through it — this is the reason `scan` is preferred wherever the trip count is known.",
+     "Use `jax.lax.scan`'s `length` and `unroll` arguments once each so you recognise them when you meet them in the scaling book or in MaxText."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Control flow and logical operators with JIT",
+      "url": "https://docs.jax.dev/en/latest/control-flow.html"
+     },
+     {
+      "name": "JAX API — jax.lax.scan",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html"
+     },
+     {
+      "name": "JAX API — jax.lax.cond",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.cond.html"
+     },
+     {
+      "name": "JAX API — jax.lax.while_loop",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.while_loop.html"
+     }
+    ]
+   },
+   "Explicit sharding and meshes": {
+    "desc": "Since JAX 0.9.0 explicit sharding is the default: `jax.make_mesh` creates axes typed `AxisType.Explicit`, shardings propagate through the type system, and a communication the compiler cannot infer is an error rather than a silent all-gather. This is the concept that maps one-for-one onto PyTorch's DeviceMesh and DTensor placements in Task 03.",
+    "steps": [
+     "Before importing anything else, run `jax.config.update(\"jax_num_cpu_devices\", 8)` so you have eight devices to mesh, then check `jax.devices()`.",
+     "Build a mesh with `mesh = jax.make_mesh((4, 2), ('data', 'model'))` and activate it with `jax.set_mesh(mesh)` — do not use `with mesh:`, which was deprecated in 0.10.1.",
+     "Annotate arrays with `jax.P` (the top-level PartitionSpec alias): shard a batch as `jax.P('data', None)` and replicate parameters as `jax.P()`. Inspect the result with `jax.debug.visualize_array_sharding`.",
+     "Write one full training step that replicates parameters and shards the batch along `'data'`, and print `x.sharding` at three points inside the step to watch the sharding propagate.",
+     "Deliberately combine two arrays with incompatible specs and read the error explicit mode raises — then fix it by resharding one of them instead of letting a compiler guess.",
+     "Write down the mapping you will need in week 27: mesh → DeviceMesh, `jax.P('data')` → `Shard(0)`, `jax.P()` → `Replicate()`."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Distributed arrays and automatic parallelization (canonical parallelism doc)",
+      "url": "https://docs.jax.dev/en/latest/parallel.html"
+     },
+     {
+      "name": "JAX API — jax.make_mesh",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.make_mesh.html"
+     },
+     {
+      "name": "JAX API — jax.set_mesh",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.set_mesh.html"
+     },
+     {
+      "name": "JAX API — jax.sharding module (Mesh, PartitionSpec, NamedSharding)",
+      "url": "https://docs.jax.dev/en/latest/jax.sharding.html"
+     },
+     {
+      "name": "Scaling book — Programming TPUs in JAX (meshes and specs in context)",
+      "url": "https://jax-ml.github.io/scaling-book/jax-stuff/"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Intro to Parallel Programming in JAX, all 3 flavors (Nodematic Tutorials)",
+      "url": "https://www.youtube.com/watch?v=wADzdMOZbF8"
+     }
+    ]
+   },
+   "Collectives and shard_map": {
+    "desc": "`shard_map` is JAX's manual mode: inside it you write the program a single device runs, and you place the collectives yourself. Every parallelism strategy in the scaling book is ultimately a question of which axis you `psum` over and when — so this is the item that makes chapter 3 legible.",
+    "steps": [
+     "Read the shard_map notebook, then write a toy `jax.shard_map` (top-level import — not `jax.experimental.shard_map`) that shards a matrix along `'data'` and does nothing but return its own shard, printing the local shape to confirm it is the per-device slice.",
+     "Add `jax.lax.psum(x, 'data')` and verify by hand that the result equals the global sum; then swap it for `lax.pmean` and check it equals the global mean.",
+     "Implement a data-parallel gradient step manually: compute per-shard grads inside `shard_map`, `pmean` them over `'data'`, and apply the update.",
+     "Implement one collective matmul that requires `lax.all_gather` or `lax.psum_scatter`, and reason about how many bytes cross the interconnect versus how many FLOPs you do.",
+     "Trigger the 0.9.1 behaviour on purpose: pass an array whose sharding does not match `in_specs` under explicit mode, read the assertion, and fix it by calling `jax.reshard` first rather than relying on an implicit reshard.",
+     "Read the shard_map JEP for the design rationale — it is the clearest statement of why manual mode exists alongside automatic sharding."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Manual parallelism with shard_map",
+      "url": "https://docs.jax.dev/en/latest/notebooks/shard_map.html"
+     },
+     {
+      "name": "JAX API — jax.shard_map",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.shard_map.html"
+     },
+     {
+      "name": "JAX API — jax.lax.psum",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.psum.html"
+     },
+     {
+      "name": "JAX API — jax.lax.pmean",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.pmean.html"
+     },
+     {
+      "name": "JAX enhancement proposal — shmap (shard_map) for simple per-device code",
+      "url": "https://docs.jax.dev/en/latest/jep/14273-shard-map.html"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Sharding the Sphere with jax.shard_map — JAX/OpenXLA DevLab Fall 2025 (OpenXLA)",
+      "url": "https://www.youtube.com/watch?v=jVWSuEj9hWE"
+     }
+    ]
+   },
+   "Read pmap, never write it": {
+    "desc": "The JAX corpus on the public internet is overwhelmingly pmap-era, and JAX 0.10.0 removed the C++ pmap infrastructure. `jax.pmap` survives only as a thin wrapper over `jit(shard_map)`; `PmapSharding`, `device_put_sharded` and `device_put_replicated` now raise AttributeError. You need to read this code and date it, not write it.",
+    "steps": [
+     "Skim the changelog for the 0.9.x–0.11 entries and pull out the removals by name: the pmap C++ path, `PmapSharding`, `device_put_sharded`, `device_put_replicated`. Paste them into your notes with version numbers.",
+     "Read the `jax.pmap` API page and note what it now says about being implemented on top of `shard_map` — this is the sentence that tells you the semantics you actually get.",
+     "Take any pmap-era tutorial snippet you can find and translate it on paper: `pmap(f)` over the leading axis becomes a mesh with one axis plus `jax.P('devices', ...)` specs; `axis_name='batch'` becomes the mesh axis name; `lax.pmean(g, 'batch')` stays exactly the same.",
+     "Do the same for the setup code: `device_put_replicated(params, devices)` becomes `jax.device_put(params, NamedSharding(mesh, jax.P()))`.",
+     "Write a three-line rule in your notes for dating a snippet on sight: `pmap` + `device_put_replicated` = pre-0.10; `with mesh:` = pre-0.10.1; `jax.experimental.shard_map` import = pre-top-level promotion.",
+     "Sanity-check the rule against two real repos you find in the wild and record which era each is from."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Change log (search for the pmap removals)",
+      "url": "https://docs.jax.dev/en/latest/changelog.html"
+     },
+     {
+      "name": "JAX API — jax.pmap (now a wrapper over jit(shard_map))",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.pmap.html"
+     },
+     {
+      "name": "JAX — Distributed arrays and automatic parallelization (what to translate pmap into)",
+      "url": "https://docs.jax.dev/en/latest/parallel.html"
+     }
+    ]
+   },
+   "Get devices without a budget": {
+    "desc": "You do not need to spend anything to do the mesh and sharding work in this task. Eight fake CPU devices behave identically for every exercise here; Kaggle and the TPU Research Cloud are the free paths to a real accelerator if you want one. Colab no longer hands out TPU slices, so do not plan around it.",
+    "steps": [
+     "Put `jax.config.update(\"jax_num_cpu_devices\", 8)` at the very top of a fresh script — before the first JAX call, or it silently has no effect — then print `jax.devices()` and confirm you see eight.",
+     "Re-run one mesh exercise and one `shard_map` exercise from this task against the fake devices to prove they behave the same as real ones.",
+     "Register a Kaggle account and start one TPU notebook session so you know the quota, the session limits and the accelerator selector before you need them under time pressure.",
+     "Read the TPU Research Cloud page and decide whether to apply; if you do, apply now, because approval is not instant.",
+     "If you want a paid fallback, price a small GCP TPU slice and write the hourly number in the same budget note you made for the multi-GPU box in Task 03.",
+     "Record in your repo README exactly what each JAX exercise actually ran on — fake CPU devices, Kaggle TPU, or rented hardware. Future-you and any interviewer will ask."
+    ],
+    "docs": [
+     {
+      "name": "JAX — Installation (CPU, GPU and TPU wheels)",
+      "url": "https://docs.jax.dev/en/latest/installation.html"
+     },
+     {
+      "name": "JAX API — jax.config (jax_num_cpu_devices and friends)",
+      "url": "https://docs.jax.dev/en/latest/_autosummary/jax.config.html"
+     },
+     {
+      "name": "Kaggle — Tensor Processing Units (TPUs) documentation",
+      "url": "https://www.kaggle.com/docs/tpu"
+     },
+     {
+      "name": "Google TPU Research Cloud — about and application",
+      "url": "https://sites.research.google/trc/about/"
+     },
+     {
+      "name": "JAX — Introduction to multi-controller (multi-process/multi-host) JAX",
+      "url": "https://docs.jax.dev/en/latest/multi_process.html"
+     }
+    ]
+   }
+  },
+  "p2-scaling-book": {
+   "Chapters 1–2: rooflines and the hardware": {
+    "desc": "The roofline chapter is the highest-value reading in the whole phase: it teaches you to answer \"is this compute-bound or memory-bound?\" with division instead of a profiler. Chapter 2 attaches real numbers — FLOP/s, HBM bandwidth, interconnect bandwidth — so the arithmetic produces predictions you can check.",
+    "steps": [
+     "Read chapter 1 and derive arithmetic intensity for three ops by hand: a big square matmul, an elementwise GELU, and a layernorm. Classify each as compute- or memory-bound before reading the answer.",
+     "Compute the crossover intensity for one accelerator you can actually rent (peak FLOP/s ÷ HBM bandwidth) and write the number on a sticky note — it is the constant you will use all phase.",
+     "Read chapter 2 for the TPU numbers, then read chapter 12 (GPUs) only far enough to pull the equivalent GPU numbers into the same table.",
+     "Do the chapter exercises with pencil and paper first. Record every answer you got wrong plus the corrected working — that log is a deliverable at the milestone.",
+     "Predict the time for a single large matmul on your hardware from the roofline, then measure it. Write down the ratio of predicted to measured and a one-line theory for the gap.",
+     "Repeat the prediction-then-measure loop for one memory-bound op so you have both sides of the roofline calibrated."
+    ],
+    "docs": [
+     {
+      "name": "Scaling book — All About Rooflines (chapter 1)",
+      "url": "https://jax-ml.github.io/scaling-book/roofline/"
+     },
+     {
+      "name": "Scaling book — How to Think About TPUs (chapter 2)",
+      "url": "https://jax-ml.github.io/scaling-book/tpus/"
+     },
+     {
+      "name": "Scaling book — table of contents",
+      "url": "https://jax-ml.github.io/scaling-book/"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
+     }
+    ]
+   },
+   "Chapters 3–4: sharding and transformer math": {
+    "desc": "Chapter 3 is the cost model: for every sharding strategy, what gets communicated, how much, and at what point the communication dominates. Chapter 4 is the accounting: parameters, FLOPs and activation memory for a transformer forward and backward. Together they let you size a run on paper, which is the stated deliverable of this task.",
+    "steps": [
+     "Read chapter 3 and build a table with one row per strategy — data parallel, FSDP/ZeRO-3, tensor parallel, pipeline parallel — and columns for what is communicated per step, how much, and what breaks it.",
+     "Derive the 6ND training-FLOP estimate from scratch: 2ND for the forward matmuls, 4ND for the backward. Then list what it ignores — attention's quadratic term, layernorms, the embedding/unembedding, activation recompute — and estimate at what sequence length the attention term stops being negligible.",
+     "Count activation memory per layer for a concrete config (hidden size, heads, sequence length, batch, dtype) and compare it against parameter plus optimizer-state memory. Note which one dominates and when.",
+     "Read chapter 5 on parallelising a transformer for training so the strategies in your table have a worked example attached.",
+     "Size one specific run end to end: pick a model, a batch size and a two-GPU box, and predict memory per device and step time. Put the prediction in your repo before you touch a GPU in Task 03.",
+     "Cross-check your tensor-parallel row against the Megatron-LM papers so you can name the original source of the column-then-row MLP trick."
+    ],
+    "docs": [
+     {
+      "name": "Scaling book — Sharded Matrices and How to Multiply Them (chapter 3)",
+      "url": "https://jax-ml.github.io/scaling-book/sharding/"
+     },
+     {
+      "name": "Scaling book — All the Transformer Math You Need to Know (chapter 4)",
+      "url": "https://jax-ml.github.io/scaling-book/transformers/"
+     },
+     {
+      "name": "Scaling book — How to Parallelize a Transformer for Training (chapter 5)",
+      "url": "https://jax-ml.github.io/scaling-book/training/"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 1909.08053 — Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism",
+      "url": "https://arxiv.org/abs/1909.08053"
+     },
+     {
+      "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM",
+      "url": "https://arxiv.org/abs/2104.04473"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
+     },
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
+     }
+    ]
+   },
+   "Chapter 12: how to think about GPUs": {
+    "desc": "Chapter 12 is the newest chapter and the one about hardware you can rent this afternoon. It covers the NVIDIA memory hierarchy, NVLink versus InfiniBand, what collectives actually cost on a GPU fabric, and how the whole GPU picture maps back onto the TPU model the rest of the book uses.",
+    "steps": [
+     "Read the chapter and extract a numbers table for one GPU you plan to rent: SM count, tensor-core FLOP/s at bf16, HBM capacity and bandwidth, NVLink bandwidth, and node-to-node bandwidth.",
+     "Work through the collectives section and compute the wall-clock cost of one all-reduce of your model's gradients at your parameter count, both intra-node over NVLink and inter-node over the network.",
+     "Write down where the GPU and TPU stories genuinely differ — topology, collective implementation, the role of the compiler — rather than treating the chapters as interchangeable.",
+     "Redo the chapter 1 roofline crossover with GPU numbers and confirm it agrees with the table you built in the previous item.",
+     "Read the Ultra-Scale Playbook's parallelism chapter immediately after, and note every place its GPU-measured guidance contradicts or refines the book's arithmetic.",
+     "End with one paragraph in your notes: given a 2×A100 or 2×L40S box, which parallelism strategy you would reach for first and why. You will test that answer next week."
+    ],
+    "docs": [
+     {
+      "name": "Scaling book — How to Think About GPUs (chapter 12)",
+      "url": "https://jax-ml.github.io/scaling-book/gpus/"
+     },
+     {
+      "name": "Scaling book — All About Rooflines (the arithmetic this chapter grounds)",
+      "url": "https://jax-ml.github.io/scaling-book/roofline/"
+     },
+     {
+      "name": "Hugging Face — The Ultra-Scale Playbook",
+      "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+     },
+     {
+      "name": "NVIDIA NCCL — environment variables (the fabric knobs the chapter describes)",
+      "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
+     }
+    ]
+   },
+   "Chinchilla as the anchor": {
+    "desc": "Chinchilla is the reference point everyone quotes and few people state correctly. The actual claim is narrow: for a fixed training-compute budget, model size and training tokens should scale roughly in proportion, landing near 20 tokens per parameter. It says nothing about inference cost and it assumes you never run out of unique data.",
+    "steps": [
+     "Read the paper and identify the three separate estimation approaches — fixed model size, IsoFLOP, and the parametric loss fit — and note that they broadly agree, which is why the result stuck.",
+     "Write the compute-optimal claim in your own words in two sentences, then write the two assumptions it rests on in two more.",
+     "Read the earlier Kaplan et al. scaling-laws paper so you can say exactly which choice (the learning-rate schedule and the treatment of embedding parameters) made its exponents differ from Chinchilla's.",
+     "Skim the replication attempt paper for the fitted-parameter dispute; the point is not to adjudicate it but to know that the exact coefficients are contested while the shape is not.",
+     "Compute the Chinchilla-optimal token count for three parameter counts you care about, then look up how many tokens a recent open model of that size was actually trained on and note the ratio.",
+     "Keep that ratio handy — the next item explains why it is 10× or more."
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (Chinchilla)",
+      "url": "https://arxiv.org/abs/2203.15556"
+     },
+     {
+      "name": "arXiv 2001.08361 — Scaling Laws for Neural Language Models (Kaplan et al.)",
+      "url": "https://arxiv.org/abs/2001.08361"
+     },
+     {
+      "name": "arXiv 2404.10102 — Chinchilla Scaling: A replication attempt",
+      "url": "https://arxiv.org/abs/2404.10102"
+     }
+    ]
+   },
+   "Inference-aware and data-constrained scaling": {
+    "desc": "Two results explain why nobody trains Chinchilla-optimal any more. Put inference demand in the objective and the optimum moves to a smaller model trained on far more data. Put a cap on unique data and repeated epochs start decaying in value until extra compute buys essentially nothing.",
+    "steps": [
+     "Read arXiv 2401.00448 and identify what changed in the objective: total cost is now training compute plus inference compute over an expected serving volume, not training compute alone.",
+     "Work one concrete example from that framing — pick a model size and an expected lifetime token volume, and show which of two training configurations is cheaper overall.",
+     "Read arXiv 2305.16264 and extract the two headline numbers: how many epochs of repeated data are roughly as good as fresh data, and where the returns flatten out.",
+     "Write one paragraph reconciling the two: inference-awareness pushes you to more tokens, data-constraints cap how many useful tokens exist, and the intersection is where 2025–2026 models actually sit.",
+     "Revisit the ratios you computed in the Chinchilla item and explain each one using these two papers rather than hand-waving about \"overtraining\".",
+     "Add the whole argument to your written scaling-book notes; being able to deliver it out loud in two minutes is the deliverable."
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2401.00448 — Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws",
+      "url": "https://arxiv.org/abs/2401.00448"
+     },
+     {
+      "name": "arXiv 2305.16264 — Scaling Data-Constrained Language Models",
+      "url": "https://arxiv.org/abs/2305.16264"
+     },
+     {
+      "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (the baseline being attacked)",
+      "url": "https://arxiv.org/abs/2203.15556"
+     }
+    ]
+   },
+   "The GPU counterpart": {
+    "desc": "The Ultra-Scale Playbook is the PyTorch-and-GPU twin of the scaling book: 5D parallelism, ZeRO stages, activation recomputation, kernel fusion, all backed by thousands of measured runs up to 512 GPUs. Where the scaling book gives you arithmetic, this gives you the empirical failure modes with the exact error you will see.",
+    "steps": [
+     "Read the memory chapter first and reproduce its memory breakdown for your own model config: parameters, gradients, optimizer states, activations.",
+     "Read the parallelism chapters — data parallel, ZeRO, tensor parallel, sequence/context parallel, pipeline parallel — and add a \"measured gotcha\" column to the strategy table you built for chapter 3.",
+     "Note every place the playbook's measured guidance sharpens the book's arithmetic, especially around overlap of communication and compute.",
+     "Skim the activation-recomputation and kernel-fusion sections so the levers in Task 03 have names before you pull them.",
+     "Skim the Smol Training Playbook for the operational side — the decisions and debugging that surround a real run rather than the parallelism theory.",
+     "Keep both tabs open through weeks 27–29 and add your own measured numbers next to theirs."
+    ],
+    "docs": [
+     {
+      "name": "Hugging Face — The Ultra-Scale Playbook",
+      "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+     },
+     {
+      "name": "Hugging Face — The Smol Training Playbook",
+      "url": "https://huggingface.co/spaces/HuggingFaceTB/smol-training-playbook"
+     },
+     {
+      "name": "Scaling book — How to Think About GPUs (the arithmetic side of the same material)",
+      "url": "https://jax-ml.github.io/scaling-book/gpus/"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+      "url": "https://arxiv.org/abs/1910.02054"
+     }
+    ]
+   }
+  },
+  "p2-pytorch-distributed": {
+   "FSDP2": {
+    "desc": "FSDP2 (`fully_shard`) shards each parameter on dim-0 into a DTensor rather than flattening everything into one per-rank buffer the way FSDP1 did. That single design change is what makes per-parameter mixed precision, per-parameter optimizer state and resharded checkpointing behave sanely — and it is why FSDP1 blog posts will mislead you.",
+    "steps": [
+     "Initialise the process group first, then apply `fully_shard` to your Phase 1 transformer bottom-up: each block, then the root module. Print `p.shape` and `p.to_local().shape` for one parameter to see the DTensor.",
+     "Run on two GPUs and record peak memory with `torch.cuda.max_memory_allocated()` before and after sharding; check the saving against the parameters + gradients + optimizer-state arithmetic from chapter 4.",
+     "Trace one step: which parameters get all-gathered in forward, when they are freed, and which gradients get reduce-scattered in backward. Confirm with `TORCH_DISTRIBUTED_DEBUG` or a profiler trace rather than by assumption.",
+     "Change the wrapping granularity — whole model versus per-block versus per-layer — and measure peak memory and step time at each. Explain the trade-off in terms of all-gather size versus all-gather count.",
+     "Turn on mixed precision via `MixedPrecisionPolicy` and confirm which tensors are bf16 (params, reduce) and which stay fp32 (master weights, optimizer state).",
+     "Read torchtitan's fsdp.md to see how a production codebase configures the same API."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch — Getting Started with Fully Sharded Data Parallel (FSDP2)",
+      "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
+     },
+     {
+      "name": "PyTorch API — torch.distributed.fsdp.fully_shard",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.fsdp.fully_shard.html"
+     },
+     {
+      "name": "torchtitan — docs/fsdp.md",
+      "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
+     },
+     {
+      "name": "Hugging Face — The Ultra-Scale Playbook (ZeRO stages and measured behaviour)",
+      "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+      "url": "https://arxiv.org/abs/1910.02054"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Too Big to Train 2: PyTorch's Upgraded Interface for Fully Sharded Data Parallel (Sharcnet HPC)",
+      "url": "https://www.youtube.com/watch?v=SgRKWKwQbQE"
+     },
+     {
+      "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
+      "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
+     }
+    ]
+   },
+   "DTensor and DeviceMesh": {
+    "desc": "DTensor is the substrate: a local tensor, plus a DeviceMesh, plus a placement per mesh axis (`Shard(dim)`, `Replicate()`, `Partial()`). FSDP2, tensor parallel and distributed checkpointing are all expressed in it. This is the exact analogue of the JAX mesh and `jax.P` work from Task 01, and building the mapping explicitly saves you a week.",
+    "steps": [
+     "Initialise the process group before you construct a DeviceMesh — a mesh built on uninitialised process groups will fail later under `torch.compile`, and the failure surfaces far from the cause.",
+     "Build a 1D mesh with `init_device_mesh`, distribute a tensor with `Shard(0)`, and print `.to_local().shape` on each rank to confirm the split.",
+     "Build a 2D mesh named `('dp', 'tp')`, slice it with `mesh['tp']`, and place a tensor as `[Shard(0), Replicate()]`.",
+     "Call `redistribute` to go from `Shard(0)` to `Replicate()` and back, and read the collectives PyTorch inserted using a profiler trace or `TORCH_DISTRIBUTED_DEBUG=DETAIL`. Name each one — all-gather, reduce-scatter, all-to-all.",
+     "Produce a `Partial()` placement deliberately (an unreduced local partial sum) and watch the all-reduce fire when you redistribute it to `Replicate()`.",
+     "Write the JAX↔PyTorch mapping table in your notes: Mesh↔DeviceMesh, `jax.P('data')`↔`Shard(0)`, `jax.P()`↔`Replicate()`, unreduced psum operand↔`Partial()`."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch API — torch.distributed.tensor (DTensor)",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
+     },
+     {
+      "name": "PyTorch — Getting Started with DeviceMesh",
+      "url": "https://docs.pytorch.org/tutorials/recipes/distributed_device_mesh.html"
+     },
+     {
+      "name": "PyTorch API — torch.distributed (collectives, process groups, debug flags)",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+     },
+     {
+      "name": "JAX — Distributed arrays and automatic parallelization (the Task 01 counterpart)",
+      "url": "https://docs.jax.dev/en/latest/parallel.html"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Introduction to PyTorch DeviceMesh and DTensor (Edward Z. Yang's PyTorch and PL)",
+      "url": "https://www.youtube.com/watch?v=yd37O-xu2-4"
+     },
+     {
+      "title": "Two Dimensional Parallelism Using Distributed Tensors — PyTorch Conference 2022 (PyTorch)",
+      "url": "https://www.youtube.com/watch?v=MEx2kJPmjHo"
+     }
+    ]
+   },
+   "Tensor parallel and 2D parallelism": {
+    "desc": "Tensor parallel splits individual matmuls across devices. Done right through an MLP block — column-parallel then row-parallel — only one all-reduce is needed per block instead of two. Compose it with FSDP2 on a second mesh axis and you have 2D parallelism, which is what every real training run above one node looks like.",
+    "steps": [
+     "Apply `parallelize_module` to one transformer block with a plan of `ColwiseParallel` on the up-projection and `RowwiseParallel` on the down-projection, and verify by inspecting weight shapes per rank.",
+     "Count the collectives per block with a profiler and confirm you see one all-reduce, not two. If you see two, your column/row ordering is wrong — fix it and re-measure.",
+     "Extend the plan to attention (colwise on q/k/v, rowwise on the output projection) and note how the head dimension constrains the TP degree.",
+     "Build a 2D mesh `('dp', 'tp')`, apply TP on the `tp` axis and `fully_shard` on the `dp` axis, and confirm both are active by printing placements.",
+     "Measure step time at TP=2 versus pure data parallel at the same device count, and explain the difference using the chapter 3 cost model — communication volume per step, not vibes.",
+     "Read torchtitan's composability.md to see the ordering constraints a production stack imposes when TP, FSDP and compile are combined."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch — Large Scale Transformer model training with Tensor Parallel (TP)",
+      "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
+     },
+     {
+      "name": "PyTorch API — Tensor Parallelism (torch.distributed.tensor.parallel)",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.parallel.html"
+     },
+     {
+      "name": "torchtitan — docs/composability.md",
+      "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
+     },
+     {
+      "name": "Scaling book — Sharded Matrices and How to Multiply Them (the cost model)",
+      "url": "https://jax-ml.github.io/scaling-book/sharding/"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 1909.08053 — Megatron-LM (the original column-then-row MLP split)",
+      "url": "https://arxiv.org/abs/1909.08053"
+     },
+     {
+      "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters",
+      "url": "https://arxiv.org/abs/2104.04473"
+     }
+    ]
+   },
+   "Read torchtitan": {
+    "desc": "torchtitan is PyTorch's own reference training stack: FSDP2, tensor parallel, pipeline parallel, float8, distributed checkpointing and compile, in a codebase small enough to read end to end. With torchtune wound down, it is the answer to \"how would you set up a real pretraining run\" that a PyTorch-shop interviewer expects.",
+    "steps": [
+     "Clone the repo and read the training loop first, top to bottom, without chasing every helper. Note where parallelism is applied relative to model construction and optimizer creation.",
+     "Read the parallelism application code and map each strategy back to the API you used yourself: `fully_shard`, `parallelize_module`, the pipeline schedule.",
+     "Read the TOML config for one model and list every knob that changes parallelism, precision or checkpointing. Change two of them and predict the effect before running anything.",
+     "Read docs/composability.md and docs/fsdp.md for the ordering rules — which wrapper must be applied before which, and what breaks under `torch.compile` if you get it wrong.",
+     "Read docs/converging.md so you know what a healthy loss curve looks like in their harness and what they consider a convergence regression.",
+     "Write half a page in your notes: how you would configure torchtitan for a 1B model on eight GPUs, and which three settings you would change first if you saw an OOM."
+    ],
+    "docs": [
+     {
+      "name": "github.com/pytorch/torchtitan",
+      "url": "https://github.com/pytorch/torchtitan"
+     },
+     {
+      "name": "torchtitan — docs/composability.md",
+      "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
+     },
+     {
+      "name": "torchtitan — docs/fsdp.md",
+      "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
+     },
+     {
+      "name": "torchtitan — docs/converging.md",
+      "url": "https://github.com/pytorch/torchtitan/blob/main/docs/converging.md"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Torchtitan: Large-Scale LLM Training Using Native PyTorch 3D Parallelism — Wanchao Liang & Linsong Chu (PyTorch)",
+      "url": "https://www.youtube.com/watch?v=WsNEBxPDljU"
+     },
+     {
+      "title": "GPU MODE Lecture 39: Torchtitan",
+      "url": "https://www.youtube.com/watch?v=VYWRjcUqW6w"
+     }
+    ]
+   },
+   "Activation checkpointing and gradient accumulation": {
+    "desc": "These are the two levers that trade compute for memory, and both have arithmetic you should be able to do in your head. Checkpointing drops stored activations and recomputes them in backward — roughly a 30% compute tax for a large memory cut. Gradient accumulation buys effective batch size for free in memory but costs a reduce per microbatch unless you suppress it.",
+    "steps": [
+     "Measure baseline peak memory and step time, then wrap your transformer blocks in `torch.utils.checkpoint.checkpoint` and measure both again. Compute the actual memory saved and the actual compute tax on your hardware.",
+     "Switch to selective checkpointing — keep the cheap-to-store, expensive-to-recompute ops (matmul outputs) and recompute the rest — and show it beats full checkpointing on the memory-per-unit-slowdown curve.",
+     "Confirm the interaction with autocast: recomputation must run under the same precision context as the original forward, or your numerics drift.",
+     "Implement gradient accumulation over N microbatches and verify the resulting update matches a single large batch to tight tolerance (watch the loss-scaling-by-1/N detail).",
+     "Under FSDP2, suppress the gradient reduce on all but the last microbatch (`set_requires_gradient_sync(False)`), and measure the step time with and without. The delta is the reduce you were paying N times.",
+     "Read the Ultra-Scale Playbook's recomputation section and compare its measured numbers against yours — if you are far off, you measured the wrong thing."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch API — torch.utils.checkpoint",
+      "url": "https://docs.pytorch.org/docs/stable/checkpoint.html"
+     },
+     {
+      "name": "Hugging Face — The Ultra-Scale Playbook (activation recomputation and gradient accumulation)",
+      "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+     },
+     {
+      "name": "PyTorch — Getting Started with FSDP2 (where the no-sync knob lives)",
+      "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
+     },
+     {
+      "name": "Scaling book — All the Transformer Math You Need to Know (the activation-memory accounting)",
+      "url": "https://jax-ml.github.io/scaling-book/transformers/"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
+      "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
+     }
+    ]
+   },
+   "bf16 and fp8": {
+    "desc": "bf16 is the default training dtype because it keeps fp32's exponent range, which is exactly why it does not need loss scaling and fp16 does. float8 goes a step further with per-tensor scaling and a real speedup on Hopper-class hardware and later — but only on some layers, and the measured number on your box is rarely the marketing number.",
+    "steps": [
+     "Write down the exponent and mantissa bit counts for fp32, bf16 and fp16, then explain in one sentence why fp16 needs a `GradScaler` and bf16 does not.",
+     "Train the same model under autocast bf16 and under fp32 on identical data and seeds, and plot both loss curves. Throughput alone is not the comparison — convergence is.",
+     "Install torchao and convert the linear layers of your model to float8 training, using its filter to skip the layers that are unsafe to cast (typically the embedding, the final projection, and any layer with a small inner dimension).",
+     "Measure tokens/second at bf16 and at float8 on your actual hardware, and check whether the layers you converted are large enough for the tensor cores to benefit at all.",
+     "Plot the float8 loss curve against the bf16 one over the same number of steps. If it diverges, look at the scaling recipe before blaming the dtype.",
+     "Record all three numbers — bf16 throughput, float8 throughput, and the loss-curve difference — in your notes. The honest measured delta is the artifact."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch API — torch.amp (Automatic Mixed Precision)",
+      "url": "https://docs.pytorch.org/docs/stable/amp.html"
+     },
+     {
+      "name": "PyTorch — Automatic Mixed Precision examples (including GradScaler)",
+      "url": "https://docs.pytorch.org/docs/stable/notes/amp_examples.html"
+     },
+     {
+      "name": "github.com/pytorch/ao (torchao)",
+      "url": "https://github.com/pytorch/ao"
+     },
+     {
+      "name": "torchao API — torchao.float8",
+      "url": "https://docs.pytorch.org/ao/stable/api_reference/api_ref_float8.html"
+     },
+     {
+      "name": "torchao tutorial — Pre-training with float8",
+      "url": "https://docs.pytorch.org/ao/stable/eager_tutorials/pretraining.html"
+     }
+    ]
+   },
+   "NCCL and OOM debugging": {
+    "desc": "Distributed jobs fail in two characteristic ways. A hang is almost always a collective that one rank never reached — divergent control flow, an early return, a rank that raised and died quietly. An OOM is either genuine exhaustion or fragmentation, and the memory snapshot tells you which. Cause both on purpose so you have seen the symptom before it costs you a rented hour.",
+    "steps": [
+     "Set `NCCL_DEBUG=INFO` and `TORCH_NCCL_ASYNC_ERROR_HANDLING=1` on a healthy run first, and read the topology and ring-construction output so you know what normal looks like.",
+     "Cause a hang deliberately: make rank 0 take an `if` branch that skips an all-reduce the other rank executes. Watch the watchdog timeout, read which collective it names, and confirm the diagnosis is \"rank divergence\", not \"network\".",
+     "Turn on `TORCH_DISTRIBUTED_DEBUG=DETAIL` and re-run the hang to see the per-rank collective mismatch reported directly.",
+     "Cause a fragmentation OOM: allocate and free alternating large and small tensors until an allocation fails while `memory_reserved` is far above `memory_allocated`. Capture a snapshot with `torch.cuda.memory._record_memory_history()` and `_dump_snapshot()`.",
+     "Load the snapshot in the PyTorch memory visualizer and identify the peak — confirm for yourself that it sits in backward, not forward, and find the allocation that triggered the failure.",
+     "Write the two playbooks up as a page each: symptom, first three commands, the diagnosis that usually holds, and the fix. This writeup is a milestone deliverable."
+    ],
+    "docs": [
+     {
+      "name": "NVIDIA NCCL — environment variables",
+      "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
+     },
+     {
+      "name": "NVIDIA NCCL — troubleshooting",
+      "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+     },
+     {
+      "name": "PyTorch — Understanding CUDA Memory Usage (snapshots and the visualizer)",
+      "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
+     },
+     {
+      "name": "PyTorch API — torch.distributed (TORCH_DISTRIBUTED_DEBUG and watchdog behaviour)",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+     },
+     {
+      "name": "torchtitan — docs/debugging.md",
+      "url": "https://github.com/pytorch/torchtitan/blob/main/docs/debugging.md"
+     },
+     {
+      "name": "PyTorch blog — Understanding GPU Memory 1: Visualizing All Allocations over Time",
+      "url": "https://pytorch.org/blog/understanding-gpu-memory-1/"
+     }
+    ]
+   },
+   "Distributed checkpoint and resume": {
+    "desc": "A run you cannot resume is a run you cannot afford, and resharding on resume is the part that actually breaks. `torch.distributed.checkpoint` saves sharded state in a world-size-independent format — but only if you save the DTensor state dicts correctly, which is exactly what this exercise proves.",
+    "steps": [
+     "Save model and optimizer state with `torch.distributed.checkpoint.save` using the distributed state-dict helpers, not a naive `state_dict()` gather to rank 0.",
+     "Inspect what landed on disk: one file per rank plus metadata. Confirm the metadata describes global shapes, which is what makes resharding possible.",
+     "Kill the job mid-epoch (SIGKILL, not a clean exit) and restart it at the same world size. Verify the loss continues rather than restarting or jumping.",
+     "Now restart at a different world size — 2 ranks saved, 4 ranks loaded, or vice versa — and verify the loss curve is still continuous. This is the test that finds the bug.",
+     "Confirm you also restored the optimizer state and the dataloader position, not just the weights. A resumed run with a fresh optimizer state shows a distinctive loss bump; go and look for it.",
+     "Read torchtitan's checkpoint.md for how a production stack handles async saving and format conversion for later export."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch — Getting Started with Distributed Checkpoint (DCP)",
+      "url": "https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html"
+     },
+     {
+      "name": "PyTorch API — torch.distributed.checkpoint",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.checkpoint.html"
+     },
+     {
+      "name": "torchtitan — docs/checkpoint.md",
+      "url": "https://github.com/pytorch/torchtitan/blob/main/docs/checkpoint.md"
+     },
+     {
+      "name": "PyTorch API — torch.distributed.tensor (what DCP is actually serialising)",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
+     }
+    ]
+   }
+  },
+  "p2-cs336-systems": {
+   "Watch the systems lectures": {
+    "desc": "CS336's systems block covers GPU architecture, kernels and Triton, and distributed training in exactly the order assignment 2 needs them. Watching first is not optional — the assignment assumes the lecture content and skipping it costs days. The executable lecture code is as valuable as the video.",
+    "steps": [
+     "Watch the GPUs/TPUs lecture and take notes specifically on the memory hierarchy and occupancy, because the assignment's benchmarking section assumes both.",
+     "Watch the Kernels/Triton lecture and follow along in the corresponding executable lecture file rather than just listening.",
+     "Watch both parallelism lectures back to back, and map each collective they describe onto the PyTorch API you used in Task 03.",
+     "Clone the current lectures repo and run the systems lecture code locally; the lectures are literate Python you can step through, which is the point of the course's format.",
+     "Cross-check the course website's schedule against the video list so you know which lecture number corresponds to which topic in the year you are watching — the numbering shifted between offerings.",
+     "Write a one-paragraph summary per lecture in your notes before starting the assignment. If you cannot write it, you did not watch it closely enough."
+    ],
+    "courses": [
+     {
+      "name": "Stanford CS336 — Language Modeling from Scratch (course site)",
+      "url": "https://cs336.stanford.edu/"
+     }
+    ],
+    "lectures": [
+     {
+      "name": "github.com/stanford-cs336/lectures — current executable lecture code and slides",
+      "url": "https://github.com/stanford-cs336/lectures"
+     },
+     {
+      "name": "github.com/stanford-cs336/spring2025-lectures — Spring 2025 lecture code",
+      "url": "https://github.com/stanford-cs336/spring2025-lectures"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
+     },
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
+     },
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
+     },
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
+     },
+     {
+      "title": "Stanford CS336: Language Modeling from Scratch | Spring 2026 — full playlist (Stanford Online)",
+      "url": "https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"
+     }
+    ]
+   },
+   "Benchmark and profile before optimising": {
+    "desc": "An unsynchronised CUDA timing measures queue submission, not work — this is the single most common benchmarking mistake and it will make every optimisation look free. Get the measurement methodology right first, then profile, then read the trace, and only then change code.",
+    "steps": [
+     "Write a timing harness with explicit warmup iterations and `torch.cuda.synchronize()` on both sides of the timed region. Prove the harness matters by timing the same op with and without sync.",
+     "Time forward, backward and the optimizer step separately across a sweep of model sizes and sequence lengths, and report mean and standard deviation, not a single run.",
+     "Before each measurement, write down a predicted number from your chapter 1 roofline. Keep a prediction-versus-measured log — this is a milestone deliverable.",
+     "Profile with `torch.profiler` using `activities=[CPU, CUDA]` and `record_shapes=True`, export a Chrome trace, and open it. Identify kernel time versus gaps, and whether you are launch-bound or compute-bound.",
+     "Use the profiler's memory profiling to find the peak allocation and confirm it lands in backward.",
+     "Pick the single largest gap or the single hottest kernel and write down what you would change — but do not change it yet. Optimising before this step is the mistake the assignment is teaching against."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch — PyTorch Profiler recipe",
+      "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
+     },
+     {
+      "name": "PyTorch — Profiling your PyTorch Module",
+      "url": "https://docs.pytorch.org/tutorials/beginner/profiler.html"
+     },
+     {
+      "name": "Scaling book — All About Rooflines (make the prediction first)",
+      "url": "https://jax-ml.github.io/scaling-book/roofline/"
+     },
+     {
+      "name": "CS336 assignment 2 handout (PDF)",
+      "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
+     },
+     {
+      "name": "PyTorch — Understanding CUDA Memory Usage",
+      "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
+     }
+    ]
+   },
+   "Triton fundamentals": {
+    "desc": "Triton gives you block-level rather than thread-level semantics: you write Python, reason about tiles, and let the compiler handle intra-block scheduling. The official tutorials are the right ladder, and the fused-softmax one in particular teaches the online-normalisation trick FlashAttention is built on — do not skip ahead to attention.",
+    "steps": [
+     "Work tutorial 01 (vector add) and make sure you understand `tl.program_id`, the block-offset computation, and why the mask on `tl.load`/`tl.store` is mandatory for ragged tails.",
+     "Work tutorial 02 (fused softmax) and derive the online max-and-sum update on paper. This is the exact recurrence FlashAttention uses across key blocks — if it is not solid, the next item will fail.",
+     "Work tutorial 03 (matmul) and understand the two-level tiling, the accumulator in fp32, and the L2-friendly program ordering.",
+     "Write one kernel of your own from scratch without copying a tutorial — a fused bias+GELU is a good size — and validate it against PyTorch to tight tolerance.",
+     "Use Triton's autotuner on your kernel over a couple of block sizes and num_warps values, and record the speedup autotuning alone buys.",
+     "Skim the fused-attention tutorial now, purely to see the shape of the target, before writing your own version next week."
+    ],
+    "docs": [
+     {
+      "name": "Triton — Vector Addition tutorial",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+     },
+     {
+      "name": "Triton — Fused Softmax tutorial (the online-normalisation trick)",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+     },
+     {
+      "name": "Triton — Matrix Multiplication tutorial",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
+     },
+     {
+      "name": "Triton — Introduction and programming model",
+      "url": "https://triton-lang.org/main/programming-guide/chapter-1/introduction.html"
+     },
+     {
+      "name": "Triton — Fused Attention tutorial (the target)",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
+     }
+    ],
+    "videos": [
+     {
+      "title": "GPU MODE Lecture 14: Practitioners Guide to Triton",
+      "url": "https://www.youtube.com/watch?v=DdTsX6DQk24"
+     },
+     {
+      "title": "GPU MODE Lecture 29: Triton Internals",
+      "url": "https://www.youtube.com/watch?v=njgow_zaJMw"
+     },
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
+     }
+    ]
+   },
+   "FlashAttention-2 forward and backward in Triton": {
+    "desc": "This is the hard part of assignment 2 and the part actually worth doing. The tiled forward with online softmax means the N×N attention matrix never materialises; the backward is where most people stop. You summarised the paper in Phase 1 — now you write the kernel and benchmark it honestly.",
+    "steps": [
+     "Re-read the FlashAttention-2 paper's algorithm boxes and write the forward recurrence out by hand, tracking the running max, the running sum, and the rescaling of the accumulator at each key block.",
+     "Implement the forward kernel with query blocks in the program grid and a loop over key blocks. Check it against a naive PyTorch reference at several shapes to a tight tolerance before optimising anything.",
+     "Add causal masking and confirm the early-exit over key blocks past the diagonal — this is where a large chunk of the speedup comes from and where off-by-one masking bugs hide.",
+     "Implement the backward pass, saving the logsumexp from forward rather than recomputing softmax, and validate dQ, dK and dV separately against autograd so a failure localises.",
+     "Benchmark forward and forward+backward against the PyTorch reference across sequence lengths and find the crossover where tiling starts to win. Plot it.",
+     "If the backward defeats you, commit the green forward, the benchmark plot, and an honest written note on exactly where the backward broke. That is a better artifact than a silent gap."
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2205.14135 — FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+      "url": "https://arxiv.org/abs/2205.14135"
+     },
+     {
+      "name": "arXiv 2307.08691 — FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
+      "url": "https://arxiv.org/abs/2307.08691"
+     }
+    ],
+    "docs": [
+     {
+      "name": "github.com/stanford-cs336/assignment2-systems",
+      "url": "https://github.com/stanford-cs336/assignment2-systems"
+     },
+     {
+      "name": "CS336 assignment 2 handout (PDF)",
+      "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
+     },
+     {
+      "name": "Triton — Fused Attention tutorial (reference implementation to compare against)",
+      "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
+     }
+    ],
+    "videos": [
+     {
+      "title": "GPU MODE Lecture 50: A learning journey — CUDA, Triton, Flash Attention",
+      "url": "https://www.youtube.com/watch?v=4jQTb6sRGLg"
+     }
+    ]
+   },
+   "DDP from scratch, then optimizer state sharding": {
+    "desc": "Build data parallelism yourself on raw collectives and FSDP2 stops being magic. Broadcast the initial parameters, all-reduce the gradients, then make it fast by bucketing so communication overlaps with the backward pass instead of queueing behind it. Then shard the optimizer state — that is ZeRO stage 1, by hand.",
+    "steps": [
+     "Initialise a process group with `init_process_group`, broadcast the initial parameters from rank 0, and confirm all ranks agree bit for bit.",
+     "Write the naive version: full backward, then one `all_reduce` per parameter, then the optimizer step. Measure the step time and the fraction spent in communication.",
+     "Flatten the gradients into a single contiguous buffer and issue one all-reduce instead of thousands. Re-measure — most of your naive overhead was launch cost, not bandwidth.",
+     "Add overlap: register post-accumulate gradient hooks that fire an async all-reduce as soon as a bucket fills, and wait on the handles before the optimizer step. Measure the overlap benefit and sweep the bucket size.",
+     "Implement ZeRO stage 1: each rank owns a disjoint slice of the optimizer state, updates only its slice, then all-gathers the updated parameters. Measure the memory saved and confirm it matches the arithmetic (roughly the optimizer state divided by world size).",
+     "Compare your hand-built version's step time and peak memory against PyTorch DDP and FSDP2 on the same model, and write down where you lose and why."
+    ],
+    "docs": [
+     {
+      "name": "PyTorch — Writing Distributed Applications with PyTorch (raw collectives)",
+      "url": "https://docs.pytorch.org/tutorials/intermediate/dist_tuto.html"
+     },
+     {
+      "name": "PyTorch — Getting Started with Distributed Data Parallel",
+      "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+     },
+     {
+      "name": "PyTorch API — torch.distributed (all_reduce, broadcast, async work handles)",
+      "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+     },
+     {
+      "name": "github.com/stanford-cs336/assignment2-systems",
+      "url": "https://github.com/stanford-cs336/assignment2-systems"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+      "url": "https://arxiv.org/abs/1910.02054"
+     }
+    ],
+    "videos": [
+     {
+      "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
+      "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
+     }
+    ]
+   }
+  },
+  "p2-inference-serving": {
+   "Stand up vLLM": {
+    "desc": "Everything else in this task is a variation on one server. Get `vllm serve` running with a small open model, hit it through the OpenAI-compatible endpoint, and learn the four knobs that actually change behaviour — plus how to read the startup log where the engine tells you how much KV cache it managed to allocate.",
+    "steps": [
+     "Install vLLM and run `vllm serve <small-model>` with an explicit `--max-model-len`, then hit `/v1/models` and `/v1/chat/completions` with plain curl before touching any client library.",
+     "Read the startup log and find the line reporting the number of KV cache blocks and the resulting maximum concurrency. Write that number down; it is the capacity of your endpoint.",
+     "Sweep `--gpu-memory-utilization` from 0.7 to 0.95 and watch the KV block count move. Understand that this is the weights-versus-cache split, not a safety margin.",
+     "Change `--max-num-seqs` and `--max-num-batched-tokens` and observe the effect on the reported concurrency and on a small burst of requests.",
+     "Point the official `openai` Python client at your endpoint with a dummy API key, and confirm both streaming and non-streaming completions work — Phase 3 depends on exactly this.",
+     "Save the working command line in your repo as a script. You will re-run it a dozen times over the next three weeks."
+    ],
+    "docs": [
+     {
+      "name": "vLLM — documentation home",
+      "url": "https://docs.vllm.ai/en/latest/"
+     },
+     {
+      "name": "vLLM — Quickstart",
+      "url": "https://docs.vllm.ai/en/latest/getting_started/quickstart/"
+     },
+     {
+      "name": "vLLM — OpenAI-Compatible Server",
+      "url": "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"
+     },
+     {
+      "name": "vLLM — Server Arguments",
+      "url": "https://docs.vllm.ai/en/latest/configuration/serve_args/"
+     },
+     {
+      "name": "vLLM — Engine Arguments",
+      "url": "https://docs.vllm.ai/en/latest/configuration/engine_args/"
+     }
+    ],
+    "videos": [
+     {
+      "title": "vLLM Office Hours #22 — Intro to vLLM V1 (Neural Magic)",
+      "url": "https://www.youtube.com/watch?v=jmzIvQZCLZM"
+     }
+    ]
+   },
+   "Continuous batching and paged KV cache": {
+    "desc": "Static batching idles the GPU whenever sequences finish at different times; continuous batching admits new requests at every decode step. PagedAttention is what makes that admission cheap — fixed-size KV blocks plus an indirection table, so there is no contiguous per-sequence reservation to fragment. Preemption under memory pressure is a real behaviour, not a footnote.",
+    "steps": [
+     "Read the paged-attention design doc and draw the block table for two sequences: logical KV positions on one side, physical block IDs on the other.",
+     "Work out the memory waste of the naive alternative — contiguous allocation sized to `max_model_len` — for a workload whose actual outputs are short. The ratio is the whole argument for paging.",
+     "Read how blocks are allocated, shared (copy-on-write for forked sequences) and evicted, and identify what triggers preemption.",
+     "Force preemption: lower `--gpu-memory-utilization` and fire more concurrent long-output requests than the cache can hold. Find the preemption warning in the logs and watch throughput collapse.",
+     "Explain in writing why continuous batching needs paging to be practical — admitting a request mid-flight is only cheap if you can hand it blocks without moving anyone else's cache.",
+     "Note the two knobs that control this in practice (`--gpu-memory-utilization`, `--max-num-seqs`) and what each one does to the failure you just produced."
+    ],
+    "docs": [
+     {
+      "name": "vLLM — Paged Attention design",
+      "url": "https://docs.vllm.ai/en/latest/design/paged_attention/"
+     },
+     {
+      "name": "vLLM — Optimization and Tuning",
+      "url": "https://docs.vllm.ai/en/latest/configuration/optimization/"
+     },
+     {
+      "name": "vLLM — Conserving Memory",
+      "url": "https://docs.vllm.ai/en/latest/configuration/conserving_memory/"
+     },
+     {
+      "name": "vLLM blog — vLLM: Easy, Fast, and Cheap LLM Serving with PagedAttention",
+      "url": "https://blog.vllm.ai/2023/06/20/vllm.html"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2309.06180 — Efficient Memory Management for LLM Serving with PagedAttention",
+      "url": "https://arxiv.org/abs/2309.06180"
+     }
+    ],
+    "videos": [
+     {
+      "title": "vLLM Office Hours — Advanced Techniques for Maximizing vLLM Performance (Neural Magic)",
+      "url": "https://www.youtube.com/watch?v=vJA1BGkAdNo"
+     }
+    ]
+   },
+   "Read the PagedAttention paper": {
+    "desc": "The original vLLM paper is short and states the problem cleanly: for LLM serving it is KV cache memory, not compute, that bounds throughput, and pre-allocating contiguous cache for the maximum sequence length wastes most of it. The framing and the memory accounting carry over to every serving system built since.",
+    "steps": [
+     "Read the paper start to finish in one sitting — it is short — and write the thesis in one sentence before looking at any commentary.",
+     "Reproduce the memory-waste taxonomy in your own words: internal fragmentation, external fragmentation, and reservation for future tokens. Estimate each for your own serving config.",
+     "Note the sharing mechanisms the paper introduces — shared prefixes for parallel sampling and beam search via copy-on-write blocks — because that is the direct ancestor of prefix caching two items from now.",
+     "Read the evaluation section critically: what baselines, what workloads, and which of its claimed speedups depend on the output-length distribution rather than on paging itself.",
+     "Read the Efficiently Scaling Transformer Inference paper alongside it for the complementary view — the arithmetic of latency versus throughput on sharded hardware.",
+     "Write half a page connecting the paper's accounting to the KV block count your own server reported at startup."
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2309.06180 — Efficient Memory Management for LLM Serving with PagedAttention",
+      "url": "https://arxiv.org/abs/2309.06180"
+     },
+     {
+      "name": "arXiv 2211.05102 — Efficiently Scaling Transformer Inference",
+      "url": "https://arxiv.org/abs/2211.05102"
+     }
+    ],
+    "videos": [
+     {
+      "title": "SOSP '23 — Efficient Memory Management for Large Language Model Serving with PagedAttention (ACM SIGOPS)",
+      "url": "https://www.youtube.com/watch?v=UdNocRPQS3Y"
+     }
+    ],
+    "docs": [
+     {
+      "name": "vLLM — Paged Attention design (the implementation the paper describes)",
+      "url": "https://docs.vllm.ai/en/latest/design/paged_attention/"
+     }
+    ]
+   },
+   "Prefix caching": {
+    "desc": "Automatic prefix caching hashes KV blocks so requests sharing a prefix reuse them instead of recomputing. For eval and RL workloads — hundreds of samples behind one long system prompt and few-shot block — this is the single largest win available, and it is a number worth measuring rather than quoting.",
+    "steps": [
+     "Read the design doc and understand the hashing scheme: blocks are keyed on the hash of their token contents plus the hash of the preceding block, which is what makes reuse safe across requests.",
+     "Build a synthetic eval batch that mirrors your Phase 3 workload — one long shared system prompt and few-shot block, then a short per-sample suffix.",
+     "Run it with prefix caching disabled and record time-to-first-token distribution and total throughput.",
+     "Run the identical batch with prefix caching enabled and record the same two metrics. Compute the speedup and note that it lands almost entirely in TTFT, not in decode.",
+     "Check the cache hit rate the engine reports and confirm it matches your expectation from the prompt structure. A low hit rate usually means your prefix is not byte-identical across requests.",
+     "Sweep the shared-prefix length and plot speedup against it, then write down the prefix length below which caching stops mattering for your workload."
+    ],
+    "docs": [
+     {
+      "name": "vLLM — Automatic Prefix Caching (feature guide)",
+      "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+     },
+     {
+      "name": "vLLM — Automatic Prefix Caching (design and hashing scheme)",
+      "url": "https://docs.vllm.ai/en/latest/design/prefix_caching/"
+     },
+     {
+      "name": "vLLM — Benchmark CLI",
+      "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
+     },
+     {
+      "name": "vLLM — Optimization and Tuning",
+      "url": "https://docs.vllm.ai/en/latest/configuration/optimization/"
+     }
+    ]
+   },
+   "Tensor-parallel and multi-GPU serving": {
+    "desc": "Serving a model too large for one card means `--tensor-parallel-size`. TP splits both the weights and the KV cache, so you get cache headroom as well as compute — but you also pay an all-reduce per layer, so latency improves sub-linearly and per-GPU throughput usually goes down. Measure per-GPU, not aggregate.",
+    "steps": [
+     "Serve the same model at TP=1 and at TP=2 and record the KV block count each reports at startup. The increase is the cache headroom TP buys you.",
+     "Run an identical load at both settings and record tokens/second, then divide by the GPU count. Compare tokens/second per GPU, which is the number that tells you whether TP paid for itself.",
+     "Measure inter-token latency at low concurrency in both configurations — this is where TP should genuinely win, because decode is memory-bandwidth-bound.",
+     "Read the parallelism doc on when to prefer pipeline parallel (across nodes, where the interconnect is slow) versus tensor parallel (within a node over NVLink), and relate it to the fabric numbers from scaling-book chapter 12.",
+     "Deliberately break it: request a TP size that does not divide the attention head count, and read the error so you recognise it later.",
+     "Read the distributed-troubleshooting page and note the two or three environment variables it tells you to set when a multi-GPU server hangs at startup."
+    ],
+    "docs": [
+     {
+      "name": "vLLM — Parallelism and Scaling",
+      "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
+     },
+     {
+      "name": "vLLM — Troubleshooting distributed deployments",
+      "url": "https://docs.vllm.ai/en/latest/serving/distributed_troubleshooting/"
+     },
+     {
+      "name": "Scaling book — How to Think About GPUs (interconnect costs)",
+      "url": "https://jax-ml.github.io/scaling-book/gpus/"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2211.05102 — Efficiently Scaling Transformer Inference",
+      "url": "https://arxiv.org/abs/2211.05102"
+     }
+    ],
+    "videos": [
+     {
+      "title": "vLLM Office Hours — Distributed Inference with vLLM (Neural Magic)",
+      "url": "https://www.youtube.com/watch?v=LH2QZehVJoc"
+     }
+    ]
+   },
+   "Throughput versus latency, measured": {
+    "desc": "There is one curve every serving engineer should be able to draw from memory: throughput rises with concurrency until the KV cache saturates and then flattens or collapses, while per-request latency degrades from the very first concurrent request. Find the knee on your own endpoint, because Phase 3's eval runs will sit right on it.",
+    "steps": [
+     "Use vLLM's benchmark CLI first to get a trustworthy baseline before writing anything yourself — it already handles warmup and percentile reporting correctly.",
+     "Then write your own small async load generator so you control the request shape: fixed input length, fixed output length, and a concurrency parameter.",
+     "Sweep concurrency across at least six points and record, at each: time-to-first-token (p50 and p95), inter-token latency, and total output tokens/second.",
+     "Plot throughput against concurrency and latency against concurrency on the same x-axis. Mark the knee, and cross-check it against the maximum concurrency the engine reported at startup.",
+     "Push past the knee until you see preemption in the logs, and note what happens to p95 TTFT when it fires.",
+     "Repeat the sweep with a long-input/short-output shape and a short-input/long-output shape, and note that the knee moves. Record the operating point you will actually use in Phase 3."
+    ],
+    "docs": [
+     {
+      "name": "vLLM — Benchmark Suites",
+      "url": "https://docs.vllm.ai/en/latest/benchmarking/"
+     },
+     {
+      "name": "vLLM — Benchmark CLI",
+      "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
+     },
+     {
+      "name": "vLLM — Optimization and Tuning",
+      "url": "https://docs.vllm.ai/en/latest/configuration/optimization/"
+     },
+     {
+      "name": "SGLang — Benchmark and Profiling",
+      "url": "https://docs.sglang.ai/docs/developer_guide/benchmark_and_profiling"
+     },
+     {
+      "name": "SGLang — Hyperparameter Tuning (throughput vs latency knobs)",
+      "url": "https://docs.sglang.ai/docs/advanced_features/hyperparameter_tuning"
+     }
+    ]
+   },
+   "Quantization": {
+    "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you already rent. The distinctions that matter in practice are weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and — separately from all of that — whether you quantize the KV cache. The accuracy cost is workload-dependent, so measure yours.",
+    "steps": [
+     "Read the quantization index and write down which schemes your GPU actually supports in hardware; FP8 on pre-Hopper cards is emulated and will not give you the speedup you expect.",
+     "Serve one model at bf16 and the same model at FP8 W8A8, and record tokens/second, KV block count and peak memory for each.",
+     "Separately enable KV cache quantization (FP8 KV) at bf16 weights, and record the increase in KV blocks. Note that this is an independent decision from weight quantization and often the better one for long-context eval workloads.",
+     "Try one 4-bit weight-only scheme and note where it wins (memory-bound single-stream decode) and where it loses (compute-bound large-batch prefill).",
+     "Evaluate all the configurations you served on the same task with the same prompts, and record the accuracy delta alongside the throughput delta. A throughput number without an accuracy number is not a result.",
+     "Write a short recommendation for your own Phase 3 workload with the measured numbers attached, and say explicitly which configuration you rejected and why."
+    ],
+    "docs": [
+     {
+      "name": "vLLM — Quantization",
+      "url": "https://docs.vllm.ai/en/latest/features/quantization/"
+     },
+     {
+      "name": "vLLM — Quantized KV Cache",
+      "url": "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/"
+     },
+     {
+      "name": "vLLM — FP8 W8A8 with llm-compressor",
+      "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/"
+     },
+     {
+      "name": "vLLM — INT8 W8A8 with llm-compressor",
+      "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/int8_w8a8/"
+     },
+     {
+      "name": "SGLang — Quantization",
+      "url": "https://docs.sglang.ai/docs/advanced_features/quantization"
+     }
+    ]
+   },
+   "Speculative decoding": {
+    "desc": "A draft model, an n-gram lookup or a self-speculation head proposes several tokens; the target model verifies them in a single forward pass and accepts the longest correct prefix. The output distribution is provably unchanged, so it is a pure latency win — but only at high acceptance and small batch. On a throughput-bound eval run it can make things worse.",
+    "steps": [
+     "Read one of the two original papers far enough to convince yourself of the correctness argument: modified rejection sampling makes the output distribution identical to plain sampling from the target.",
+     "Enable n-gram (prompt-lookup) speculation first, since it needs no second model, and measure inter-token latency at concurrency 1 against your baseline.",
+     "Enable a real draft model and measure both acceptance rate and end-to-end latency. Acceptance rate is the number that predicts whether it will help.",
+     "Now re-run the same configuration at high concurrency and show that the benefit shrinks or inverts, because verification FLOPs compete with the batch you are already running.",
+     "Vary the number of speculative tokens and find the optimum for your workload — more proposals help only until the acceptance probability of the last one gets small.",
+     "Write the decision rule you will apply in Phase 3: on for interactive single-stream work, off for throughput-bound batch eval, with your measured numbers as evidence."
+    ],
+    "docs": [
+     {
+      "name": "vLLM — Speculative Decoding",
+      "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
+     },
+     {
+      "name": "vLLM — Speculative Decoding with draft models",
+      "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/draft_model/"
+     },
+     {
+      "name": "SGLang — Speculative Decoding",
+      "url": "https://docs.sglang.ai/docs/advanced_features/speculative_decoding"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2211.17192 — Fast Inference from Transformers via Speculative Decoding",
+      "url": "https://arxiv.org/abs/2211.17192"
+     },
+     {
+      "name": "arXiv 2302.01318 — Accelerating Large Language Model Decoding with Speculative Sampling",
+      "url": "https://arxiv.org/abs/2302.01318"
+     }
+    ],
+    "videos": [
+     {
+      "title": "GPU MODE Lecture 22: Hacker's Guide to Speculative Decoding in vLLM",
+      "url": "https://www.youtube.com/watch?v=9wNAgpX6z_4"
+     },
+     {
+      "title": "vLLM Office Hours — Speculative Decoding in vLLM (Neural Magic)",
+      "url": "https://www.youtube.com/watch?v=eVJBFajJRIU"
+     }
+    ]
+   },
+   "SGLang and structured generation": {
+    "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which is exactly what branching agent traces produce — and fast constrained decoding for JSON and grammar-bounded output.",
+    "steps": [
+     "Read the SGLang paper for RadixAttention and the LRU eviction policy over the radix tree, and articulate how it differs from vLLM's block-hash prefix caching for a branching workload.",
+     "Install SGLang and serve the same model you used on vLLM, then hit its OpenAI-compatible endpoint to confirm the client code is unchanged.",
+     "Run your own load generator against SGLang at the same concurrency sweep and compare the throughput and latency curves against your vLLM numbers directly.",
+     "Build a branching workload — one shared prompt, several divergent continuations, then further branches — and compare both engines on it. This is where RadixAttention should show its advantage.",
+     "Use SGLang's structured outputs to force a JSON schema and then a small grammar, and measure the latency cost of constrained decoding versus free generation.",
+     "Write the comparison: which engine you would pick for an agentic eval workload, the measured evidence, and the one thing that would change your mind. That writeup is a milestone deliverable."
+    ],
+    "docs": [
+     {
+      "name": "SGLang — documentation home",
+      "url": "https://docs.sglang.ai/"
+     },
+     {
+      "name": "SGLang — Server Arguments",
+      "url": "https://docs.sglang.ai/docs/advanced_features/server_arguments"
+     },
+     {
+      "name": "SGLang — Structured Outputs (JSON and grammar-constrained decoding)",
+      "url": "https://docs.sglang.ai/docs/advanced_features/structured_outputs"
+     },
+     {
+      "name": "SGLang — OpenAI-Compatible APIs",
+      "url": "https://docs.sglang.ai/docs/basic_usage/openai_api"
+     },
+     {
+      "name": "SGLang — Installation",
+      "url": "https://docs.sglang.ai/docs/get-started/install"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2312.07104 — SGLang: Efficient Execution of Structured Language Model Programs",
+      "url": "https://arxiv.org/abs/2312.07104"
+     }
+    ],
+    "videos": [
+     {
+      "title": "GPU MODE Lecture 35: SGLang",
+      "url": "https://www.youtube.com/watch?v=XQylGyG7yp8"
+     },
+     {
+      "title": "Lianmin Zheng on Efficient LLM Inference with SGLang (AMD Developer Central)",
+      "url": "https://www.youtube.com/watch?v=G4ZeVP7n0Ik"
+     }
+    ]
+   },
+   "Wire the endpoint to an RL and eval harness": {
+    "desc": "Close the loop that motivates the whole task. Prime Intellect's `verifiers` assumes an OpenAI-compatible endpoint backed by vLLM, so point it at the server you just built and run one trivial rollout. You are not learning the library yet — that is Phase 3 — you are proving the plumbing and finding where the endpoint becomes the bottleneck.",
+    "steps": [
+     "Install `verifiers` and read its overview far enough to know what it expects: a base URL, an API key it will not check, and a model name that matches what your server reports at `/v1/models`.",
+     "Point it at your running vLLM server and execute the smallest built-in environment you can find. Success is a completed rollout, not a good score.",
+     "Turn the concurrency up until the rollout loop stops getting faster, and confirm from the server logs that the endpoint — not the harness — is the limiter.",
+     "Turn prefix caching on and re-run; a rollout loop with a fixed system prompt should show exactly the TTFT win you measured earlier.",
+     "Repeat the same trivial rollout against your SGLang server to prove the harness really is engine-agnostic, and note anything that had to change.",
+     "Write down the endpoint configuration you will standardise on for Phase 3 — model, TP size, max-model-len, prefix caching, quantization — with the measurement that justifies each choice."
+    ],
+    "docs": [
+     {
+      "name": "github.com/willccbb/verifiers (now PrimeIntellect-ai/verifiers)",
+      "url": "https://github.com/willccbb/verifiers"
+     },
+     {
+      "name": "Prime Intellect — verifiers overview",
+      "url": "https://docs.primeintellect.ai/verifiers/overview"
+     },
+     {
+      "name": "vLLM — OpenAI-Compatible Server",
+      "url": "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"
+     },
+     {
+      "name": "SGLang — SGLang for RL Systems",
+      "url": "https://docs.sglang.ai/docs/advanced_features/sglang_for_rl"
+     },
+     {
+      "name": "vLLM — Automatic Prefix Caching (the knob that matters most for rollouts)",
+      "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+     }
+    ]
+   }
   }
+ }
 }
