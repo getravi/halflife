@@ -136,7 +136,9 @@
     <section class="today-block">
       <div class="today-block-title">Due now</div>
       <div class="today-due"><span id="today-due-count">0</span> <span id="today-due-noun">cards</span></div>
-      <button class="today-review-btn" id="today-start-review">Start review</button>
+      <!-- disabled until the first render; cards arrive asynchronously and a
+           live button before then silently does nothing when clicked -->
+      <button class="today-review-btn" id="today-start-review" disabled>Start review</button>
     </section>
 
     <section class="today-block">
@@ -148,6 +150,25 @@
       <div class="today-block-title">Capture debt</div>
       <div id="today-debt">—</div>
     </section>
+  </div>
+</div>
+
+<!-- REVIEW RUNNER — hand-written; must stay above the render.py marker. -->
+<div id="runner" class="runner" hidden>
+  <div class="runner-card">
+    <div class="runner-meta"><span><span id="runner-remaining">0</span> left</span>
+      <button class="runner-close" id="runner-close">&times;</button></div>
+    <div class="runner-prompt" id="runner-prompt"></div>
+    <textarea class="runner-recall" id="runner-recall" rows="4"
+      placeholder="Recall it here first — typing it is the stronger act."></textarea>
+    <button class="today-review-btn" id="runner-reveal">Reveal</button>
+    <div class="runner-answer" id="runner-answer" hidden></div>
+    <div class="runner-grades" id="runner-grades" hidden>
+      <button data-grade="again">Again</button>
+      <button data-grade="hard">Hard</button>
+      <button data-grade="good">Good</button>
+      <button data-grade="easy">Easy</button>
+    </div>
   </div>
 </div>
 

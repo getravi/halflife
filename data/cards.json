@@ -7,10 +7,24 @@
     "prompt": "What disqualifies a task family from environment v0?",
     "answer": "A task family is only usable at v0 if the check can be written as code. If I cannot state the verifier, I am grading, not evaluating.",
     "createdAt": 1784961870845,
-    "lastReviewedAt": null,
-    "dueAt": 1784961870845,
-    "stability": 0,
-    "reps": 0,
+    "lastReviewedAt": 1784962224982,
+    "dueAt": 1785048624982,
+    "stability": 1,
+    "reps": 1,
+    "lapses": 1
+  },
+  {
+    "id": "cms00gca21",
+    "page": "phase2.html",
+    "taskId": "p2-environment-v0",
+    "subtaskTitle": "Write the four interfaces and nothing else",
+    "prompt": "What are the four interfaces environment v0 exposes, and why only four?",
+    "answer": "Task iterator, step, reward, and reset. Four keeps the harness swappable; anything more encodes one runner into the environment.",
+    "createdAt": 1784962277930,
+    "lastReviewedAt": 1784962294976,
+    "dueAt": 1785307894976,
+    "stability": 4,
+    "reps": 1,
     "lapses": 0
   }
 ]

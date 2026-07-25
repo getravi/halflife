@@ -894,3 +894,30 @@ weight-badge {
   color: var(--muted); text-decoration: none; }
 .today-debt-item:hover { color: inherit; }
 .today-debt-more { font-size: 12px; color: var(--muted2); margin-top: 6px; }
+
+/* ── Review runner ─────────────────────────────────────────── */
+.runner { position: fixed; inset: 0; background: rgba(0,0,0,0.86);
+  display: flex; align-items: center; justify-content: center; z-index: 200; }
+.runner[hidden] { display: none; }
+.runner-card { width: min(640px, 92vw); border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg, #111); padding: 28px; }
+.runner-meta { font-size: 11px; color: var(--muted2); text-transform: uppercase;
+  letter-spacing: 0.06em; display: flex; justify-content: space-between; }
+.runner-close { background: none; border: none; color: var(--muted);
+  font-size: 20px; line-height: 1; cursor: pointer; }
+.runner-prompt { font-size: 19px; margin: 20px 0; line-height: 1.5; }
+.runner-recall { width: 100%; background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: 2px; color: inherit;
+  font: inherit; font-size: 13px; padding: 8px; margin-bottom: 14px;
+  resize: vertical; }
+.runner-answer { border-top: 1px solid var(--border); padding-top: 16px;
+  margin-top: 4px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+.runner-grades { display: flex; gap: 8px; margin-top: 20px; }
+/* display:flex outranks the user-agent [hidden] rule, so the grade buttons
+   would sit visible above the answer they are meant to follow. */
+.runner-grades[hidden] { display: none; }
+.runner-grades button { flex: 1; font: inherit; font-size: 13px; padding: 9px 0;
+  border: 1px solid var(--border); border-radius: 2px;
+  background: rgba(255,255,255,0.06); color: inherit; cursor: pointer; }
+.runner-grades button:hover { background: rgba(255,255,255,0.12); }
+.today-review-btn:disabled { opacity: 0.45; cursor: default; }

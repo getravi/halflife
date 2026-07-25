@@ -102,9 +102,73 @@
     const due = dueCards().length;
     document.getElementById('today-due-count').textContent = due;
     document.getElementById('today-due-noun').textContent = due === 1 ? 'card' : 'cards';
+
+    // Live only once there is something to review. Covers both the load race
+    // and a genuinely empty queue, which would otherwise both read as a button
+    // that does nothing when pressed.
+    const btn = document.getElementById('today-start-review');
+    btn.disabled = due === 0;
+    btn.textContent = due === 0 ? 'Nothing due' : 'Start review';
     renderWeek(state);
     renderDebt();
   }
 
-  window.TODAY = { render, dueCards };
+  let queue = [];
+  let shownAt = 0;
+
+  const el = id => document.getElementById(id);
+
+  function startReview() {
+    queue = dueCards();
+    if (queue.length === 0) return;
+    el('runner').hidden = false;
+    next();
+  }
+
+  function next() {
+    if (queue.length === 0) {
+      el('runner').hidden = true;
+      render();
+      return;
+    }
+    const card = queue[0];
+    el('runner-remaining').textContent = queue.length;
+    el('runner-prompt').textContent = card.prompt;
+    el('runner-recall').value = '';
+    el('runner-answer').textContent = card.answer;
+    el('runner-answer').hidden = true;
+    el('runner-grades').hidden = true;
+    el('runner-reveal').hidden = false;
+    shownAt = Date.now();
+  }
+
+  async function grade(g) {
+    const card = queue.shift();
+    const updated = await API.review(card.id, g, Date.now() - shownAt);
+    if (updated) {
+      const i = window.CAPTURE_STATE.cards.findIndex(c => c.id === updated.id);
+      if (i !== -1) window.CAPTURE_STATE.cards[i] = updated;
+    }
+    // A forgotten card that is not seen again the same session is theatre.
+    if (g === 'again') queue.push(updated || card);
+    next();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    el('today-start-review').addEventListener('click', startReview);
+    el('runner-close').addEventListener('click', () => {
+      el('runner').hidden = true;
+      render();
+    });
+    el('runner-reveal').addEventListener('click', () => {
+      el('runner-answer').hidden = false;
+      el('runner-grades').hidden = false;
+      el('runner-reveal').hidden = true;
+    });
+    el('runner-grades').querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => grade(b.dataset.grade));
+    });
+  });
+
+  window.TODAY = { render, dueCards, startReview };
 })();

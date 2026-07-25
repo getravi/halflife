@@ -1674,7 +1674,7 @@ In `index.html`, immediately after the closing `</div>` of `view-today` and stil
 <!-- REVIEW RUNNER — hand-written; must stay above the render.py marker. -->
 <div id="runner" class="runner" hidden>
   <div class="runner-card">
-    <div class="runner-meta"><span id="runner-remaining">0</span> left
+    <div class="runner-meta"><span><span id="runner-remaining">0</span> left</span>
       <button class="runner-close" id="runner-close">&times;</button></div>
     <div class="runner-prompt" id="runner-prompt"></div>
     <textarea class="runner-recall" id="runner-recall" rows="4"
@@ -1783,6 +1783,9 @@ Append to `style.css`:
 .runner-answer { border-top: 1px solid var(--border); padding-top: 16px;
   margin-top: 4px; font-size: 14px; line-height: 1.6; color: var(--muted); }
 .runner-grades { display: flex; gap: 8px; margin-top: 20px; }
+/* display:flex outranks the user-agent [hidden] rule, so the grade buttons
+   would sit visible above the answer they are meant to follow. */
+.runner-grades[hidden] { display: none; }
 .runner-grades button { flex: 1; font: inherit; font-size: 13px; padding: 9px 0;
   border: 1px solid var(--border); border-radius: 2px;
   background: rgba(255,255,255,0.06); color: inherit; cursor: pointer; }

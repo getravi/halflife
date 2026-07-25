@@ -103,7 +103,9 @@ for (const pm of htmlSrc.matchAll(/<div id="view-(phase\d)" class="view-panel">(
 const hooks = ['global-bar-fill', 'global-done', 'global-total', 'global-pct',
                'global-done-2', 'global-pct-2', 'phases-started', 'streak-weeks',
                'view-today', 'today-due-count', 'today-due-noun', 'today-start-review',
-               'today-week', 'today-debt', 'today-offline'];
+               'today-week', 'today-debt', 'today-offline',
+               'runner', 'runner-prompt', 'runner-recall', 'runner-answer',
+               'runner-reveal', 'runner-grades', 'runner-remaining', 'runner-close'];
 for (const h of hooks) if (!htmlSrc.includes(`id="${h}"`)) fail.push(`missing DOM hook id="${h}"`);
 for (const s of ['p0', 'p1', 'p2', 'p3', 'p4'])
   for (const a of [`id="progress-bar-${s}"`, `id="progress-label-${s}"`,
