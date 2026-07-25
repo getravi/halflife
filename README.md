@@ -5,6 +5,42 @@ environments roles, with a spaced-repetition review loop over it. Run it with
 `make serve` — a small Node server that hosts the page and the `/api` routes.
 It is no longer openable as `file://`, and no longer purely static.
 
+## Running it
+
+Node 18 or newer. No dependencies, no `npm install` — the server, the tests and
+the build tools are all standard library. Python 3 is needed only by
+`make render`.
+
+```sh
+make serve          # http://localhost:8000 — ctrl-c to stop
+```
+
+Then open <http://localhost:8000>. **Today** is the landing view. On a fresh
+install it has nothing to show, so start here:
+
+1. Press **Set plan start date to today**. That is what makes "This week" able
+   to tell you which week you are on, and how far you have drifted from it.
+2. Go to a phase, open a subtask, work through it, and tick its steps.
+3. Ticking the last step opens the capture form. Write the card. This is the
+   part that makes Retained move.
+
+Serve on another port with `PORT=9000 make serve`.
+
+**Do not open `index.html` directly.** `file://` gives you no `/api`, so cards,
+reviews and completions have nowhere to go.
+
+If the server is not running the page still opens and still shows your
+progress, from a `localStorage` cache, behind a banner saying so. Ticks you
+make while it is down queue in an outbox and flush on the next successful
+request. Reviews and capture are disabled rather than accepted and dropped.
+
+Your cards live in `data/` and are committed to git deliberately — they are a
+year of hand-written notes, and git is their backup. Commit them like source.
+
+If the server refuses to start with `FATAL: cards.json is not valid JSON`, it
+is protecting that file rather than starting empty and overwriting it on the
+next save. Restore it with `git checkout data/cards.json`.
+
 ## The plan
 
 | Phase | Weeks | | Source |

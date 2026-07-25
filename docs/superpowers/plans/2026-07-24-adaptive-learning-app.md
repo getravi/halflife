@@ -289,11 +289,13 @@ In `Makefile`, add `test` to the `.PHONY` line, add a help line, and add the tar
 
 ```make
 test:
-	@node --test 'test/*.test.js'
+	@node --test test/*.test.js
 ```
 
-The glob must be quoted so Node expands it rather than the shell. `node --test
-test/` fails on Node 24 — it resolves the directory as a module path.
+Leave the glob unquoted so the shell expands it. `node --test test/` fails on
+Node 24 — it resolves the directory as a module path — and quoting the glob
+would push the Node floor to 21, which is where Node gained its own glob
+handling.
 
 Help line to add inside the `help` target, after the `check` line:
 

@@ -13,7 +13,7 @@ check:
 	@node tools/check.js
 
 test:
-	@node --test 'test/*.test.js'
+	@node --test test/*.test.js
 
 render:
 	@python3 tools/render.py
