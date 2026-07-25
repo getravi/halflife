@@ -1,0 +1,20 @@
+{
+  "name": "frontier-lab-plan",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "DEV_USER_ID": "01JQZX000000000000000USER"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "frontier-lab",
+      "database_id": "a8758923-9994-4e82-af04-572d47298218"
+    }
+  ]
+}

@@ -16,14 +16,22 @@
     "test": "node --test test/*.test.js",
     "check": "node tools/check.js",
     "render": "python3 tools/render.py",
-    "gen": "node tools/build.js"
+    "gen": "node tools/build.js",
+    "dev:worker": "wrangler dev",
+    "db:migrate:local": "wrangler d1 migrations apply frontier-lab --local",
+    "db:migrate": "wrangler d1 migrations apply frontier-lab --remote",
+    "deploy": "vite build && wrangler deploy"
   },
   "devDependencies": {
-    "vite": "^8.1.5"
+    "@cloudflare/vitest-pool-workers": "^0.18.8",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.114.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "esbuild"
+      "esbuild",
+      "workerd"
     ]
   }
 }
