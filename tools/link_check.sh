@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sweep every URL in resources_db.js and index.html for liveness.
+# Sweep every URL in paths/*.json for liveness.
 #
 # Two traps this handles that a plain status check does not:
 #   - YouTube watch pages return 200 for deleted videos, so videos go through
@@ -16,14 +16,15 @@ mkdir -p "$OUT"
 UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36"
 
 node -e "
-global.window={};require('$ROOT/resources_db.js');const db=window.RESOURCES_DB;
+const fs=require('fs');
 const u=new Set();
-for(const p of Object.keys(db))for(const t of Object.keys(db[p]))for(const s of Object.keys(db[p][t]))
- for(const c of ['courses','papers','lectures','docs','videos','podcasts'])
-  for(const e of (db[p][t][s][c]||[]))u.add(e.url);
-const h=require('fs').readFileSync('$ROOT/index.html','utf8');
-for(const m of h.matchAll(/href=\"(https?:\/\/[^\"]+)\"/g))u.add(m[1]);
-console.log([...u].join('\n'));
+for(const f of fs.readdirSync('$ROOT/paths').filter(f=>f.endsWith('.json'))){
+  const p=JSON.parse(fs.readFileSync('$ROOT/paths/'+f,'utf8'));
+  for(const ph of p.phases||[])for(const t of ph.tasks||[])for(const s of t.subtasks||[])
+    for(const c of ['courses','papers','lectures','docs','videos','podcasts'])
+      for(const e of (s.resources?.[c]||[]))u.add(e.url);
+}
+console.log([...u].join('\\n'));
 " > "$OUT/urls.txt"
 
 total=$(wc -l < "$OUT/urls.txt" | tr -d ' ')

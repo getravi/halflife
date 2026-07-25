@@ -13,14 +13,12 @@
     "build": "node tools/validate-path.js && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "check": "node tools/check.js",
-    "render": "python3 tools/render.py",
-    "gen": "node tools/build.js",
     "dev:worker": "wrangler dev",
     "db:migrate:local": "wrangler d1 migrations apply frontier-lab --local",
     "db:migrate": "wrangler d1 migrations apply frontier-lab --remote",
     "deploy": "vite build && wrangler deploy",
-    "validate": "node tools/validate-path.js"
+    "validate": "node tools/validate-path.js",
+    "links": "bash tools/link_check.sh"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.18.8",

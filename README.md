@@ -1,74 +1,47 @@
 # Frontier Lab Learning Plan
 
-A single-page tracker for a 52-week self-study plan aimed at evals and
-environments roles, with a spaced-repetition review loop over it. Run it with
-`make serve` — a small Node server that hosts the page and the `/api` routes.
-It is no longer openable as `file://`, and no longer purely static.
+A hosted tracker for multi-week learning paths, with a spaced-repetition
+review loop over them. The curriculum is data; the app is a Cloudflare Worker
+serving `/api` from D1 and a Vite-built page from static assets.
+
+The frontier-lab roadmap in `paths/frontier-lab.json` is one path. It is not
+the app.
 
 ## Running it
 
-Node 24 (the current LTS, pinned in `.nvmrc` and `engines`) and pnpm. The
-frontend is bundled by Vite; the server, the tests and the build tools use no
-dependencies at all. Python 3 is needed only by `make render`.
+Node 24 and pnpm. Everything else is Cloudflare Wrangler.
 
 ```sh
 pnpm install
-pnpm build          # bundle the frontend into dist/
-pnpm serve          # http://localhost:8000 — ctrl-c to stop
+pnpm db:migrate:local     # create the local D1 schema and seed the dev user
+pnpm validate             # check paths/*.json and emit public/paths/
+pnpm build                # bundle the frontend into dist/
+pnpm dev:worker           # http://localhost:8787 — the Worker, D1 and the page
 ```
 
-Then open <http://localhost:8000>. **Today** is the landing view. On a fresh
-install it has nothing to show, so start here:
+Open <http://localhost:8787>. **Today** is the landing view; press
+**Set plan start date** first, since the plan-week reading depends on it.
 
-1. Press **Set plan start date to today**. That is what makes "This week" able
-   to tell you which week you are on, and how far you have drifted from it.
-2. Go to a phase, open a subtask, work through it, and tick its steps.
-3. Ticking the last step opens the capture form. Write the card. This is the
-   part that makes Retained move.
-
-Serve on another port with `PORT=9000 pnpm serve`.
-
-### Working on the UI
-
-Two processes. The API stays on 8000; Vite serves the page on 5173 with hot
-reload and proxies `/api` back to it.
+While working on the UI, run Vite instead for hot reload — it serves the page
+on 5173 and proxies `/api` back to the Worker:
 
 ```sh
-pnpm serve          # terminal 1 — the API and the store
-pnpm dev            # terminal 2 — http://localhost:5173
+pnpm dev:worker           # terminal 1
+pnpm dev                  # terminal 2 — http://localhost:5173
 ```
 
-`pnpm serve` alone answers `/api` but returns 503 for the page until you have
-run `pnpm build`. That is deliberate: `index.html` loads `/main.js`, which
-imports `style.css`, and a browser cannot import CSS — serving the unbundled
-repo would hand you a page that renders unstyled and dead rather than telling
-you what is wrong.
-
-**Do not open `index.html` directly.** `file://` gives you no `/api`, so cards,
-reviews and completions have nowhere to go — and the module graph will not
-resolve either.
-
-If the server is not running the page still opens and still shows your
-progress, from a `localStorage` cache, behind a banner saying so. Ticks you
-make while it is down queue in an outbox and flush on the next successful
-request. Reviews and capture are disabled rather than accepted and dropped.
-
-Your cards live in `data/` and are committed to git deliberately — they are a
-year of hand-written notes, and git is their backup. Commit them like source.
-
-If the server refuses to start with `FATAL: cards.json is not valid JSON`, it
-is protecting that file rather than starting empty and overwriting it on the
-next save. Restore it with `git checkout data/cards.json`.
+Deploy with `pnpm deploy`, and apply migrations to the real database with
+`pnpm db:migrate`.
 
 ## The plan
 
-| Phase | Weeks | | Source |
-|---|---|---|---|
-| 0 · Programming foundations | 1–8 | Python from zero, arrays, the maths, the operating rhythm | `data/panels/panel_p01.json` |
-| 1 · Deep learning & transformers | 9–20 | micrograd → makemore → CS336 a1 → nanochat | `data/panels/panel_p01.json` |
-| 2 · Evals & environments | 21–38 | endpoint, harness, **environment v0 at wk 26**, then statistics, judges, infra, audit, post-training, safety, **v1 at wk 38** | `data/panels/panel_p2.json` |
-| 3 · Systems & scaling | 39–48 | JAX, scaling book, FSDP2/DTensor, CS336 a2, serving performance | `data/panels/panel_p3.json` |
-| 4 · Ship & apply | 49–52 | adoption, write-up, upstream contribution, close the funnel | `data/panels/panel_p4.json` |
+| Phase | Weeks | |
+|---|---|---|
+| 0 · Programming foundations | 1–8 | Python from zero, arrays, the maths, the operating rhythm |
+| 1 · Deep learning & transformers | 9–20 | micrograd → makemore → CS336 a1 → nanochat |
+| 2 · Evals & environments | 21–38 | endpoint, harness, **environment v0 at wk 26**, then statistics, judges, infra, audit, post-training, safety, **v1 at wk 38** |
+| 3 · Systems & scaling | 39–48 | JAX, scaling book, FSDP2/DTensor, CS336 a2, serving performance |
+| 4 · Ship & apply | 49–52 | adoption, write-up, upstream contribution, close the funnel |
 
 Two things about the shape, because they were deliberate and are easy to undo
 by accident:
@@ -103,103 +76,50 @@ in days; retrievability is `0.9 ^ (elapsed / stability)`, so `R` is exactly 0.9
 on the due date. A lapse resets stability to one day rather than shrinking it —
 forgotten means back tomorrow, whatever the card was worth yesterday.
 
-Three files hold this state and all three are committed, because they are a
-year of hand-written notes:
-
-| file | holds |
-|---|---|
-| `data/cards.json` | the cards themselves |
-| `data/reviews.jsonl` | append-only review log; card state is replayable from it |
-| `data/state.json` | plan start date and subtask completions |
-
-`server/store.js` is the only module that touches them. Writes rename into
-place, and the server refuses to boot on an unparseable file rather than
-starting empty and overwriting it.
+Cards, reviews and progress live in D1, scoped by `user_id` from the first
+commit even though sign-in arrives in the next sub-project. `worker/db.js` is
+the only module that knows SQL. The review log is append-only, so card
+scheduling state can always be rebuilt by replaying it — a scheduler bug is a
+recomputation rather than a data loss.
 
 ## The one thing to know before editing
 
-Three files have to agree exactly:
+Node **ids** in `paths/*.json` are load-bearing: user progress rows and cards
+reference them. `pnpm validate` diffs each path against its last committed
+version and fails if an id has changed or vanished. Hosted, a bad rename would
+orphan every user's cards at once rather than just one person's.
 
-| file | holds |
-|---|---|
-| `index.html` | the subtask titles — **the authority** |
-| `app.js` | `ALL_PHASES` and `STATIC_WEIGHTS`, keyed by those titles |
-| `resources_db.js` | each subtask's body, keyed by those titles |
-
-The progress key is `` `${page}::${taskId}::${subtaskTitle}::${stepIndex}` ``.
-Subtask titles are therefore load-bearing in three places at once, including
-saved `localStorage` progress.
-
-Rename a subtask title by hand and nothing throws: the sidebar silently opens
-empty and the progress bar quietly stops counting that subtask. That failure
-mode is why `make check` exists. **Run it before every commit.**
-
-Cards are keyed by the same title, so a rename would orphan hand-written notes
-too. `make check` now fails on any card whose subtask no longer resolves.
-
-Two files are generated. Do not hand-edit them:
-
-- `index.html` panels ← `data/panels/*.json`
-- `resources_db.js` and the `app.js` registries ← `data/resources/*.json` + `data/weights.json`
+Titles are display-only. **Rename them freely.**
 
 ## Editing
 
-Change curriculum content — task titles, subtask text, week labels, callouts:
+Curriculum content — titles, descriptions, steps, resources, weeks, weights —
+all lives in `paths/frontier-lab.json`:
 
 ```sh
-$EDITOR data/panels/panel_p3.json
-make render && make check
+$EDITOR paths/frontier-lab.json
+pnpm validate
 ```
 
-Change a subtask's resources, steps, or links:
+Phase and task weights are authored there. Subtask weights are derived (task
+weight ÷ subtask count) and step weights from the leading verb: build/verify
+verbs score 3, practice verbs 2, read verbs 1.
 
-```sh
-$EDITOR data/resources/rdb_p3.json
-make build && make check
-```
-
-Change how progress is weighted:
-
-```sh
-$EDITOR data/weights.json     # phase and task weights only
-make build && make check
-```
-
-Subtask weights are derived (task weight ÷ subtask count). Step weights are
-derived from the leading verb: build/verify verbs score 3, practice verbs 2,
-read verbs 1.
-
-Adding or removing a subtask means editing the panel **and** the resource file,
-in that order. `make build` refuses to write if the two disagree, and names the
-keys that drifted.
+Adding a subtask means adding an id that has never been used before. Removing
+one fails validation, because somebody's cards point at it.
 
 ## Commands
 
-Every `make` target has a `pnpm` script of the same name, except `make build`
-and `make dist`, which are `pnpm gen` and `pnpm build`. Use whichever you like.
-
 ```
-make check    invariants: the three files agree, weeks are sane, DOM hooks exist
-make test     unit tests for the scheduler, the store and the server routes
-make render   rebuild index.html panels from data/panels/
-make build    rebuild resources_db.js + app.js registries from data/resources/
-make all      render, build, check
-make dist     bundle the frontend into dist/            (pnpm build)
-make dev      vite on :5173 with hot reload             (pnpm dev)
-make serve    the API on :8000, plus dist/ if built     (pnpm serve)
-make links    sweep every URL for liveness (slow, hits the network)
+pnpm validate     validate paths/*.json and emit public/paths/
+pnpm test         vitest — scheduler, worker routes, isolation, validator, rollup
+pnpm build        validate, then bundle into dist/
+pnpm dev          vite on :5173 with hot reload, proxying /api to :8787
+pnpm dev:worker   the Worker, D1 and the built page on :8787
+pnpm deploy       build and push the Worker
+pnpm db:migrate   apply migrations to the remote D1
+pnpm links        sweep every URL in paths/ for liveness (slow, network)
 ```
-
-Note the collision: **`make build` generates `resources_db.js`; `pnpm build`
-bundles the frontend.** They are different things. `pnpm gen` is the script
-that matches `make build`.
-
-`make check` also verifies week labels sit inside their phase range and never
-run backwards. An earlier version of this plan had calculus scheduled outside
-its own phase and the capstone environment shipping seven weeks before the
-experiment that designed it, because weeks had been renumbered with sequential
-find-and-replace. Weeks now come from the panel JSON and are validated on every
-render.
 
 ## Link hygiene
 
@@ -207,7 +127,7 @@ This repo inherited a resources database with a **~47% dead rate on video
 links** — invented YouTube IDs, several a single character off a real one,
 podcast slugs that never existed, and well-known names attached to other
 people's videos. Everything was rebuilt and verified, but the lesson is
-encoded in `make links`:
+encoded in `pnpm links`:
 
 - YouTube watch pages return **200 for deleted videos**. Check via the oEmbed
   API instead, and compare the returned title *and* channel against the label.
@@ -215,7 +135,7 @@ encoded in `make links`:
 - Podcast sites route on **episode number and ignore the slug**, so a fabricated
   slug still returns 200 while serving an unrelated episode. Confirm the title.
 - Some documentation sites serve **soft-404s**: HTTP 200 with an ~800-byte JS
-  redirect shell. `make links` flags any 200 with a body under 1 KB.
+  redirect shell. `pnpm links` flags any 200 with a body under 1 KB.
 - Verify every arXiv ID against the arXiv API and confirm the title matches the
   claim. Use `https://` and follow redirects — the `http://` endpoint 301s and
   silently returns no entry, which reads as "dead" if you don't follow it.
