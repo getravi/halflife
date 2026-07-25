@@ -3,7 +3,21 @@
  * window.API. Shows three things in this order: what is due, what week you
  * are on, and what you finished without capturing.
  */
-(function () {
+import {
+  ALL_PHASES,
+  CAPTURE_STATE,
+  loadProgress,
+  recalculateAllProgress,
+  hasCardFor,
+  getStaticSubtaskWeight,
+  getStaticTaskWeight,
+  getStaticPhaseWeight
+} from './app.js';
+import { API } from './api.js';
+import { RESOURCES_DB } from './resources_db.js';
+import * as SCHEDULER from './server/scheduler.js';
+
+{
   const DAY_MS = 86400000;
   const DAILY_CAP = 30;
 
@@ -25,8 +39,8 @@
 
   function dueCards() {
     const now = Date.now();
-    return window.SCHEDULER
-      .orderQueue(window.CAPTURE_STATE.cards, weightOf, now)
+    return SCHEDULER
+      .orderQueue(CAPTURE_STATE.cards, weightOf, now)
       .slice(0, DAILY_CAP);
   }
 
@@ -73,7 +87,7 @@
   function renderDebt() {
     const el = document.getElementById('today-debt');
     const calc = recalculateAllProgress(loadProgress());
-    const db = window.RESOURCES_DB || {};
+    const db = RESOURCES_DB;
     const debt = [];
 
     for (const ph of Object.keys(ALL_PHASES)) {
@@ -101,11 +115,11 @@
    */
   function retained() {
     const now = Date.now();
-    const db = window.RESOURCES_DB || {};
+    const db = RESOURCES_DB;
     const byCard = {};
-    for (const c of window.CAPTURE_STATE.cards) {
+    for (const c of CAPTURE_STATE.cards) {
       const key = `${c.page}::${c.taskId}::${c.subtaskTitle}`;
-      (byCard[key] = byCard[key] || []).push(window.SCHEDULER.retrievability(c, now));
+      (byCard[key] = byCard[key] || []).push(SCHEDULER.retrievability(c, now));
     }
 
     // This mirrors recalculateAllProgress exactly — same nesting, same weights,
@@ -170,8 +184,8 @@
     const worst = started.sort((a, b) => ret.byPhase[a] - ret.byPhase[b])[0];
     const page = ALL_PHASES[worst].page;
     const now = Date.now();
-    const stale = window.CAPTURE_STATE.cards
-      .filter(c => c.page === page && window.SCHEDULER.isDue(c, now))
+    const stale = CAPTURE_STATE.cards
+      .filter(c => c.page === page && SCHEDULER.isDue(c, now))
       .sort((a, b) => a.dueAt - b.dueAt);
 
     el.innerHTML = stale.length === 0
@@ -181,7 +195,7 @@
   }
 
   async function render() {
-    window.CAPTURE_STATE.cards = await API.getCards();
+    CAPTURE_STATE.cards = await API.getCards();
     const state = await API.getState();
 
     document.getElementById('today-offline').hidden = API.online;
@@ -238,8 +252,8 @@
     const card = queue.shift();
     const updated = await API.review(card.id, g, Date.now() - shownAt);
     if (updated) {
-      const i = window.CAPTURE_STATE.cards.findIndex(c => c.id === updated.id);
-      if (i !== -1) window.CAPTURE_STATE.cards[i] = updated;
+      const i = CAPTURE_STATE.cards.findIndex(c => c.id === updated.id);
+      if (i !== -1) CAPTURE_STATE.cards[i] = updated;
     }
     // A forgotten card that is not seen again the same session is theatre.
     if (g === 'again') queue.push(updated || card);
@@ -263,4 +277,4 @@
   });
 
   window.TODAY = { render, dueCards, startReview, retained };
-})();
+}

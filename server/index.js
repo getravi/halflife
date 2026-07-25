@@ -4,11 +4,13 @@
  * computed here on read so the scheduler exists in exactly one place and the
  * frontend never reimplements it.
  */
-const http = require('node:http');
-const fs = require('node:fs');
-const path = require('node:path');
-const { createStore } = require('./store.js');
-const S = require('./scheduler.js');
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+import { createStore } from './store.js';
+import * as S from './scheduler.js';
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -50,13 +52,20 @@ function serveStatic(root, urlPath, res) {
   });
 }
 
-function createServer({ dir, root, clock = () => Date.now() }) {
+export function createServer({ dir, root, clock = () => Date.now() }) {
   const store = createStore(dir);
 
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
 
     if (!url.pathname.startsWith('/api/')) {
+      if (!root) {
+        res.writeHead(503, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end('No build found. Run `pnpm build` then reload, '
+              + 'or run `pnpm dev` and use http://localhost:5173 instead.\n'
+              + 'The API on this port is up and serving either way.\n');
+        return;
+      }
       return serveStatic(root, url.pathname, res);
     }
 
@@ -126,11 +135,22 @@ function createServer({ dir, root, clock = () => Date.now() }) {
   });
 }
 
-module.exports = { createServer };
+const thisFile = fileURLToPath(import.meta.url);
 
-if (require.main === module) {
-  const root = path.dirname(__dirname);
-  const dir = path.join(root, 'data');
+// process.argv[1] is the entry script. Comparing it to this file is the ESM
+// equivalent of `require.main === module`.
+if (process.argv[1] && path.resolve(process.argv[1]) === thisFile) {
+  const repo = path.dirname(path.dirname(thisFile));
+  const dir = path.join(repo, 'data');
+
+  // Serve the Vite build when one exists. Without it there is no page to
+  // serve — index.html points at /main.js, which imports style.css, and a
+  // browser cannot import CSS. Falling back to the repo root would hand out a
+  // page that silently renders unstyled and dead, so this serves the API alone
+  // and says why.
+  const dist = path.join(repo, 'dist');
+  const built = fs.existsSync(path.join(dist, 'index.html'));
+  const root = built ? dist : null;
   const port = Number(process.env.PORT) || 8000;
 
   // Refuse to boot on a corrupt store. Starting empty and overwriting a

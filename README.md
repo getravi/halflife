@@ -7,12 +7,14 @@ It is no longer openable as `file://`, and no longer purely static.
 
 ## Running it
 
-Node 18 or newer. No dependencies, no `npm install` — the server, the tests and
-the build tools are all standard library. Python 3 is needed only by
-`make render`.
+Node 24 (the current LTS, pinned in `.nvmrc` and `engines`) and pnpm. The
+frontend is bundled by Vite; the server, the tests and the build tools use no
+dependencies at all. Python 3 is needed only by `make render`.
 
 ```sh
-make serve          # http://localhost:8000 — ctrl-c to stop
+pnpm install
+pnpm build          # bundle the frontend into dist/
+pnpm serve          # http://localhost:8000 — ctrl-c to stop
 ```
 
 Then open <http://localhost:8000>. **Today** is the landing view. On a fresh
@@ -24,10 +26,27 @@ install it has nothing to show, so start here:
 3. Ticking the last step opens the capture form. Write the card. This is the
    part that makes Retained move.
 
-Serve on another port with `PORT=9000 make serve`.
+Serve on another port with `PORT=9000 pnpm serve`.
+
+### Working on the UI
+
+Two processes. The API stays on 8000; Vite serves the page on 5173 with hot
+reload and proxies `/api` back to it.
+
+```sh
+pnpm serve          # terminal 1 — the API and the store
+pnpm dev            # terminal 2 — http://localhost:5173
+```
+
+`pnpm serve` alone answers `/api` but returns 503 for the page until you have
+run `pnpm build`. That is deliberate: `index.html` loads `/main.js`, which
+imports `style.css`, and a browser cannot import CSS — serving the unbundled
+repo would hand you a page that renders unstyled and dead rather than telling
+you what is wrong.
 
 **Do not open `index.html` directly.** `file://` gives you no `/api`, so cards,
-reviews and completions have nowhere to go.
+reviews and completions have nowhere to go — and the module graph will not
+resolve either.
 
 If the server is not running the page still opens and still shows your
 progress, from a `localStorage` cache, behind a banner saying so. Ticks you
@@ -156,15 +175,24 @@ keys that drifted.
 
 ## Commands
 
+Every `make` target has a `pnpm` script of the same name, except `make build`
+and `make dist`, which are `pnpm gen` and `pnpm build`. Use whichever you like.
+
 ```
 make check    invariants: the three files agree, weeks are sane, DOM hooks exist
 make test     unit tests for the scheduler, the store and the server routes
 make render   rebuild index.html panels from data/panels/
 make build    rebuild resources_db.js + app.js registries from data/resources/
 make all      render, build, check
-make serve    http://localhost:8000 — the page and the /api routes
+make dist     bundle the frontend into dist/            (pnpm build)
+make dev      vite on :5173 with hot reload             (pnpm dev)
+make serve    the API on :8000, plus dist/ if built     (pnpm serve)
 make links    sweep every URL for liveness (slow, hits the network)
 ```
+
+Note the collision: **`make build` generates `resources_db.js`; `pnpm build`
+bundles the frontend.** They are different things. `pnpm gen` is the script
+that matches `make build`.
 
 `make check` also verifies week labels sit inside their phase range and never
 run backwards. An earlier version of this plan had calculus scheduled outside

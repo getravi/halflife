@@ -1,4 +1,4 @@
-.PHONY: all check test render build serve links help
+.PHONY: all check test render build serve dev dist links help
 
 help:
 	@echo "make check    verify index.html, app.js and resources_db.js still agree (run before committing)"
@@ -6,7 +6,9 @@ help:
 	@echo "make render   regenerate index.html panels from data/panels/*.json"
 	@echo "make build    regenerate resources_db.js + app.js registries from data/resources/*.json"
 	@echo "make all      render, build, then check"
-	@echo "make serve    serve on http://localhost:8000 (also hosts the /api routes)"
+	@echo "make dev      vite dev server on :5173 with hot reload (proxies /api to :8000)"
+	@echo "make dist     production bundle into dist/"
+	@echo "make serve    the API on :8000, and dist/ if you have built it"
 	@echo "make links    sweep every URL for liveness (slow, network)"
 
 check:
@@ -25,6 +27,12 @@ all: render build check
 
 serve:
 	@node server/index.js
+
+dev:
+	@pnpm vite
+
+dist:
+	@pnpm vite build
 
 links:
 	@bash tools/link_check.sh

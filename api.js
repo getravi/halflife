@@ -6,8 +6,7 @@
  * wrote is the single unrecoverable failure in this system; everything else
  * can be recomputed from the review log.
  */
-(function () {
-  const CACHE_CARDS = 'flp_cache_cards';
+const CACHE_CARDS = 'flp_cache_cards';
   const CACHE_STATE = 'flp_cache_state';
   const OUTBOX = 'flp_outbox';
 
@@ -25,7 +24,7 @@
   let seq = 0;
   const nextId = () => `${Date.now()}-${++seq}`;
 
-  const API = {
+export const API = {
     online: true,
 
     pendingCount() {
@@ -118,6 +117,4 @@
     }
   };
 
-  window.addEventListener('online', () => { API.flushOutbox(); });
-  window.API = API;
-})();
+window.addEventListener('online', () => { API.flushOutbox(); });

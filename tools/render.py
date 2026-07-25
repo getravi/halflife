@@ -243,7 +243,7 @@ overview_panel = '''
 
 src = open(HTML).read()
 head = src[:src.index('<!-- OVERVIEW VIEW PANEL -->')]
-tail = src[src.index('<script src="resources_db.js">'):]
+tail = src[src.index('<!-- SCRIPTS -->'):]
 new = head + (overview_panel + ''.join(phase_panel(p) for p in phases)).lstrip('\n') + '\n' + tail
 
 need = ['id="global-bar-fill"', 'id="global-done"', 'id="global-total"', 'id="global-pct"',

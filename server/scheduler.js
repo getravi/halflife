@@ -6,7 +6,7 @@
  * R = 0.9 ^ (elapsed / stability), which puts R at exactly 0.9 on the due
  * date. The retention target is therefore not a second free parameter.
  */
-const DAY_MS = 86400000;
+export const DAY_MS = 86400000;
 
 const GRADES = ['again', 'hard', 'good', 'easy'];
 const FIRST = { hard: 2, good: 4, easy: 7 };
@@ -21,7 +21,7 @@ const LAPSE_STABILITY = 1;
 
 let seq = 0;
 
-function newCard(fields, now) {
+export function newCard(fields, now) {
   seq += 1;
   return {
     id: `c${now.toString(36)}${seq.toString(36)}`,
@@ -39,7 +39,7 @@ function newCard(fields, now) {
   };
 }
 
-function review(card, grade, now) {
+export function review(card, grade, now) {
   if (!GRADES.includes(grade)) {
     throw new Error(`unknown grade "${grade}"`);
   }
@@ -59,24 +59,19 @@ function review(card, grade, now) {
   };
 }
 
-function retrievability(card, now) {
+export function retrievability(card, now) {
   if (!card.lastReviewedAt || card.stability <= 0) return 0;
   const elapsedDays = (now - card.lastReviewedAt) / DAY_MS;
   if (elapsedDays <= 0) return 1;
   return Math.pow(0.9, elapsedDays / card.stability);
 }
 
-function isDue(card, now) {
+export function isDue(card, now) {
   return now >= card.dueAt;
 }
 
-function orderQueue(cards, weightOf, now) {
+export function orderQueue(cards, weightOf, now) {
   return cards
     .filter(c => isDue(c, now))
     .sort((a, b) => (a.dueAt - b.dueAt) || (weightOf(b) - weightOf(a)));
 }
-
-const SCHEDULER = { DAY_MS, newCard, review, retrievability, isDue, orderQueue };
-
-if (typeof module !== 'undefined' && module.exports) module.exports = SCHEDULER;
-if (typeof window !== 'undefined') window.SCHEDULER = SCHEDULER;

@@ -1,3 +1,6 @@
+import { RESOURCES_DB } from './resources_db.js';
+import { API } from './api.js';
+
 // ── Web Components ───────────────────────────────────────────
 class ProgressBar extends HTMLElement {
   static get observedAttributes() { return ['value']; }
@@ -1208,7 +1211,7 @@ function loadProgress() {
 function saveProgress(data) {
   PROGRESS_MIRROR = { completions: data.completions || {} };
   localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS_MIRROR));
-  if (window.API) API.patchState({ completions: PROGRESS_MIRROR.completions });
+  API.patchState({ completions: PROGRESS_MIRROR.completions });
 }
 
 // One-time hydration: the server wins if it has completions, because it is the
@@ -1328,7 +1331,7 @@ function getStepCompletion(progressData, page, taskId, subtaskTitle, stepIdx, ha
 function recalculateAllProgress(progressData) {
   if (!progressData.completions) progressData.completions = {};
 
-  const db = window.RESOURCES_DB || {};
+  const db = RESOURCES_DB || {};
   const calculated = {
     subtasks: {}, // key -> percentage
     tasks: {},    // taskId -> percentage
@@ -1418,7 +1421,7 @@ function recalculateAllProgress(progressData) {
 // ── Bulk Toggling ────────────────────────────────────────────
 function toggleTaskChildren(taskId, checked) {
   const progressData = loadProgress();
-  const db = window.RESOURCES_DB || {};
+  const db = RESOURCES_DB || {};
   const page = getPageForTask(taskId);
   
   const taskResources = db[page]?.[taskId];
@@ -1521,7 +1524,7 @@ function handleRouting() {
 
 // ── Reading Pane Sidebar ─────────────────────────────────────
 function loadResourcesDB(callback) {
-  if (window.RESOURCES_DB) {
+  if (RESOURCES_DB) {
     callback();
     return;
   }
@@ -1559,7 +1562,7 @@ function injectSidebar() {
 }
 
 function openSidebar(taskId, subtaskTitle) {
-  const db = window.RESOURCES_DB;
+  const db = RESOURCES_DB;
   if (!db) return;
 
   const page = getPageForTask(taskId);
@@ -1764,10 +1767,12 @@ function openSidebar(taskId, subtaskTitle) {
 // Writing the card is itself the strongest available study act, which is why
 // it happens here — at the moment the work is finished — rather than being
 // authored up front against material not yet learned.
-window.CAPTURE_STATE = { cards: [] };
+const CAPTURE_STATE = { cards: [] };
+// still on window so the browser console can poke at it during a session
+window.CAPTURE_STATE = CAPTURE_STATE;
 
 function hasCardFor(taskId, subtaskTitle) {
-  return window.CAPTURE_STATE.cards.some(
+  return CAPTURE_STATE.cards.some(
     c => c.taskId === taskId && c.subtaskTitle === subtaskTitle
   );
 }
@@ -1808,7 +1813,7 @@ function renderCaptureForm(taskId, subtaskTitle) {
     const card = await API.createCard({
       page: getPageForTask(taskId), taskId, subtaskTitle, prompt, answer
     });
-    window.CAPTURE_STATE.cards = await API.getCards();
+    CAPTURE_STATE.cards = await API.getCards();
     status.textContent = card ? 'Saved.' : 'Queued — server is not running.';
     setTimeout(() => form.remove(), 1200);
   });
@@ -1895,7 +1900,7 @@ function updatePageUI(calculated, progressData) {
   });
 
   // ── 3. Tasks and Subtasks Rendering ──
-  const db = window.RESOURCES_DB || {};
+  const db = RESOURCES_DB || {};
   
   for (const [phaseId, phaseInfo] of Object.entries(ALL_PHASES)) {
     const page = phaseInfo.page;
@@ -1942,7 +1947,7 @@ function initApp() {
 
   // Migrate legacy data if necessary
   if (!progressData.completions) {
-    progressData = migrateLegacyProgress(progressData, window.RESOURCES_DB || {});
+    progressData = migrateLegacyProgress(progressData, RESOURCES_DB || {});
     saveProgress(progressData);
   }
 
@@ -1950,7 +1955,7 @@ function initApp() {
     .then(() => hydrateProgress())
     .then(() => API.getCards())
     .then(cards => {
-      window.CAPTURE_STATE.cards = cards;
+      CAPTURE_STATE.cards = cards;
       const hydrated = loadProgress();
       updatePageUI(recalculateAllProgress(hydrated), hydrated);
       if (window.TODAY) window.TODAY.render();
@@ -1977,7 +1982,7 @@ function initApp() {
   });
 
   // ── 2. Task Headers & Subtask Cards Injections (All Phases) ──
-  const db = window.RESOURCES_DB || {};
+  const db = RESOURCES_DB || {};
   const daySections = document.querySelectorAll('.day-section');
 
   daySections.forEach(section => {
@@ -2076,3 +2081,17 @@ window.addEventListener('storage', e => {
     updatePageUI(calc, progressData);
   }
 });
+
+// Named exports for today.js. The declarations above stay plain `const`/
+// `function` because tools/check.js parses `const ALL_PHASES = {...}` out of
+// this file's source text to validate it against index.html.
+export {
+  ALL_PHASES,
+  CAPTURE_STATE,
+  loadProgress,
+  recalculateAllProgress,
+  hasCardFor,
+  getStaticSubtaskWeight,
+  getStaticTaskWeight,
+  getStaticPhaseWeight
+};

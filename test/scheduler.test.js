@@ -1,6 +1,6 @@
-const test = require('node:test');
-const assert = require('node:assert');
-const S = require('../server/scheduler.js');
+import test from 'node:test';
+import assert from 'node:assert';
+import * as S from '../server/scheduler.js';
 
 const DAY = 86400000;
 const T0 = 1750000000000; // fixed epoch — never call Date.now() in a test

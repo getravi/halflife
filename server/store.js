@@ -8,8 +8,8 @@
  * on read rather than reading as empty — starting empty and saving over it is
  * the one failure that would be unrecoverable.
  */
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 function readJSON(file, fallback) {
   let raw;
@@ -32,7 +32,7 @@ function writeJSON(file, value) {
   fs.renameSync(tmp, file);
 }
 
-function createStore(dir) {
+export function createStore(dir) {
   const cardsFile = path.join(dir, 'cards.json');
   const reviewsFile = path.join(dir, 'reviews.jsonl');
   const stateFile = path.join(dir, 'state.json');
@@ -95,5 +95,3 @@ function createStore(dir) {
     }
   };
 }
-
-module.exports = { createStore };

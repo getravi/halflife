@@ -4,7 +4,7 @@
  * Keyed by: Page Name -> Section ID (checkbox data-id) -> Subtask Title
  */
 
-window.RESOURCES_DB = {
+export const RESOURCES_DB = {
   "phase0.html": {
     "p0-operating-rhythm": {
       "Go public on day one": {

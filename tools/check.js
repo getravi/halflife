@@ -19,19 +19,23 @@
  *
  * Exits non-zero on any failure.
  */
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import process from 'node:process';
 
-const ROOT = path.dirname(__dirname);
+const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const fail = [];
 
 // ---- load ----
 const htmlSrc = read('index.html');
 const appSrc = read('app.js');
-global.window = {};
-require(path.join(ROOT, 'resources_db.js'));
-const db = window.RESOURCES_DB;
+// resources_db.js is an ES module now, so it is imported rather than executed
+// against a faked global. Cache-bust so a rebuild inside one process is seen.
+const { RESOURCES_DB: db } = await import(
+  'file://' + path.join(ROOT, 'resources_db.js') + '?t=' + fs.statSync(path.join(ROOT, 'resources_db.js')).mtimeMs
+);
 
 // evaluate the two registries as expressions rather than declarations, so this
 // file's own scope stays clean

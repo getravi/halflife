@@ -10,10 +10,11 @@
  *
  * Usage: node tools/build.js
  */
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = path.dirname(__dirname);
+const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const HTML = path.join(ROOT, 'index.html');
 const DB = path.join(ROOT, 'resources_db.js');
 const APP = path.join(ROOT, 'app.js');
@@ -80,7 +81,7 @@ fs.writeFileSync(DB, `/**
  * Keyed by: Page Name -> Section ID (checkbox data-id) -> Subtask Title
  */
 
-window.RESOURCES_DB = ` + JSON.stringify(out, null, 2) + ';\n');
+export const RESOURCES_DB = ` + JSON.stringify(out, null, 2) + ';\n');
 
 // ---- 4. regenerate app.js registries ----
 const W = JSON.parse(fs.readFileSync(WEIGHTS, 'utf8'));
