@@ -5,8 +5,12 @@
  */
 import { getUser } from './auth.js';
 import { error } from './http.js';
+import * as progress from './routes/progress.js';
 
-const ROUTES = [];
+const ROUTES = [
+  ['GET', '/api/progress', progress.list],
+  ['PUT', '/api/progress', progress.set]
+];
 
 export default {
   async fetch(request, env) {
