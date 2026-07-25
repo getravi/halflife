@@ -8,13 +8,17 @@ import { error } from './http.js';
 import * as progress from './routes/progress.js';
 import * as cards from './routes/cards.js';
 import * as reviews from './routes/reviews.js';
+import * as meRoutes from './routes/me.js';
 
 const ROUTES = [
   ['GET', '/api/progress', progress.list],
   ['PUT', '/api/progress', progress.set],
   ['GET', '/api/cards', cards.list],
   ['POST', '/api/cards', cards.create],
-  ['POST', '/api/reviews', reviews.create]
+  ['POST', '/api/reviews', reviews.create],
+  ['GET', '/api/me', meRoutes.me],
+  ['DELETE', '/api/me', meRoutes.destroy],
+  ['POST', '/api/enrollments', meRoutes.enrol]
 ];
 
 export default {
