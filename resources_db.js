@@ -86,7 +86,7 @@ window.RESOURCES_DB = {
       "Put the buffer and the reviews in the calendar": {
         "desc": "Reserve slack you will certainly need, and schedule the review that stops six-month-old material evaporating. A plan with no slack turns the first two-week slip into permanent failure.",
         "steps": [
-          "Mark weeks 13, 26 and 39 as catch-up in your calendar now, and refuse to schedule content into them.",
+          "Mark weeks 13, 26 and 44 as catch-up in your calendar now, and refuse to schedule content into them.",
           "Spend 90 minutes of each re-deriving from a blank page: backprop, scaled dot-product attention, the Adam update, cross-entropy, and a sharded training step.",
           "If you are behind, use the whole week to catch up rather than declaring yourself behind permanently.",
           "Keep a list of things you have derived once; anything untouched for eight weeks goes into the next review.",
@@ -1731,976 +1731,7 @@ window.RESOURCES_DB = {
     }
   },
   "phase2.html": {
-    "p2-jax-core": {
-      "Purity and the tracing model": {
-        "desc": "JAX's transformations work by tracing your function with abstract values, so anything that is not a pure function of the declared inputs either silently disappears or blows up with an error you have never seen before. The goal of this item is not to memorise rules but to burn the three canonical error messages into recognition memory.",
-        "steps": [
-          "Read \"How to think in JAX\" end to end, then re-read the section on tracers until you can say in one sentence what a `Traced<ShapedArray>` object actually is.",
-          "Deliberately leak a tracer: store the value of an intermediate inside a Python list from within a `jit`-ed function, then use it outside. Record the `UnexpectedTracerError` text verbatim.",
-          "Deliberately mutate in place: write `x[0] = 1.0` on a `jax.Array` and read the error; then rewrite it with `x.at[0].set(1.0)` and confirm it returns a new array rather than mutating.",
-          "Deliberately branch on a traced boolean: `if x > 0:` inside a `jit`-ed function. Read the `ConcretizationTypeError`, then fix it with `jnp.where` and note which fix applies when (`where` for values, `lax.cond` for expensive branches).",
-          "Work the JAX Sharp Bits notebook's PRNG section: replace a global `np.random` seed with explicit `jax.random.key` splitting and understand why JAX refuses implicit global state.",
-          "Write a one-page cheat sheet in your notes mapping each error string to its cause and its fix. This is the artifact — you will consult it for the rest of the phase."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Quickstart: How to think in JAX",
-            "url": "https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html"
-          },
-          {
-            "name": "JAX — 🔪 The Sharp Bits 🔪 (common gotchas)",
-            "url": "https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html"
-          },
-          {
-            "name": "JAX — Errors reference (UnexpectedTracerError, ConcretizationTypeError)",
-            "url": "https://docs.jax.dev/en/latest/errors.html"
-          },
-          {
-            "name": "JAX — Stateful computations (why purity is enforced)",
-            "url": "https://docs.jax.dev/en/latest/stateful-computations.html"
-          },
-          {
-            "name": "JAX — Frequently asked questions",
-            "url": "https://docs.jax.dev/en/latest/faq.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Intro to JAX: Accelerating Machine Learning research (TensorFlow)",
-            "url": "https://www.youtube.com/watch?v=WdTeDXsOSj4"
-          }
-        ]
-      },
-      "grad, value_and_grad, and jit": {
-        "desc": "Autodiff and compilation are the two transformations you will see in literally every JAX snippet. `grad` differentiates with respect to the first argument by default and happily takes a whole parameter pytree; `jit` caches compiled code on a key made of shapes and dtypes, which is the single fact that explains most JAX performance surprises.",
-        "steps": [
-          "Write a scalar loss over a nested dict of parameters and take `jax.grad(loss)(params, batch)`. Confirm the returned gradient is a pytree with exactly the same structure as `params`.",
-          "Swap to `jax.value_and_grad(loss)` and verify you get the loss and the gradient from a single forward pass; time both versions to see the saving.",
-          "Use `argnums` to differentiate with respect to something other than argument 0, and `has_aux=True` to return per-step metrics alongside the gradient.",
-          "Wrap a training step in `jax.jit` and time call 1 and call 2 separately with `block_until_ready()`. The delta is the compile cost — write the number down.",
-          "Trigger a recompile on purpose by changing the batch size, and confirm it with `jax.jit(f).lower(x).compile()` or by watching the timing jump. Then pass a Python int as a config flag and mark it `static_argnums` so it stops recompiling every call.",
-          "Read the autodiff cookbook's sections on `jvp` and `vjp` so you know what `grad` is built out of, even though you will rarely call them directly."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Just-in-time compilation",
-            "url": "https://docs.jax.dev/en/latest/jit-compilation.html"
-          },
-          {
-            "name": "JAX API — jax.grad",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.grad.html"
-          },
-          {
-            "name": "JAX API — jax.value_and_grad",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.value_and_grad.html"
-          },
-          {
-            "name": "JAX — The Autodiff Cookbook (jvp, vjp, and what grad is made of)",
-            "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
-          },
-          {
-            "name": "JAX — Pytrees (how grad traverses parameter trees)",
-            "url": "https://docs.jax.dev/en/latest/pytrees.html"
-          }
-        ]
-      },
-      "vmap": {
-        "desc": "`vmap` is a program transformation, not a loop: it rewrites the traced computation so a leading batch axis is pushed into every primitive. Reading `in_axes` and `out_axes` fluently is a prerequisite for reading anyone else's JAX, and `vmap(grad(...))` is the pattern that makes per-example gradients trivial.",
-        "steps": [
-          "Write a single-example loss, then get per-example gradients with `jax.vmap(jax.grad(loss))(params, xs, ys)` — no batch dimension anywhere in the loss body.",
-          "Use `in_axes=(None, 0, 0)` to broadcast the parameter pytree while mapping over data, and confirm what happens if you get the `None` wrong.",
-          "Write a pairwise-distance function for a single pair, then build the full N×N matrix with nested `vmap` and compare it against a hand-broadcast NumPy version for both correctness and readability.",
-          "Play with `out_axes` to move the mapped axis somewhere other than position 0, and check the resulting shape.",
-          "Compose the three: `jax.jit(jax.vmap(jax.grad(loss)))`, and confirm the composition order does not change the result.",
-          "Read the autodiff cookbook's per-example-gradient section so you can explain why `vmap(grad(f))` is cheaper than a Python loop over `grad(f)`."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Automatic vectorization",
-            "url": "https://docs.jax.dev/en/latest/automatic-vectorization.html"
-          },
-          {
-            "name": "JAX API — jax.vmap (in_axes / out_axes reference)",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.vmap.html"
-          },
-          {
-            "name": "JAX — The Autodiff Cookbook (per-example gradients)",
-            "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
-          }
-        ]
-      },
-      "lax.scan and structured control flow": {
-        "desc": "Python control flow runs at trace time and gets baked into the graph; `lax` control flow runs at execution time inside XLA. Getting this distinction wrong is the difference between a 3-second compile and a 10-minute one, and `lax.scan` is how every real JAX training loop is written.",
-        "steps": [
-          "Write a jit-ed function with a Python `for` loop of 500 iterations, time the compile, then rewrite it with `jax.lax.scan` and time the compile again. Record both numbers.",
-          "Build a scan-based training step where `carry = (params, opt_state)` and the per-step outputs are the metrics you want stacked; confirm the output leading axis equals the number of steps.",
-          "Get the scan signature right by hand: `f(carry, x) -> (carry, y)`. Deliberately return a carry whose dtype differs from the input carry and read the error you get.",
-          "Write one `lax.cond` where both branches are traced, and note that unlike Python `if`, both branches must return the same pytree structure and shapes.",
-          "Write one `lax.while_loop` and confirm you cannot reverse-differentiate through it — this is the reason `scan` is preferred wherever the trip count is known.",
-          "Use `jax.lax.scan`'s `length` and `unroll` arguments once each so you recognise them when you meet them in the scaling book or in MaxText."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Control flow and logical operators with JIT",
-            "url": "https://docs.jax.dev/en/latest/control-flow.html"
-          },
-          {
-            "name": "JAX API — jax.lax.scan",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html"
-          },
-          {
-            "name": "JAX API — jax.lax.cond",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.cond.html"
-          },
-          {
-            "name": "JAX API — jax.lax.while_loop",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.while_loop.html"
-          }
-        ]
-      },
-      "Explicit sharding and meshes": {
-        "desc": "Since JAX 0.9.0 explicit sharding is the default: `jax.make_mesh` creates axes typed `AxisType.Explicit`, shardings propagate through the type system, and a communication the compiler cannot infer is an error rather than a silent all-gather. This is the concept that maps one-for-one onto PyTorch's DeviceMesh and DTensor placements in Task 03.",
-        "steps": [
-          "Before importing anything else, run `jax.config.update(\"jax_num_cpu_devices\", 8)` so you have eight devices to mesh, then check `jax.devices()`.",
-          "Build a mesh with `mesh = jax.make_mesh((4, 2), ('data', 'model'))` and activate it with `jax.set_mesh(mesh)` — do not use `with mesh:`, which was deprecated in 0.10.1.",
-          "Annotate arrays with `jax.P` (the top-level PartitionSpec alias): shard a batch as `jax.P('data', None)` and replicate parameters as `jax.P()`. Inspect the result with `jax.debug.visualize_array_sharding`.",
-          "Write one full training step that replicates parameters and shards the batch along `'data'`, and print `x.sharding` at three points inside the step to watch the sharding propagate.",
-          "Deliberately combine two arrays with incompatible specs and read the error explicit mode raises — then fix it by resharding one of them instead of letting a compiler guess.",
-          "Write down the mapping you will need in week 27: mesh → DeviceMesh, `jax.P('data')` → `Shard(0)`, `jax.P()` → `Replicate()`."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Distributed arrays and automatic parallelization (canonical parallelism doc)",
-            "url": "https://docs.jax.dev/en/latest/parallel.html"
-          },
-          {
-            "name": "JAX API — jax.make_mesh",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.make_mesh.html"
-          },
-          {
-            "name": "JAX API — jax.set_mesh",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.set_mesh.html"
-          },
-          {
-            "name": "JAX API — jax.sharding module (Mesh, PartitionSpec, NamedSharding)",
-            "url": "https://docs.jax.dev/en/latest/jax.sharding.html"
-          },
-          {
-            "name": "Scaling book — Programming TPUs in JAX (meshes and specs in context)",
-            "url": "https://jax-ml.github.io/scaling-book/jax-stuff/"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Intro to Parallel Programming in JAX, all 3 flavors (Nodematic Tutorials)",
-            "url": "https://www.youtube.com/watch?v=wADzdMOZbF8"
-          }
-        ]
-      },
-      "Collectives and shard_map": {
-        "desc": "`shard_map` is JAX's manual mode: inside it you write the program a single device runs, and you place the collectives yourself. Every parallelism strategy in the scaling book is ultimately a question of which axis you `psum` over and when — so this is the item that makes chapter 3 legible.",
-        "steps": [
-          "Read the shard_map notebook, then write a toy `jax.shard_map` (top-level import — not `jax.experimental.shard_map`) that shards a matrix along `'data'` and does nothing but return its own shard, printing the local shape to confirm it is the per-device slice.",
-          "Add `jax.lax.psum(x, 'data')` and verify by hand that the result equals the global sum; then swap it for `lax.pmean` and check it equals the global mean.",
-          "Implement a data-parallel gradient step manually: compute per-shard grads inside `shard_map`, `pmean` them over `'data'`, and apply the update.",
-          "Implement one collective matmul that requires `lax.all_gather` or `lax.psum_scatter`, and reason about how many bytes cross the interconnect versus how many FLOPs you do.",
-          "Trigger the 0.9.1 behaviour on purpose: pass an array whose sharding does not match `in_specs` under explicit mode, read the assertion, and fix it by calling `jax.reshard` first rather than relying on an implicit reshard.",
-          "Read the shard_map JEP for the design rationale — it is the clearest statement of why manual mode exists alongside automatic sharding."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Manual parallelism with shard_map",
-            "url": "https://docs.jax.dev/en/latest/notebooks/shard_map.html"
-          },
-          {
-            "name": "JAX API — jax.shard_map",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.shard_map.html"
-          },
-          {
-            "name": "JAX API — jax.lax.psum",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.psum.html"
-          },
-          {
-            "name": "JAX API — jax.lax.pmean",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.pmean.html"
-          },
-          {
-            "name": "JAX enhancement proposal — shmap (shard_map) for simple per-device code",
-            "url": "https://docs.jax.dev/en/latest/jep/14273-shard-map.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Sharding the Sphere with jax.shard_map — JAX/OpenXLA DevLab Fall 2025 (OpenXLA)",
-            "url": "https://www.youtube.com/watch?v=jVWSuEj9hWE"
-          }
-        ]
-      },
-      "Read pmap, never write it": {
-        "desc": "The JAX corpus on the public internet is overwhelmingly pmap-era, and JAX 0.10.0 removed the C++ pmap infrastructure. `jax.pmap` survives only as a thin wrapper over `jit(shard_map)`; `PmapSharding`, `device_put_sharded` and `device_put_replicated` now raise AttributeError. You need to read this code and date it, not write it.",
-        "steps": [
-          "Skim the changelog for the 0.9.x–0.11 entries and pull out the removals by name: the pmap C++ path, `PmapSharding`, `device_put_sharded`, `device_put_replicated`. Paste them into your notes with version numbers.",
-          "Read the `jax.pmap` API page and note what it now says about being implemented on top of `shard_map` — this is the sentence that tells you the semantics you actually get.",
-          "Take any pmap-era tutorial snippet you can find and translate it on paper: `pmap(f)` over the leading axis becomes a mesh with one axis plus `jax.P('devices', ...)` specs; `axis_name='batch'` becomes the mesh axis name; `lax.pmean(g, 'batch')` stays exactly the same.",
-          "Do the same for the setup code: `device_put_replicated(params, devices)` becomes `jax.device_put(params, NamedSharding(mesh, jax.P()))`.",
-          "Write a three-line rule in your notes for dating a snippet on sight: `pmap` + `device_put_replicated` = pre-0.10; `with mesh:` = pre-0.10.1; `jax.experimental.shard_map` import = pre-top-level promotion.",
-          "Sanity-check the rule against two real repos you find in the wild and record which era each is from."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Change log (search for the pmap removals)",
-            "url": "https://docs.jax.dev/en/latest/changelog.html"
-          },
-          {
-            "name": "JAX API — jax.pmap (now a wrapper over jit(shard_map))",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.pmap.html"
-          },
-          {
-            "name": "JAX — Distributed arrays and automatic parallelization (what to translate pmap into)",
-            "url": "https://docs.jax.dev/en/latest/parallel.html"
-          }
-        ]
-      },
-      "Get devices without a budget": {
-        "desc": "You do not need to spend anything to do the mesh and sharding work in this task. Eight fake CPU devices behave identically for every exercise here; Kaggle and the TPU Research Cloud are the free paths to a real accelerator if you want one. Colab no longer hands out TPU slices, so do not plan around it.",
-        "steps": [
-          "Put `jax.config.update(\"jax_num_cpu_devices\", 8)` at the very top of a fresh script — before the first JAX call, or it silently has no effect — then print `jax.devices()` and confirm you see eight.",
-          "Re-run one mesh exercise and one `shard_map` exercise from this task against the fake devices to prove they behave the same as real ones.",
-          "Register a Kaggle account and start one TPU notebook session so you know the quota, the session limits and the accelerator selector before you need them under time pressure.",
-          "Read the TPU Research Cloud page and decide whether to apply; if you do, apply now, because approval is not instant.",
-          "If you want a paid fallback, price a small GCP TPU slice and write the hourly number in the same budget note you made for the multi-GPU box in Task 03.",
-          "Record in your repo README exactly what each JAX exercise actually ran on — fake CPU devices, Kaggle TPU, or rented hardware. Future-you and any interviewer will ask."
-        ],
-        "docs": [
-          {
-            "name": "JAX — Installation (CPU, GPU and TPU wheels)",
-            "url": "https://docs.jax.dev/en/latest/installation.html"
-          },
-          {
-            "name": "JAX API — jax.config (jax_num_cpu_devices and friends)",
-            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.config.html"
-          },
-          {
-            "name": "Kaggle — Tensor Processing Units (TPUs) documentation",
-            "url": "https://www.kaggle.com/docs/tpu"
-          },
-          {
-            "name": "Google TPU Research Cloud — about and application",
-            "url": "https://sites.research.google/trc/about/"
-          },
-          {
-            "name": "JAX — Introduction to multi-controller (multi-process/multi-host) JAX",
-            "url": "https://docs.jax.dev/en/latest/multi_process.html"
-          }
-        ]
-      }
-    },
-    "p2-scaling-book": {
-      "Chapters 1–2: rooflines and the hardware": {
-        "desc": "The roofline chapter is the highest-value reading in the whole phase: it teaches you to answer \"is this compute-bound or memory-bound?\" with division instead of a profiler. Chapter 2 attaches real numbers — FLOP/s, HBM bandwidth, interconnect bandwidth — so the arithmetic produces predictions you can check.",
-        "steps": [
-          "Read chapter 1 and derive arithmetic intensity for three ops by hand: a big square matmul, an elementwise GELU, and a layernorm. Classify each as compute- or memory-bound before reading the answer.",
-          "Compute the crossover intensity for one accelerator you can actually rent (peak FLOP/s ÷ HBM bandwidth) and write the number on a sticky note — it is the constant you will use all phase.",
-          "Read chapter 2 for the TPU numbers, then read chapter 12 (GPUs) only far enough to pull the equivalent GPU numbers into the same table.",
-          "Do the chapter exercises with pencil and paper first. Record every answer you got wrong plus the corrected working — that log is a deliverable at the milestone.",
-          "Predict the time for a single large matmul on your hardware from the roofline, then measure it. Write down the ratio of predicted to measured and a one-line theory for the gap.",
-          "Repeat the prediction-then-measure loop for one memory-bound op so you have both sides of the roofline calibrated."
-        ],
-        "docs": [
-          {
-            "name": "Scaling book — All About Rooflines (chapter 1)",
-            "url": "https://jax-ml.github.io/scaling-book/roofline/"
-          },
-          {
-            "name": "Scaling book — How to Think About TPUs (chapter 2)",
-            "url": "https://jax-ml.github.io/scaling-book/tpus/"
-          },
-          {
-            "name": "Scaling book — table of contents",
-            "url": "https://jax-ml.github.io/scaling-book/"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
-          }
-        ]
-      },
-      "Chapters 3–4: sharding and transformer math": {
-        "desc": "Chapter 3 is the cost model: for every sharding strategy, what gets communicated, how much, and at what point the communication dominates. Chapter 4 is the accounting: parameters, FLOPs and activation memory for a transformer forward and backward. Together they let you size a run on paper, which is the stated deliverable of this task.",
-        "steps": [
-          "Read chapter 3 and build a table with one row per strategy — data parallel, FSDP/ZeRO-3, tensor parallel, pipeline parallel — and columns for what is communicated per step, how much, and what breaks it.",
-          "Derive the 6ND training-FLOP estimate from scratch: 2ND for the forward matmuls, 4ND for the backward. Then list what it ignores — attention's quadratic term, layernorms, the embedding/unembedding, activation recompute — and estimate at what sequence length the attention term stops being negligible.",
-          "Count activation memory per layer for a concrete config (hidden size, heads, sequence length, batch, dtype) and compare it against parameter plus optimizer-state memory. Note which one dominates and when.",
-          "Read chapter 5 on parallelising a transformer for training so the strategies in your table have a worked example attached.",
-          "Size one specific run end to end: pick a model, a batch size and a two-GPU box, and predict memory per device and step time. Put the prediction in your repo before you touch a GPU in Task 03.",
-          "Cross-check your tensor-parallel row against the Megatron-LM papers so you can name the original source of the column-then-row MLP trick."
-        ],
-        "docs": [
-          {
-            "name": "Scaling book — Sharded Matrices and How to Multiply Them (chapter 3)",
-            "url": "https://jax-ml.github.io/scaling-book/sharding/"
-          },
-          {
-            "name": "Scaling book — All the Transformer Math You Need to Know (chapter 4)",
-            "url": "https://jax-ml.github.io/scaling-book/transformers/"
-          },
-          {
-            "name": "Scaling book — How to Parallelize a Transformer for Training (chapter 5)",
-            "url": "https://jax-ml.github.io/scaling-book/training/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1909.08053 — Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism",
-            "url": "https://arxiv.org/abs/1909.08053"
-          },
-          {
-            "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM",
-            "url": "https://arxiv.org/abs/2104.04473"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
-          }
-        ]
-      },
-      "Chapter 12: how to think about GPUs": {
-        "desc": "Chapter 12 is the newest chapter and the one about hardware you can rent this afternoon. It covers the NVIDIA memory hierarchy, NVLink versus InfiniBand, what collectives actually cost on a GPU fabric, and how the whole GPU picture maps back onto the TPU model the rest of the book uses.",
-        "steps": [
-          "Read the chapter and extract a numbers table for one GPU you plan to rent: SM count, tensor-core FLOP/s at bf16, HBM capacity and bandwidth, NVLink bandwidth, and node-to-node bandwidth.",
-          "Work through the collectives section and compute the wall-clock cost of one all-reduce of your model's gradients at your parameter count, both intra-node over NVLink and inter-node over the network.",
-          "Write down where the GPU and TPU stories genuinely differ — topology, collective implementation, the role of the compiler — rather than treating the chapters as interchangeable.",
-          "Redo the chapter 1 roofline crossover with GPU numbers and confirm it agrees with the table you built in the previous item.",
-          "Read the Ultra-Scale Playbook's parallelism chapter immediately after, and note every place its GPU-measured guidance contradicts or refines the book's arithmetic.",
-          "End with one paragraph in your notes: given a 2×A100 or 2×L40S box, which parallelism strategy you would reach for first and why. You will test that answer next week."
-        ],
-        "docs": [
-          {
-            "name": "Scaling book — How to Think About GPUs (chapter 12)",
-            "url": "https://jax-ml.github.io/scaling-book/gpus/"
-          },
-          {
-            "name": "Scaling book — All About Rooflines (the arithmetic this chapter grounds)",
-            "url": "https://jax-ml.github.io/scaling-book/roofline/"
-          },
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          },
-          {
-            "name": "NVIDIA NCCL — environment variables (the fabric knobs the chapter describes)",
-            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
-          }
-        ]
-      },
-      "Chinchilla as the anchor": {
-        "desc": "Chinchilla is the reference point everyone quotes and few people state correctly. The actual claim is narrow: for a fixed training-compute budget, model size and training tokens should scale roughly in proportion, landing near 20 tokens per parameter. It says nothing about inference cost and it assumes you never run out of unique data.",
-        "steps": [
-          "Read the paper and identify the three separate estimation approaches — fixed model size, IsoFLOP, and the parametric loss fit — and note that they broadly agree, which is why the result stuck.",
-          "Write the compute-optimal claim in your own words in two sentences, then write the two assumptions it rests on in two more.",
-          "Read the earlier Kaplan et al. scaling-laws paper so you can say exactly which choice (the learning-rate schedule and the treatment of embedding parameters) made its exponents differ from Chinchilla's.",
-          "Skim the replication attempt paper for the fitted-parameter dispute; the point is not to adjudicate it but to know that the exact coefficients are contested while the shape is not.",
-          "Compute the Chinchilla-optimal token count for three parameter counts you care about, then look up how many tokens a recent open model of that size was actually trained on and note the ratio.",
-          "Keep that ratio handy — the next item explains why it is 10× or more."
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (Chinchilla)",
-            "url": "https://arxiv.org/abs/2203.15556"
-          },
-          {
-            "name": "arXiv 2001.08361 — Scaling Laws for Neural Language Models (Kaplan et al.)",
-            "url": "https://arxiv.org/abs/2001.08361"
-          },
-          {
-            "name": "arXiv 2404.10102 — Chinchilla Scaling: A replication attempt",
-            "url": "https://arxiv.org/abs/2404.10102"
-          }
-        ]
-      },
-      "Inference-aware and data-constrained scaling": {
-        "desc": "Two results explain why nobody trains Chinchilla-optimal any more. Put inference demand in the objective and the optimum moves to a smaller model trained on far more data. Put a cap on unique data and repeated epochs start decaying in value until extra compute buys essentially nothing.",
-        "steps": [
-          "Read arXiv 2401.00448 and identify what changed in the objective: total cost is now training compute plus inference compute over an expected serving volume, not training compute alone.",
-          "Work one concrete example from that framing — pick a model size and an expected lifetime token volume, and show which of two training configurations is cheaper overall.",
-          "Read arXiv 2305.16264 and extract the two headline numbers: how many epochs of repeated data are roughly as good as fresh data, and where the returns flatten out.",
-          "Write one paragraph reconciling the two: inference-awareness pushes you to more tokens, data-constraints cap how many useful tokens exist, and the intersection is where 2025–2026 models actually sit.",
-          "Revisit the ratios you computed in the Chinchilla item and explain each one using these two papers rather than hand-waving about \"overtraining\".",
-          "Add the whole argument to your written scaling-book notes; being able to deliver it out loud in two minutes is the deliverable."
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2401.00448 — Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws",
-            "url": "https://arxiv.org/abs/2401.00448"
-          },
-          {
-            "name": "arXiv 2305.16264 — Scaling Data-Constrained Language Models",
-            "url": "https://arxiv.org/abs/2305.16264"
-          },
-          {
-            "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (the baseline being attacked)",
-            "url": "https://arxiv.org/abs/2203.15556"
-          }
-        ]
-      },
-      "The GPU counterpart": {
-        "desc": "The Ultra-Scale Playbook is the PyTorch-and-GPU twin of the scaling book: 5D parallelism, ZeRO stages, activation recomputation, kernel fusion, all backed by thousands of measured runs up to 512 GPUs. Where the scaling book gives you arithmetic, this gives you the empirical failure modes with the exact error you will see.",
-        "steps": [
-          "Read the memory chapter first and reproduce its memory breakdown for your own model config: parameters, gradients, optimizer states, activations.",
-          "Read the parallelism chapters — data parallel, ZeRO, tensor parallel, sequence/context parallel, pipeline parallel — and add a \"measured gotcha\" column to the strategy table you built for chapter 3.",
-          "Note every place the playbook's measured guidance sharpens the book's arithmetic, especially around overlap of communication and compute.",
-          "Skim the activation-recomputation and kernel-fusion sections so the levers in Task 03 have names before you pull them.",
-          "Skim the Smol Training Playbook for the operational side — the decisions and debugging that surround a real run rather than the parallelism theory.",
-          "Keep both tabs open through weeks 27–29 and add your own measured numbers next to theirs."
-        ],
-        "docs": [
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          },
-          {
-            "name": "Hugging Face — The Smol Training Playbook",
-            "url": "https://huggingface.co/spaces/HuggingFaceTB/smol-training-playbook"
-          },
-          {
-            "name": "Scaling book — How to Think About GPUs (the arithmetic side of the same material)",
-            "url": "https://jax-ml.github.io/scaling-book/gpus/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
-            "url": "https://arxiv.org/abs/1910.02054"
-          }
-        ]
-      }
-    },
-    "p2-pytorch-distributed": {
-      "FSDP2": {
-        "desc": "FSDP2 (`fully_shard`) shards each parameter on dim-0 into a DTensor rather than flattening everything into one per-rank buffer the way FSDP1 did. That single design change is what makes per-parameter mixed precision, per-parameter optimizer state and resharded checkpointing behave sanely — and it is why FSDP1 blog posts will mislead you.",
-        "steps": [
-          "Initialise the process group first, then apply `fully_shard` to your Phase 1 transformer bottom-up: each block, then the root module. Print `p.shape` and `p.to_local().shape` for one parameter to see the DTensor.",
-          "Run on two GPUs and record peak memory with `torch.cuda.max_memory_allocated()` before and after sharding; check the saving against the parameters + gradients + optimizer-state arithmetic from chapter 4.",
-          "Trace one step: which parameters get all-gathered in forward, when they are freed, and which gradients get reduce-scattered in backward. Confirm with `TORCH_DISTRIBUTED_DEBUG` or a profiler trace rather than by assumption.",
-          "Change the wrapping granularity — whole model versus per-block versus per-layer — and measure peak memory and step time at each. Explain the trade-off in terms of all-gather size versus all-gather count.",
-          "Turn on mixed precision via `MixedPrecisionPolicy` and confirm which tensors are bf16 (params, reduce) and which stay fp32 (master weights, optimizer state).",
-          "Read torchtitan's fsdp.md to see how a production codebase configures the same API."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Getting Started with Fully Sharded Data Parallel (FSDP2)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed.fsdp.fully_shard",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.fsdp.fully_shard.html"
-          },
-          {
-            "name": "torchtitan — docs/fsdp.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
-          },
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook (ZeRO stages and measured behaviour)",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
-            "url": "https://arxiv.org/abs/1910.02054"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Too Big to Train 2: PyTorch's Upgraded Interface for Fully Sharded Data Parallel (Sharcnet HPC)",
-            "url": "https://www.youtube.com/watch?v=SgRKWKwQbQE"
-          },
-          {
-            "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
-            "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
-          }
-        ]
-      },
-      "DTensor and DeviceMesh": {
-        "desc": "DTensor is the substrate: a local tensor, plus a DeviceMesh, plus a placement per mesh axis (`Shard(dim)`, `Replicate()`, `Partial()`). FSDP2, tensor parallel and distributed checkpointing are all expressed in it. This is the exact analogue of the JAX mesh and `jax.P` work from Task 01, and building the mapping explicitly saves you a week.",
-        "steps": [
-          "Initialise the process group before you construct a DeviceMesh — a mesh built on uninitialised process groups will fail later under `torch.compile`, and the failure surfaces far from the cause.",
-          "Build a 1D mesh with `init_device_mesh`, distribute a tensor with `Shard(0)`, and print `.to_local().shape` on each rank to confirm the split.",
-          "Build a 2D mesh named `('dp', 'tp')`, slice it with `mesh['tp']`, and place a tensor as `[Shard(0), Replicate()]`.",
-          "Call `redistribute` to go from `Shard(0)` to `Replicate()` and back, and read the collectives PyTorch inserted using a profiler trace or `TORCH_DISTRIBUTED_DEBUG=DETAIL`. Name each one — all-gather, reduce-scatter, all-to-all.",
-          "Produce a `Partial()` placement deliberately (an unreduced local partial sum) and watch the all-reduce fire when you redistribute it to `Replicate()`.",
-          "Write the JAX↔PyTorch mapping table in your notes: Mesh↔DeviceMesh, `jax.P('data')`↔`Shard(0)`, `jax.P()`↔`Replicate()`, unreduced psum operand↔`Partial()`."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch API — torch.distributed.tensor (DTensor)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
-          },
-          {
-            "name": "PyTorch — Getting Started with DeviceMesh",
-            "url": "https://docs.pytorch.org/tutorials/recipes/distributed_device_mesh.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed (collectives, process groups, debug flags)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
-          },
-          {
-            "name": "JAX — Distributed arrays and automatic parallelization (the Task 01 counterpart)",
-            "url": "https://docs.jax.dev/en/latest/parallel.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Introduction to PyTorch DeviceMesh and DTensor (Edward Z. Yang's PyTorch and PL)",
-            "url": "https://www.youtube.com/watch?v=yd37O-xu2-4"
-          },
-          {
-            "title": "Two Dimensional Parallelism Using Distributed Tensors — PyTorch Conference 2022 (PyTorch)",
-            "url": "https://www.youtube.com/watch?v=MEx2kJPmjHo"
-          }
-        ]
-      },
-      "Tensor parallel and 2D parallelism": {
-        "desc": "Tensor parallel splits individual matmuls across devices. Done right through an MLP block — column-parallel then row-parallel — only one all-reduce is needed per block instead of two. Compose it with FSDP2 on a second mesh axis and you have 2D parallelism, which is what every real training run above one node looks like.",
-        "steps": [
-          "Apply `parallelize_module` to one transformer block with a plan of `ColwiseParallel` on the up-projection and `RowwiseParallel` on the down-projection, and verify by inspecting weight shapes per rank.",
-          "Count the collectives per block with a profiler and confirm you see one all-reduce, not two. If you see two, your column/row ordering is wrong — fix it and re-measure.",
-          "Extend the plan to attention (colwise on q/k/v, rowwise on the output projection) and note how the head dimension constrains the TP degree.",
-          "Build a 2D mesh `('dp', 'tp')`, apply TP on the `tp` axis and `fully_shard` on the `dp` axis, and confirm both are active by printing placements.",
-          "Measure step time at TP=2 versus pure data parallel at the same device count, and explain the difference using the chapter 3 cost model — communication volume per step, not vibes.",
-          "Read torchtitan's composability.md to see the ordering constraints a production stack imposes when TP, FSDP and compile are combined."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Large Scale Transformer model training with Tensor Parallel (TP)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
-          },
-          {
-            "name": "PyTorch API — Tensor Parallelism (torch.distributed.tensor.parallel)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.parallel.html"
-          },
-          {
-            "name": "torchtitan — docs/composability.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
-          },
-          {
-            "name": "Scaling book — Sharded Matrices and How to Multiply Them (the cost model)",
-            "url": "https://jax-ml.github.io/scaling-book/sharding/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1909.08053 — Megatron-LM (the original column-then-row MLP split)",
-            "url": "https://arxiv.org/abs/1909.08053"
-          },
-          {
-            "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters",
-            "url": "https://arxiv.org/abs/2104.04473"
-          }
-        ]
-      },
-      "Read torchtitan": {
-        "desc": "torchtitan is PyTorch's own reference training stack: FSDP2, tensor parallel, pipeline parallel, float8, distributed checkpointing and compile, in a codebase small enough to read end to end. With torchtune wound down, it is the answer to \"how would you set up a real pretraining run\" that a PyTorch-shop interviewer expects.",
-        "steps": [
-          "Clone the repo and read the training loop first, top to bottom, without chasing every helper. Note where parallelism is applied relative to model construction and optimizer creation.",
-          "Read the parallelism application code and map each strategy back to the API you used yourself: `fully_shard`, `parallelize_module`, the pipeline schedule.",
-          "Read the TOML config for one model and list every knob that changes parallelism, precision or checkpointing. Change two of them and predict the effect before running anything.",
-          "Read docs/composability.md and docs/fsdp.md for the ordering rules — which wrapper must be applied before which, and what breaks under `torch.compile` if you get it wrong.",
-          "Read docs/converging.md so you know what a healthy loss curve looks like in their harness and what they consider a convergence regression.",
-          "Write half a page in your notes: how you would configure torchtitan for a 1B model on eight GPUs, and which three settings you would change first if you saw an OOM."
-        ],
-        "docs": [
-          {
-            "name": "github.com/pytorch/torchtitan",
-            "url": "https://github.com/pytorch/torchtitan"
-          },
-          {
-            "name": "torchtitan — docs/composability.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
-          },
-          {
-            "name": "torchtitan — docs/fsdp.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
-          },
-          {
-            "name": "torchtitan — docs/converging.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/converging.md"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Torchtitan: Large-Scale LLM Training Using Native PyTorch 3D Parallelism — Wanchao Liang & Linsong Chu (PyTorch)",
-            "url": "https://www.youtube.com/watch?v=WsNEBxPDljU"
-          },
-          {
-            "title": "GPU MODE Lecture 39: Torchtitan",
-            "url": "https://www.youtube.com/watch?v=VYWRjcUqW6w"
-          }
-        ]
-      },
-      "Activation checkpointing and gradient accumulation": {
-        "desc": "These are the two levers that trade compute for memory, and both have arithmetic you should be able to do in your head. Checkpointing drops stored activations and recomputes them in backward — roughly a 30% compute tax for a large memory cut. Gradient accumulation buys effective batch size for free in memory but costs a reduce per microbatch unless you suppress it.",
-        "steps": [
-          "Measure baseline peak memory and step time, then wrap your transformer blocks in `torch.utils.checkpoint.checkpoint` and measure both again. Compute the actual memory saved and the actual compute tax on your hardware.",
-          "Switch to selective checkpointing — keep the cheap-to-store, expensive-to-recompute ops (matmul outputs) and recompute the rest — and show it beats full checkpointing on the memory-per-unit-slowdown curve.",
-          "Confirm the interaction with autocast: recomputation must run under the same precision context as the original forward, or your numerics drift.",
-          "Implement gradient accumulation over N microbatches and verify the resulting update matches a single large batch to tight tolerance (watch the loss-scaling-by-1/N detail).",
-          "Under FSDP2, suppress the gradient reduce on all but the last microbatch (`set_requires_gradient_sync(False)`), and measure the step time with and without. The delta is the reduce you were paying N times.",
-          "Read the Ultra-Scale Playbook's recomputation section and compare its measured numbers against yours — if you are far off, you measured the wrong thing."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch API — torch.utils.checkpoint",
-            "url": "https://docs.pytorch.org/docs/stable/checkpoint.html"
-          },
-          {
-            "name": "Hugging Face — The Ultra-Scale Playbook (activation recomputation and gradient accumulation)",
-            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-          },
-          {
-            "name": "PyTorch — Getting Started with FSDP2 (where the no-sync knob lives)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
-          },
-          {
-            "name": "Scaling book — All the Transformer Math You Need to Know (the activation-memory accounting)",
-            "url": "https://jax-ml.github.io/scaling-book/transformers/"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
-            "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
-          }
-        ]
-      },
-      "bf16 and fp8": {
-        "desc": "bf16 is the default training dtype because it keeps fp32's exponent range, which is exactly why it does not need loss scaling and fp16 does. float8 goes a step further with per-tensor scaling and a real speedup on Hopper-class hardware and later — but only on some layers, and the measured number on your box is rarely the marketing number.",
-        "steps": [
-          "Write down the exponent and mantissa bit counts for fp32, bf16 and fp16, then explain in one sentence why fp16 needs a `GradScaler` and bf16 does not.",
-          "Train the same model under autocast bf16 and under fp32 on identical data and seeds, and plot both loss curves. Throughput alone is not the comparison — convergence is.",
-          "Install torchao and convert the linear layers of your model to float8 training, using its filter to skip the layers that are unsafe to cast (typically the embedding, the final projection, and any layer with a small inner dimension).",
-          "Measure tokens/second at bf16 and at float8 on your actual hardware, and check whether the layers you converted are large enough for the tensor cores to benefit at all.",
-          "Plot the float8 loss curve against the bf16 one over the same number of steps. If it diverges, look at the scaling recipe before blaming the dtype.",
-          "Record all three numbers — bf16 throughput, float8 throughput, and the loss-curve difference — in your notes. The honest measured delta is the artifact."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch API — torch.amp (Automatic Mixed Precision)",
-            "url": "https://docs.pytorch.org/docs/stable/amp.html"
-          },
-          {
-            "name": "PyTorch — Automatic Mixed Precision examples (including GradScaler)",
-            "url": "https://docs.pytorch.org/docs/stable/notes/amp_examples.html"
-          },
-          {
-            "name": "github.com/pytorch/ao (torchao)",
-            "url": "https://github.com/pytorch/ao"
-          },
-          {
-            "name": "torchao API — torchao.float8",
-            "url": "https://docs.pytorch.org/ao/stable/api_reference/api_ref_float8.html"
-          },
-          {
-            "name": "torchao tutorial — Pre-training with float8",
-            "url": "https://docs.pytorch.org/ao/stable/eager_tutorials/pretraining.html"
-          }
-        ]
-      },
-      "NCCL and OOM debugging": {
-        "desc": "Distributed jobs fail in two characteristic ways. A hang is almost always a collective that one rank never reached — divergent control flow, an early return, a rank that raised and died quietly. An OOM is either genuine exhaustion or fragmentation, and the memory snapshot tells you which. Cause both on purpose so you have seen the symptom before it costs you a rented hour.",
-        "steps": [
-          "Set `NCCL_DEBUG=INFO` and `TORCH_NCCL_ASYNC_ERROR_HANDLING=1` on a healthy run first, and read the topology and ring-construction output so you know what normal looks like.",
-          "Cause a hang deliberately: make rank 0 take an `if` branch that skips an all-reduce the other rank executes. Watch the watchdog timeout, read which collective it names, and confirm the diagnosis is \"rank divergence\", not \"network\".",
-          "Turn on `TORCH_DISTRIBUTED_DEBUG=DETAIL` and re-run the hang to see the per-rank collective mismatch reported directly.",
-          "Cause a fragmentation OOM: allocate and free alternating large and small tensors until an allocation fails while `memory_reserved` is far above `memory_allocated`. Capture a snapshot with `torch.cuda.memory._record_memory_history()` and `_dump_snapshot()`.",
-          "Load the snapshot in the PyTorch memory visualizer and identify the peak — confirm for yourself that it sits in backward, not forward, and find the allocation that triggered the failure.",
-          "Write the two playbooks up as a page each: symptom, first three commands, the diagnosis that usually holds, and the fix. This writeup is a milestone deliverable."
-        ],
-        "docs": [
-          {
-            "name": "NVIDIA NCCL — environment variables",
-            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
-          },
-          {
-            "name": "NVIDIA NCCL — troubleshooting",
-            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
-          },
-          {
-            "name": "PyTorch — Understanding CUDA Memory Usage (snapshots and the visualizer)",
-            "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed (TORCH_DISTRIBUTED_DEBUG and watchdog behaviour)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
-          },
-          {
-            "name": "torchtitan — docs/debugging.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/debugging.md"
-          },
-          {
-            "name": "PyTorch blog — Understanding GPU Memory 1: Visualizing All Allocations over Time",
-            "url": "https://pytorch.org/blog/understanding-gpu-memory-1/"
-          }
-        ]
-      },
-      "Distributed checkpoint and resume": {
-        "desc": "A run you cannot resume is a run you cannot afford, and resharding on resume is the part that actually breaks. `torch.distributed.checkpoint` saves sharded state in a world-size-independent format — but only if you save the DTensor state dicts correctly, which is exactly what this exercise proves.",
-        "steps": [
-          "Save model and optimizer state with `torch.distributed.checkpoint.save` using the distributed state-dict helpers, not a naive `state_dict()` gather to rank 0.",
-          "Inspect what landed on disk: one file per rank plus metadata. Confirm the metadata describes global shapes, which is what makes resharding possible.",
-          "Kill the job mid-epoch (SIGKILL, not a clean exit) and restart it at the same world size. Verify the loss continues rather than restarting or jumping.",
-          "Now restart at a different world size — 2 ranks saved, 4 ranks loaded, or vice versa — and verify the loss curve is still continuous. This is the test that finds the bug.",
-          "Confirm you also restored the optimizer state and the dataloader position, not just the weights. A resumed run with a fresh optimizer state shows a distinctive loss bump; go and look for it.",
-          "Read torchtitan's checkpoint.md for how a production stack handles async saving and format conversion for later export."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Getting Started with Distributed Checkpoint (DCP)",
-            "url": "https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed.checkpoint",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.checkpoint.html"
-          },
-          {
-            "name": "torchtitan — docs/checkpoint.md",
-            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/checkpoint.md"
-          },
-          {
-            "name": "PyTorch API — torch.distributed.tensor (what DCP is actually serialising)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
-          }
-        ]
-      }
-    },
-    "p2-cs336-systems": {
-      "Watch the systems lectures": {
-        "desc": "CS336's systems block covers GPU architecture, kernels and Triton, and distributed training in exactly the order assignment 2 needs them. Watching first is not optional — the assignment assumes the lecture content and skipping it costs days. The executable lecture code is as valuable as the video.",
-        "steps": [
-          "Watch the GPUs/TPUs lecture and take notes specifically on the memory hierarchy and occupancy, because the assignment's benchmarking section assumes both.",
-          "Watch the Kernels/Triton lecture and follow along in the corresponding executable lecture file rather than just listening.",
-          "Watch both parallelism lectures back to back, and map each collective they describe onto the PyTorch API you used in Task 03.",
-          "Clone the current lectures repo and run the systems lecture code locally; the lectures are literate Python you can step through, which is the point of the course's format.",
-          "Cross-check the course website's schedule against the video list so you know which lecture number corresponds to which topic in the year you are watching — the numbering shifted between offerings.",
-          "Write a one-paragraph summary per lecture in your notes before starting the assignment. If you cannot write it, you did not watch it closely enough."
-        ],
-        "courses": [
-          {
-            "name": "Stanford CS336 — Language Modeling from Scratch (course site)",
-            "url": "https://cs336.stanford.edu/"
-          }
-        ],
-        "lectures": [
-          {
-            "name": "github.com/stanford-cs336/lectures — current executable lecture code and slides",
-            "url": "https://github.com/stanford-cs336/lectures"
-          },
-          {
-            "name": "github.com/stanford-cs336/spring2025-lectures — Spring 2025 lecture code",
-            "url": "https://github.com/stanford-cs336/spring2025-lectures"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
-          },
-          {
-            "title": "Stanford CS336: Language Modeling from Scratch | Spring 2026 — full playlist (Stanford Online)",
-            "url": "https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"
-          }
-        ]
-      },
-      "Benchmark and profile before optimising": {
-        "desc": "An unsynchronised CUDA timing measures queue submission, not work — this is the single most common benchmarking mistake and it will make every optimisation look free. Get the measurement methodology right first, then profile, then read the trace, and only then change code.",
-        "steps": [
-          "Write a timing harness with explicit warmup iterations and `torch.cuda.synchronize()` on both sides of the timed region. Prove the harness matters by timing the same op with and without sync.",
-          "Time forward, backward and the optimizer step separately across a sweep of model sizes and sequence lengths, and report mean and standard deviation, not a single run.",
-          "Before each measurement, write down a predicted number from your chapter 1 roofline. Keep a prediction-versus-measured log — this is a milestone deliverable.",
-          "Profile with `torch.profiler` using `activities=[CPU, CUDA]` and `record_shapes=True`, export a Chrome trace, and open it. Identify kernel time versus gaps, and whether you are launch-bound or compute-bound.",
-          "Use the profiler's memory profiling to find the peak allocation and confirm it lands in backward.",
-          "Pick the single largest gap or the single hottest kernel and write down what you would change — but do not change it yet. Optimising before this step is the mistake the assignment is teaching against."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — PyTorch Profiler recipe",
-            "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
-          },
-          {
-            "name": "PyTorch — Profiling your PyTorch Module",
-            "url": "https://docs.pytorch.org/tutorials/beginner/profiler.html"
-          },
-          {
-            "name": "Scaling book — All About Rooflines (make the prediction first)",
-            "url": "https://jax-ml.github.io/scaling-book/roofline/"
-          },
-          {
-            "name": "CS336 assignment 2 handout (PDF)",
-            "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
-          },
-          {
-            "name": "PyTorch — Understanding CUDA Memory Usage",
-            "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
-          }
-        ]
-      },
-      "Triton fundamentals": {
-        "desc": "Triton gives you block-level rather than thread-level semantics: you write Python, reason about tiles, and let the compiler handle intra-block scheduling. The official tutorials are the right ladder, and the fused-softmax one in particular teaches the online-normalisation trick FlashAttention is built on — do not skip ahead to attention.",
-        "steps": [
-          "Work tutorial 01 (vector add) and make sure you understand `tl.program_id`, the block-offset computation, and why the mask on `tl.load`/`tl.store` is mandatory for ragged tails.",
-          "Work tutorial 02 (fused softmax) and derive the online max-and-sum update on paper. This is the exact recurrence FlashAttention uses across key blocks — if it is not solid, the next item will fail.",
-          "Work tutorial 03 (matmul) and understand the two-level tiling, the accumulator in fp32, and the L2-friendly program ordering.",
-          "Write one kernel of your own from scratch without copying a tutorial — a fused bias+GELU is a good size — and validate it against PyTorch to tight tolerance.",
-          "Use Triton's autotuner on your kernel over a couple of block sizes and num_warps values, and record the speedup autotuning alone buys.",
-          "Skim the fused-attention tutorial now, purely to see the shape of the target, before writing your own version next week."
-        ],
-        "docs": [
-          {
-            "name": "Triton — Vector Addition tutorial",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
-          },
-          {
-            "name": "Triton — Fused Softmax tutorial (the online-normalisation trick)",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
-          },
-          {
-            "name": "Triton — Matrix Multiplication tutorial",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
-          },
-          {
-            "name": "Triton — Introduction and programming model",
-            "url": "https://triton-lang.org/main/programming-guide/chapter-1/introduction.html"
-          },
-          {
-            "name": "Triton — Fused Attention tutorial (the target)",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 14: Practitioners Guide to Triton",
-            "url": "https://www.youtube.com/watch?v=DdTsX6DQk24"
-          },
-          {
-            "title": "GPU MODE Lecture 29: Triton Internals",
-            "url": "https://www.youtube.com/watch?v=njgow_zaJMw"
-          },
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
-          }
-        ]
-      },
-      "FlashAttention-2 forward and backward in Triton": {
-        "desc": "This is the hard part of assignment 2 and the part actually worth doing. The tiled forward with online softmax means the N×N attention matrix never materialises; the backward is where most people stop. You summarised the paper in Phase 1 — now you write the kernel and benchmark it honestly.",
-        "steps": [
-          "Re-read the FlashAttention-2 paper's algorithm boxes and write the forward recurrence out by hand, tracking the running max, the running sum, and the rescaling of the accumulator at each key block.",
-          "Implement the forward kernel with query blocks in the program grid and a loop over key blocks. Check it against a naive PyTorch reference at several shapes to a tight tolerance before optimising anything.",
-          "Add causal masking and confirm the early-exit over key blocks past the diagonal — this is where a large chunk of the speedup comes from and where off-by-one masking bugs hide.",
-          "Implement the backward pass, saving the logsumexp from forward rather than recomputing softmax, and validate dQ, dK and dV separately against autograd so a failure localises.",
-          "Benchmark forward and forward+backward against the PyTorch reference across sequence lengths and find the crossover where tiling starts to win. Plot it.",
-          "If the backward defeats you, commit the green forward, the benchmark plot, and an honest written note on exactly where the backward broke. That is a better artifact than a silent gap."
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2205.14135 — FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
-            "url": "https://arxiv.org/abs/2205.14135"
-          },
-          {
-            "name": "arXiv 2307.08691 — FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
-            "url": "https://arxiv.org/abs/2307.08691"
-          }
-        ],
-        "docs": [
-          {
-            "name": "github.com/stanford-cs336/assignment2-systems",
-            "url": "https://github.com/stanford-cs336/assignment2-systems"
-          },
-          {
-            "name": "CS336 assignment 2 handout (PDF)",
-            "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
-          },
-          {
-            "name": "Triton — Fused Attention tutorial (reference implementation to compare against)",
-            "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 50: A learning journey — CUDA, Triton, Flash Attention",
-            "url": "https://www.youtube.com/watch?v=4jQTb6sRGLg"
-          }
-        ]
-      },
-      "DDP from scratch, then optimizer state sharding": {
-        "desc": "Build data parallelism yourself on raw collectives and FSDP2 stops being magic. Broadcast the initial parameters, all-reduce the gradients, then make it fast by bucketing so communication overlaps with the backward pass instead of queueing behind it. Then shard the optimizer state — that is ZeRO stage 1, by hand.",
-        "steps": [
-          "Initialise a process group with `init_process_group`, broadcast the initial parameters from rank 0, and confirm all ranks agree bit for bit.",
-          "Write the naive version: full backward, then one `all_reduce` per parameter, then the optimizer step. Measure the step time and the fraction spent in communication.",
-          "Flatten the gradients into a single contiguous buffer and issue one all-reduce instead of thousands. Re-measure — most of your naive overhead was launch cost, not bandwidth.",
-          "Add overlap: register post-accumulate gradient hooks that fire an async all-reduce as soon as a bucket fills, and wait on the handles before the optimizer step. Measure the overlap benefit and sweep the bucket size.",
-          "Implement ZeRO stage 1: each rank owns a disjoint slice of the optimizer state, updates only its slice, then all-gathers the updated parameters. Measure the memory saved and confirm it matches the arithmetic (roughly the optimizer state divided by world size).",
-          "Compare your hand-built version's step time and peak memory against PyTorch DDP and FSDP2 on the same model, and write down where you lose and why."
-        ],
-        "docs": [
-          {
-            "name": "PyTorch — Writing Distributed Applications with PyTorch (raw collectives)",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/dist_tuto.html"
-          },
-          {
-            "name": "PyTorch — Getting Started with Distributed Data Parallel",
-            "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
-          },
-          {
-            "name": "PyTorch API — torch.distributed (all_reduce, broadcast, async work handles)",
-            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
-          },
-          {
-            "name": "github.com/stanford-cs336/assignment2-systems",
-            "url": "https://github.com/stanford-cs336/assignment2-systems"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
-            "url": "https://arxiv.org/abs/1910.02054"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
-          }
-        ]
-      }
-    },
-    "p2-inference-serving": {
+    "p2-serving": {
       "Stand up vLLM": {
         "desc": "Everything else in this task is a variation on one server. Get `vllm serve` running with a small open model, hit it through the OpenAI-compatible endpoint, and learn the four knobs that actually change behaviour — plus how to read the startup log where the engine tells you how much KV cache it managed to allocate.",
         "steps": [
@@ -3041,14 +2072,14 @@ window.RESOURCES_DB = {
         ]
       },
       "Wire the endpoint to an RL and eval harness": {
-        "desc": "Close the loop that motivates the whole task. Prime Intellect's `verifiers` assumes an OpenAI-compatible endpoint backed by vLLM, so point it at the server you just built and run one trivial rollout. You are not learning the library yet — that is Phase 3 — you are proving the plumbing and finding where the endpoint becomes the bottleneck.",
+        "desc": "Close the loop that motivates the whole task. Prime Intellect's `verifiers` assumes an OpenAI-compatible endpoint backed by vLLM, so point it at the server you just built and run one trivial rollout. You are not learning the library yet — that comes in week 25 — you are proving the plumbing and finding where the endpoint becomes the bottleneck.",
         "steps": [
           "Install `verifiers` and read its overview far enough to know what it expects: a base URL, an API key it will not check, and a model name that matches what your server reports at `/v1/models`.",
           "Point it at your running vLLM server and execute the smallest built-in environment you can find. Success is a completed rollout, not a good score.",
           "Turn the concurrency up until the rollout loop stops getting faster, and confirm from the server logs that the endpoint — not the harness — is the limiter.",
           "Turn prefix caching on and re-run; a rollout loop with a fixed system prompt should show exactly the TTFT win you measured earlier.",
           "Repeat the same trivial rollout against your SGLang server to prove the harness really is engine-agnostic, and note anything that had to change.",
-          "Write down the endpoint configuration you will standardise on for Phase 3 — model, TP size, max-model-len, prefix caching, quantization — with the measurement that justifies each choice."
+          "Write down the endpoint configuration you will standardise on for the rest of this phase — model, TP size, max-model-len, prefix caching, quantization — with the measurement that justifies each choice."
         ],
         "docs": [
           {
@@ -3073,201 +2104,8 @@ window.RESOURCES_DB = {
           }
         ]
       }
-    }
-  },
-  "phase3.html": {
-    "p3-stats": {
-      "Decide the sample size before you run anything": {
-        "desc": "Power analysis is the reflex that separates an eval engineer from someone running a script. Before any comparison, work out what difference n questions could even detect — and discover how brutal n = 100 really is.",
-        "steps": [
-          "Write the comparison down first: two models on one benchmark (independent-ish), or one model before/after a change (paired). The design decides the test.",
-          "Use `statsmodels.stats.power.NormalIndPower().solve_power()` with `proportion_effectsize(p1, p2)` to get the minimum detectable effect at 80% power for n = 100, 500, 2000.",
-          "Tabulate MDE against n and stare at it: at n = 100 you typically cannot resolve anything under ~10 accuracy points. Save that table in your stats notebook.",
-          "Redo it for the paired case with `TTestPower` — the paired design usually buys you a 2–4x smaller n for the same MDE. That is the whole argument for scoring both models on the same questions.",
-          "Add a `plan_eval(n, baseline_acc, target_delta)` helper to your notebook that refuses (raises) when the requested delta is below the MDE.",
-          "Apply it once for real: pick an eval you were about to run and either enlarge n or narrow the claim you intend to make."
-        ],
-        "docs": [
-          {
-            "name": "statsmodels — TTestPower (paired / one-sample power)",
-            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.TTestPower.html"
-          },
-          {
-            "name": "statsmodels — NormalIndPower (two-proportion power)",
-            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.NormalIndPower.html"
-          },
-          {
-            "name": "statsmodels — proportion_effectsize (Cohen's h)",
-            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.proportion.proportion_effectsize.html"
-          }
-        ],
-        "papers": [
-          {
-            "name": "Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations (arXiv 2411.00640)",
-            "url": "https://arxiv.org/abs/2411.00640"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Statistical Power, Clearly Explained!!! (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=Rsc5znwR5FA"
-          },
-          {
-            "title": "Power Analysis, Clearly Explained!!! (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=VX_M3tIyiYk"
-          },
-          {
-            "title": "Sample Size and Effective Sample Size, Clearly Explained!!! (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=67zCIqdeXpo"
-          }
-        ]
-      },
-      "Read the error-bars paper and apply it the same day": {
-        "desc": "Anthropic's \"Adding Error Bars to Evals\" is the single most reusable eval paper there is: standard error over questions, the clustered case, and the paired analysis that makes model comparisons far tighter. Read it, then recompute error bars on a result you already published.",
-        "steps": [
-          "Read arXiv 2411.00640 end to end — it is short. Take notes on the three cases: independent questions, clustered questions, paired model comparison.",
-          "Implement `mean_and_se(scores)` for the simple case, and check it against the closed form for a Bernoulli mean: `sqrt(p(1-p)/n)`.",
-          "Implement the clustered standard error for benchmarks where questions come in families (same passage, same repo, same scenario) — treat the cluster, not the question, as the unit.",
-          "Recompute error bars on one real eval result you already have and see whether the ranking you claimed still holds once the interval is drawn.",
-          "Write the CI into your results format so every number your harness emits carries `mean`, `se`, `n`, and `n_clusters`.",
-          "Read Anthropic's companion blog post for the plain-language version you can reuse in an interview answer."
-        ],
-        "papers": [
-          {
-            "name": "Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations (arXiv 2411.00640)",
-            "url": "https://arxiv.org/abs/2411.00640"
-          }
-        ],
-        "docs": [
-          {
-            "name": "Anthropic — A statistical approach to model evals",
-            "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals"
-          },
-          {
-            "name": "scipy.stats.bootstrap — CIs without a closed form",
-            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "The standard error, Clearly Explained!!! (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=XNgt7F6FqDU"
-          },
-          {
-            "title": "Confidence Intervals, Clearly Explained!!! (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=TqOeMYtOc1w"
-          }
-        ]
-      },
-      "Paired comparison and variance decomposition": {
-        "desc": "Two models scored on the same questions are paired data. Analysing them as independent samples throws away most of your power. Then decompose the remaining variance — question difficulty, decoding temperature, seed — and find out which one you should actually be buying more of.",
-        "steps": [
-          "Score both models on the identical question set, keep per-question results, and run `scipy.stats.ttest_rel` on the per-question difference; compare the interval width against the unpaired `ttest_ind`.",
-          "Add the non-parametric fallback (`scipy.stats.wilcoxon`) for the case where the per-question difference is far from normal.",
-          "Bootstrap the paired difference with `scipy.stats.bootstrap(..., paired=True)` and report the CI on the difference, not two overlapping CIs on two means.",
-          "Decompose variance: fix questions and resample seeds (decoding variance), then fix seeds and resample questions (question variance). Report both numbers separately.",
-          "State the conclusion explicitly: if question variance dominates, more questions beat more samples per question — and that is a budget decision, not a statistics footnote.",
-          "Add both tests to the stats notebook with a docstring saying when each applies."
-        ],
-        "docs": [
-          {
-            "name": "scipy.stats.bootstrap (supports `paired=True`)",
-            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
-          },
-          {
-            "name": "scipy.stats.ttest_rel — paired t-test",
-            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html"
-          },
-          {
-            "name": "scipy.stats.wilcoxon — paired non-parametric test",
-            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html"
-          }
-        ],
-        "papers": [
-          {
-            "name": "Adding Error Bars to Evals — see the paired-comparison section (arXiv 2411.00640)",
-            "url": "https://arxiv.org/abs/2411.00640"
-          }
-        ],
-        "videos": [
-          {
-            "title": "Bootstrapping Main Ideas!!! (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=Xz0x-8-cgaQ"
-          },
-          {
-            "title": "Using Bootstrapping to Calculate p-values!!! (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=N4ZQQqyIf6k"
-          }
-        ]
-      },
-      "Multiple comparisons and effect sizes": {
-        "desc": "Run twelve ablations against one baseline and one of them is significant by accident. Implement Benjamini–Hochberg and Bonferroni, see what survives, and then stop leading with p-values — report the effect size with a bootstrap interval instead.",
-        "steps": [
-          "Simulate the problem first: generate 12 null comparisons (no real effect) and count how often at least one p < 0.05. Seeing ~46% makes the correction non-negotiable.",
-          "Apply `statsmodels.stats.multitest.multipletests` with `method='bonferroni'` and `method='fdr_bh'` to a real family of ablations and record which survive each.",
-          "Understand the difference you are choosing between: family-wise error rate (Bonferroni, conservative) versus false discovery rate (BH, what you usually want for screening).",
-          "Rewrite your results table so the headline column is the effect size with a bootstrap CI, and the p-value is a secondary column.",
-          "Pre-register the comparison family in the notebook: which comparisons you intend to make, before you look at the numbers. Post-hoc family size is how people cheat themselves.",
-          "Write one sentence per surviving result distinguishing 'small but real' from 'large but uncertain'."
-        ],
-        "docs": [
-          {
-            "name": "statsmodels — multipletests (Bonferroni, Benjamini–Hochberg)",
-            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.multitest.multipletests.html"
-          },
-          {
-            "name": "scipy.stats.bootstrap — effect-size confidence intervals",
-            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
-          }
-        ],
-        "videos": [
-          {
-            "title": "False Discovery Rates, FDR, clearly explained (StatQuest with Josh Starmer)",
-            "url": "https://www.youtube.com/watch?v=L3nlGfSyHV0"
-          },
-          {
-            "title": "Statistical Learning: 13.5 False Discovery Rate and Benjamini Hochberg Method (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=4RPUrwzgO6c"
-          }
-        ]
-      },
-      "Exit check: redo an old result honestly": {
-        "desc": "Take the single-variable change you measured back in the nanochat week and redo the analysis properly — paired where possible, bootstrap CI, stated n, stated seeds. Then publish whether it survives. A public correction is worth more in an interview than the original claim.",
-        "steps": [
-          "Pull the raw per-sample outputs of the old result. If you did not keep them, that is finding number one — write it down and fix the harness so it never happens again.",
-          "Re-run the analysis paired on the same questions, with a bootstrap CI on the difference and an explicit n, seed list, and decode configuration.",
-          "Check whether the original comparison was part of a larger family; if so, apply BH correction across that family.",
-          "Write the paragraph: what you claimed, what the honest interval is, and whether the claim survives. Publish it in the same place the original went.",
-          "Turn the whole thing into a reusable `analysis.ipynb` with functions — power, paired test, bootstrap CI, multiple-comparison correction — that every later task in this phase imports.",
-          "Add a results-schema check: any number your harness emits without n, seeds, and a CI should fail validation."
-        ],
-        "docs": [
-          {
-            "name": "Anthropic — A statistical approach to model evals",
-            "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals"
-          },
-          {
-            "name": "scipy.stats.bootstrap",
-            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
-          },
-          {
-            "name": "Inspect — Scoring Metrics (how a mature harness reports stderr)",
-            "url": "https://inspect.aisi.org.uk/metrics.html"
-          }
-        ],
-        "papers": [
-          {
-            "name": "Adding Error Bars to Evals (arXiv 2411.00640)",
-            "url": "https://arxiv.org/abs/2411.00640"
-          },
-          {
-            "name": "BetterBench: Assessing AI Benchmarks, Uncovering Issues, and Establishing Best Practices (arXiv 2411.12990)",
-            "url": "https://arxiv.org/abs/2411.12990"
-          }
-        ]
-      }
     },
-    "p3-agent-harness": {
+    "p2-agent-harness": {
       "The loop, from a blank file": {
         "desc": "No framework. Write the while loop yourself: send messages, parse the tool call, dispatch to a Python function, append the tool result, repeat until the model stops or you hit a limit. Two hundred lines, and afterwards every agent framework reads as a config file rather than magic.",
         "steps": [
@@ -3462,377 +2300,430 @@ window.RESOURCES_DB = {
         ]
       }
     },
-    "p3-finetuning": {
-      "LoRA from scratch — it is two matrices and a scale factor": {
-        "desc": "Implement a LoRA layer in PyTorch: A initialised Gaussian, B initialised to zero, output scaled by alpha over r. Inject it into your Phase 1 transformer, verify the trainable parameter count drops by the factor you predicted, confirm gradients flow only into A and B, and merge the adapter back into the base weights.",
+    "p2-environment-v0": {
+      "Pick a task you can verify without an LLM": {
+        "desc": "Task selection is the hardest judgement call in evaluation and it happens before any code. Programmatic verifiability keeps version zero honest — you are testing your harness, not your grading.",
         "steps": [
-          "Write `LoRALinear(base: nn.Linear, r: int, alpha: float)` that freezes `base.weight`, adds `A` (r × in, Gaussian) and `B` (out × r, zeros), and returns `base(x) + (alpha/r) * (x @ A.T @ B.T)`.",
-          "Prove B=0 matters: assert the wrapped module's output equals the base module's output exactly at initialisation. If it does not, your merge will be wrong too.",
-          "Inject into q_proj and v_proj of your Phase 1 transformer, then compute `trainable/total` and check it against the number you predicted from r, alpha, and the injected shapes.",
-          "Run one backward pass and assert `base.weight.grad is None` while `A.grad` and `B.grad` are populated — that is the actual PEFT invariant.",
-          "Implement `merge()` that folds `(alpha/r) * B @ A` into `base.weight`, and assert merged-model outputs match unmerged within float tolerance.",
-          "Sweep r ∈ {1, 4, 16, 64} on a tiny task and plot quality against trainable parameters so you have your own version of the paper's rank ablation."
-        ],
-        "papers": [
-          {
-            "name": "LoRA: Low-Rank Adaptation of Large Language Models (arXiv 2106.09685)",
-            "url": "https://arxiv.org/abs/2106.09685"
-          },
-          {
-            "name": "QLoRA: Efficient Finetuning of Quantized LLMs (arXiv 2305.14314)",
-            "url": "https://arxiv.org/abs/2305.14314"
-          },
-          {
-            "name": "LoRA Learns Less and Forgets Less (arXiv 2405.09673)",
-            "url": "https://arxiv.org/abs/2405.09673"
-          }
+          "Choose a task family with objectively checkable answers: arithmetic with hidden state, structured extraction against ground truth, or code checked by execution.",
+          "Confirm it has real variance across models — trivially solved or universally failed tells you nothing.",
+          "Keep it narrow enough that a failure points at a specific cause you can name.",
+          "Write the verifier before the tasks; if you cannot state the check as code, pick a different task family.",
+          "Write down what this environment does NOT measure. That sentence goes in the README."
         ],
         "docs": [
           {
-            "name": "PEFT — LoRA conceptual guide",
-            "url": "https://huggingface.co/docs/peft/en/developer_guides/lora"
-          },
-          {
-            "name": "PEFT documentation",
-            "url": "https://huggingface.co/docs/peft/en/index"
-          }
-        ],
-        "videos": [
-          {
-            "title": "LoRA: Low-Rank Adaptation of Large Language Models — Explained visually + PyTorch code from scratch (Umar Jamil)",
-            "url": "https://www.youtube.com/watch?v=PXWYUTMt-AU"
-          },
-          {
-            "title": "What is Low-Rank Adaptation (LoRA) | explained by the inventor (Edward Hu)",
-            "url": "https://www.youtube.com/watch?v=DhRoTONcyZE"
-          },
-          {
-            "title": "LoRA: Low-Rank Adaptation of LLMs Explained (Gabriel Mongaras)",
-            "url": "https://www.youtube.com/watch?v=_K3HgjnRHCY"
+            "name": "Inspect — scorers, and when a programmatic check is enough",
+            "url": "https://inspect.aisi.org.uk/scorers.html"
           }
         ]
       },
-      "One real SFT run with peft and trl": {
-        "desc": "Fine-tune a small open-weights model on an instruction dataset with peft plus TRL's SFTTrainer. One run, logged properly: loss curve, hyperparameters, hardware, wall-clock, cost. The point is to have executed the standard pipeline once so you can reason about post-training — not to produce a good model.",
+      "Write the four interfaces and nothing else": {
+        "desc": "Task, verifier, reset, reward. Resisting abstraction now is what lets version one exist at all.",
         "steps": [
-          "Pick a model small enough to iterate on a single GPU and a dataset already in a TRL-supported format (prompt-completion or conversational) — read the dataset-formats page before you write a formatting function.",
-          "Configure `SFTTrainer` with a `LoraConfig` from peft, and check `print_trainable_parameters()` against the prediction you made in the from-scratch task.",
-          "Turn on completion-only loss (mask the prompt) and confirm it is actually applied — training on the prompt is the most common silent SFT bug.",
-          "Log to a tracker: loss curve, LR schedule, grad norm, tokens/sec, peak memory, wall-clock, and the dollar figure. Record the exact package versions.",
-          "Evaluate before/after on a held-out set with the paired machinery from Task 01 — not on the training loss.",
-          "Push the adapter to the Hub with a model card stating base model, data, hyperparameters, and what it is not good for."
+          "Implement the four interfaces against roughly twenty tasks. Twenty is plenty.",
+          "Point it at the served endpoint you stood up in week 21 so the loop is real rather than mocked.",
+          "Make it runnable in one command from a clean clone — if a stranger cannot run it, it is not published.",
+          "Write no config system, no plugin layer, and no abstraction for the second environment you have not built.",
+          "Read the verifiers library's taskset/harness/runtime split for the shape this converges on, but do not adopt the framework yet."
         ],
         "docs": [
           {
-            "name": "TRL — SFTTrainer",
-            "url": "https://huggingface.co/docs/trl/en/sft_trainer"
+            "name": "Prime Intellect — verifiers",
+            "url": "https://github.com/PrimeIntellect-ai/verifiers"
           },
           {
-            "name": "TRL — Dataset formats and types",
-            "url": "https://huggingface.co/docs/trl/en/dataset_formats"
-          },
-          {
-            "name": "TRL — PEFT integration",
-            "url": "https://huggingface.co/docs/trl/en/peft_integration"
-          },
-          {
-            "name": "TRL — Reducing memory usage",
-            "url": "https://huggingface.co/docs/trl/en/reducing_memory_usage"
-          },
-          {
-            "name": "TRL releases (check the version you pin — v1.9.0 changed RL defaults)",
-            "url": "https://github.com/huggingface/trl/releases"
-          }
-        ],
-        "courses": [
-          {
-            "name": "Hugging Face LLM Course — Chapter 11: Supervised Fine-Tuning",
-            "url": "https://huggingface.co/learn/llm-course/chapter11/1"
-          },
-          {
-            "name": "Post-training of LLMs (DeepLearning.AI short course)",
-            "url": "https://www.deeplearning.ai/short-courses/post-training-of-llms/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "Training language models to follow instructions with human feedback (InstructGPT, arXiv 2203.02155)",
-            "url": "https://arxiv.org/abs/2203.02155"
+            "name": "Prime Intellect — Environments Hub",
+            "url": "https://app.primeintellect.ai/dashboard/environments"
           }
         ]
       },
-      "Dataset card and leakage check": {
-        "desc": "Write the dataset card before you publish the adapter — provenance, licence, size, splits, known limitations. Then actually check for train/eval contamination with exact-match and near-duplicate search between your training set and whatever you plan to evaluate on. Report the overlap number even when it is zero.",
+      "Run two models and write down the numbers": {
+        "desc": "Baselines exist first to prove the harness works end to end, and only second to be interesting.",
         "steps": [
-          "Write the card from the Hub template first: source, collection method, licence, size, split definition, intended use, and known limitations. Doing it before the run changes what you collect.",
-          "Run exact-match contamination: normalise whitespace and case, hash every training example and every eval question, and report the intersection size.",
-          "Run near-duplicate contamination: n-gram overlap (13-gram is the common convention) or MinHash/LSH, with a stated threshold. Report the count and show the top ten matches by hand.",
-          "Check the base model too — you cannot fix pretraining contamination, but you can say which benchmarks are compromised for the model you chose and cite the leakage literature.",
-          "Publish the overlap number in the card as a first-class field, including when it is zero, plus the exact script that produced it.",
-          "Add the check to CI so the number is recomputed whenever the training set changes."
+          "Run one small open model and one frontier API model across every task.",
+          "Record success rate, per-sample cost, tokens, and wall-clock — cost belongs beside accuracy from the very first run.",
+          "Do not tune prompts or scaffolding yet; you are measuring the harness, not competing.",
+          "Save the raw outputs, not just the aggregates. You will want them in week 32 when you learn to audit.",
+          "Note anything that made you uneasy about the numbers; that list becomes your Phase 2 backlog."
+        ]
+      },
+      "Publish it and say it is version zero": {
+        "desc": "Publishing something you know is flawed, with the flaws named, reads as competence. Publishing nothing until it is perfect reads as nothing at all.",
+        "steps": [
+          "Push the repo public with a one-command quickstart and your baseline table in the README.",
+          "Write a Known limitations section that is specific: no variance estimates yet, no judge validation, small n, single seed.",
+          "Post it in the community you joined in week 1 and ask one concrete question about it.",
+          "Tag the commit v0 so the diff against your week-38 version is legible to a reviewer.",
+          "Put the repo link in your application materials now, not when it is finished."
         ],
         "docs": [
           {
-            "name": "Hugging Face Hub — Dataset cards",
-            "url": "https://huggingface.co/docs/hub/en/datasets-cards"
-          },
-          {
-            "name": "TRL — Dataset formats and types",
-            "url": "https://huggingface.co/docs/trl/en/dataset_formats"
-          }
-        ],
-        "papers": [
-          {
-            "name": "Investigating Data Contamination in Modern Benchmarks for Large Language Models (arXiv 2311.09783)",
-            "url": "https://arxiv.org/abs/2311.09783"
-          },
-          {
-            "name": "Benchmarking Benchmark Leakage in Large Language Models (arXiv 2404.18824)",
-            "url": "https://arxiv.org/abs/2404.18824"
-          },
-          {
-            "name": "Evaluating Large Language Models Trained on Code — the original decontamination discussion (arXiv 2107.03374)",
-            "url": "https://arxiv.org/abs/2107.03374"
+            "name": "GitHub: About READMEs",
+            "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes"
           }
         ]
       }
     },
-    "p3-rl-posttraining": {
-      "Run a GRPO-family loop on a verifiable task": {
-        "desc": "Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. TRL v1.9.0 flipped the default `loss_type` to \"dapo\" and marks plain `grpo` as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.",
+    "p2-stats": {
+      "Decide the sample size before you run anything": {
+        "desc": "Power analysis is the reflex that separates an eval engineer from someone running a script. Before any comparison, work out what difference n questions could even detect — and discover how brutal n = 100 really is.",
         "steps": [
-          "Write the checker first, as a pure function with unit tests. If you cannot write the reward as code you do not have a verifiable task.",
-          "Use two reward functions, not one: a format reward and a correctness reward, logged separately — the first almost always saturates before the second moves.",
-          "Read the `loss_type` section of the GRPOTrainer docs and write down in your own words what `dapo` changes versus `grpo` (token-level normalisation) before you keep the default.",
-          "Stand up an OpenAI-compatible vLLM endpoint for generation; on-policy sampling throughput, not gradient steps, is what bounds this run.",
-          "Log per-step: mean reward, reward std within group, completion length, KL to reference, and fraction of groups with zero advantage (all-correct or all-wrong groups contribute nothing).",
-          "Report the honest outcome: reward curve versus held-out eval, with the paired CI from Task 01. Reward going up while eval does not is the interesting result, not a failure."
+          "Write the comparison down first: two models on one benchmark (independent-ish), or one model before/after a change (paired). The design decides the test.",
+          "Use `statsmodels.stats.power.NormalIndPower().solve_power()` with `proportion_effectsize(p1, p2)` to get the minimum detectable effect at 80% power for n = 100, 500, 2000.",
+          "Tabulate MDE against n and stare at it: at n = 100 you typically cannot resolve anything under ~10 accuracy points. Save that table in your stats notebook.",
+          "Redo it for the paired case with `TTestPower` — the paired design usually buys you a 2–4x smaller n for the same MDE. That is the whole argument for scoring both models on the same questions.",
+          "Add a `plan_eval(n, baseline_acc, target_delta)` helper to your notebook that refuses (raises) when the requested delta is below the MDE.",
+          "Apply it once for real: pick an eval you were about to run and either enlarge n or narrow the claim you intend to make."
         ],
         "docs": [
           {
-            "name": "TRL — GRPOTrainer (see `loss_type`)",
-            "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+            "name": "statsmodels — TTestPower (paired / one-sample power)",
+            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.TTestPower.html"
           },
           {
-            "name": "TRL releases — v1.9.0 changed the default loss_type",
-            "url": "https://github.com/huggingface/trl/releases"
+            "name": "statsmodels — NormalIndPower (two-proportion power)",
+            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.NormalIndPower.html"
           },
           {
-            "name": "TRL — Speeding up training (vLLM-backed generation)",
-            "url": "https://huggingface.co/docs/trl/en/speeding_up_training"
-          },
-          {
-            "name": "vLLM",
-            "url": "https://github.com/vllm-project/vllm"
+            "name": "statsmodels — proportion_effectsize (Cohen's h)",
+            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.proportion.proportion_effectsize.html"
           }
         ],
-        "courses": [
+        "papers": [
           {
-            "name": "Reinforcement Fine-Tuning LLMs With GRPO (DeepLearning.AI short course)",
-            "url": "https://www.deeplearning.ai/short-courses/reinforcement-fine-tuning-llms-grpo/"
-          },
-          {
-            "name": "Hugging Face LLM Course — Chapter 12: Open R1 / reasoning models",
-            "url": "https://huggingface.co/learn/llm-course/chapter12/1"
+            "name": "Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations (arXiv 2411.00640)",
+            "url": "https://arxiv.org/abs/2411.00640"
           }
         ],
         "videos": [
           {
-            "title": "DeepSeek's GRPO (Group Relative Policy Optimization) | Reinforcement Learning for LLMs (Julia Turc)",
-            "url": "https://www.youtube.com/watch?v=xT4jxQUl0X8"
+            "title": "Statistical Power, Clearly Explained!!! (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=Rsc5znwR5FA"
           },
           {
-            "title": "GRPO Reinforcement Learning Explained (DeepSeekMath Paper) (AI Papers Academy)",
-            "url": "https://www.youtube.com/watch?v=YCawyzAOg1Y"
+            "title": "Power Analysis, Clearly Explained!!! (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=VX_M3tIyiYk"
+          },
+          {
+            "title": "Sample Size and Effective Sample Size, Clearly Explained!!! (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=67zCIqdeXpo"
           }
         ]
       },
-      "Know where GRPO and DAPO came from": {
-        "desc": "GRPO is introduced in the DeepSeekMath paper: drop the value model, normalise advantage within a sampled group. DAPO then fixes four concrete failures — clip-higher, dynamic sampling, token-level loss, overlong-reward shaping — and that token-level loss is exactly the length-bias fix behind TRL's new default. Read both and you can explain your config line by line.",
+      "Read the error-bars paper and apply it the same day": {
+        "desc": "Anthropic's \"Adding Error Bars to Evals\" is the single most reusable eval paper there is: standard error over questions, the clustered case, and the paired analysis that makes model comparisons far tighter. Read it, then recompute error bars on a result you already published.",
         "steps": [
-          "Read DeepSeekMath (arXiv 2402.03300) §4 and derive the GRPO objective yourself from PPO by replacing the learned value baseline with the within-group mean.",
-          "Read DAPO (arXiv 2503.14476) and write one paragraph per fix: clip-higher (entropy collapse), dynamic sampling (zero-gradient groups), token-level loss (length bias), overlong reward shaping (truncation noise).",
-          "Map each fix onto a TRL config field and note which ones TRL exposes and which it does not.",
-          "Read DeepSeek-R1 (arXiv 2501.12948) for the part most people skip: they dropped process reward models for rule-based outcome rewards. Know why before someone asks.",
-          "Skim the PPO paper for the clipped surrogate objective so you can say precisely what GRPO kept and what it threw away.",
-          "Write the one-page explainer of your own run's config, citing the paper section behind each non-default value."
+          "Read arXiv 2411.00640 end to end — it is short. Take notes on the three cases: independent questions, clustered questions, paired model comparison.",
+          "Implement `mean_and_se(scores)` for the simple case, and check it against the closed form for a Bernoulli mean: `sqrt(p(1-p)/n)`.",
+          "Implement the clustered standard error for benchmarks where questions come in families (same passage, same repo, same scenario) — treat the cluster, not the question, as the unit.",
+          "Recompute error bars on one real eval result you already have and see whether the ranking you claimed still holds once the interval is drawn.",
+          "Write the CI into your results format so every number your harness emits carries `mean`, `se`, `n`, and `n_clusters`.",
+          "Read Anthropic's companion blog post for the plain-language version you can reuse in an interview answer."
         ],
         "papers": [
           {
-            "name": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models — introduces GRPO (arXiv 2402.03300)",
-            "url": "https://arxiv.org/abs/2402.03300"
-          },
-          {
-            "name": "DAPO: An Open-Source LLM Reinforcement Learning System at Scale (arXiv 2503.14476)",
-            "url": "https://arxiv.org/abs/2503.14476"
-          },
-          {
-            "name": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (arXiv 2501.12948)",
-            "url": "https://arxiv.org/abs/2501.12948"
-          },
-          {
-            "name": "Proximal Policy Optimization Algorithms (arXiv 1707.06347)",
-            "url": "https://arxiv.org/abs/1707.06347"
+            "name": "Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations (arXiv 2411.00640)",
+            "url": "https://arxiv.org/abs/2411.00640"
           }
         ],
         "docs": [
           {
-            "name": "TRL — GRPOTrainer",
-            "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+            "name": "Anthropic — A statistical approach to model evals",
+            "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals"
           },
           {
-            "name": "The RLHF Book — Reinforcement Learning / policy gradients",
-            "url": "https://rlhfbook.com/c/11-policy-gradients"
+            "name": "scipy.stats.bootstrap — CIs without a closed form",
+            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
           }
         ],
-        "lectures": [
+        "videos": [
           {
-            "name": "Stanford CS336 Spring 2025 — Lecture 16: Alignment, RL 1 (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=46f2QTDB08Q"
+            "title": "The standard error, Clearly Explained!!! (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=XNgt7F6FqDU"
           },
           {
-            "name": "Stanford CS336 Spring 2025 — Lecture 17: Alignment, RL 2 (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=JdGFdViaOJk"
-          }
-        ]
-      },
-      "Read the RLVR capability debate honestly": {
-        "desc": "This is contested ground and knowing that is the point. Read 2504.13837 (base models win at large k), 2506.10947 (Spurious Rewards — random rewards help Qwen but not Llama or OLMo), 2505.24864 (ProRL — prolonged RL does expand the boundary), then 2510.04028, which reconciles them: early training exploits and narrows, prolonged training explores and expands.",
-        "steps": [
-          "Read 2504.13837 first and get precise about pass@k: at k=1 RL wins, at large k the base model catches up. The claim is about the *support* of the distribution, not the mean.",
-          "Read Spurious Rewards (2506.10947) and note the load-bearing detail: the effect appears on Qwen and not on Llama or OLMo. Any RLVR result on a single model family is a result about that family.",
-          "Read ProRL (2505.24864) as the rebuttal — enough steps, enough task diversity, and the boundary does move.",
-          "Read the two-stage reconciliation (2510.04028) last and write the synthesis: the camps measured different phases of the same curve.",
-          "Test one claim on your own run: compute pass@1 and pass@k for base and RL'd model on your verifiable task and see which side your data lands on.",
-          "Write the 300-word position you would defend in an interview, naming which evidence would change your mind."
-        ],
-        "papers": [
-          {
-            "name": "Does Reinforcement Learning Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model? (arXiv 2504.13837)",
-            "url": "https://arxiv.org/abs/2504.13837"
-          },
-          {
-            "name": "Spurious Rewards: Rethinking Training Signals in RLVR (arXiv 2506.10947)",
-            "url": "https://arxiv.org/abs/2506.10947"
-          },
-          {
-            "name": "ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in Large Language Models (arXiv 2505.24864)",
-            "url": "https://arxiv.org/abs/2505.24864"
-          },
-          {
-            "name": "The Debate on RLVR Reasoning Capability Boundary: Shrinkage, Expansion, or Both? A Two-Stage Dynamic View (arXiv 2510.04028)",
-            "url": "https://arxiv.org/abs/2510.04028"
-          }
-        ],
-        "docs": [
-          {
-            "name": "The RLHF Book — Reasoning and Inference-Time Scaling",
-            "url": "https://rlhfbook.com/c/14-reasoning"
+            "title": "Confidence Intervals, Clearly Explained!!! (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=TqOeMYtOc1w"
           }
         ]
       },
-      "Learn what actually moves the number": {
-        "desc": "\"The Art of Scaling RL Compute\" spends 400k+ GPU-hours and finds sigmoidal rather than power-law curves: design choices buy compute efficiency, they do not raise the asymptote. The practical lesson is to stop collecting GRPO variants — pick one, scale it as far as your budget goes, and measure the curve you get.",
+      "Paired comparison and variance decomposition": {
+        "desc": "Two models scored on the same questions are paired data. Analysing them as independent samples throws away most of your power. Then decompose the remaining variance — question difficulty, decoding temperature, seed — and find out which one you should actually be buying more of.",
         "steps": [
-          "Read 2510.13786 and extract the two parameters that matter: the asymptote (what the recipe can ever reach) and the efficiency (how fast it gets there). Most published wins move the second.",
-          "Fit the same shape to your own run: plot held-out score against cumulative training compute, not against steps, and try a sigmoid fit rather than a line.",
-          "Freeze your recipe. Spend the remaining budget on one long run instead of five short ablations — the paper's whole point is that short runs mispredict.",
-          "Pair it with the two-stage RLVR paper: an early-phase measurement of your own run will look like narrowing, and that is expected rather than a bug.",
-          "Read the on-policy distillation paper so you know the 2026 pipeline shape — SFT-distill cold start, RLVR, then distillation as compaction — even if you only run the first two stages.",
-          "Write the budget conclusion: given your compute, what is the largest claim your curve supports?"
-        ],
-        "papers": [
-          {
-            "name": "The Art of Scaling Reinforcement Learning Compute for LLMs (arXiv 2510.13786)",
-            "url": "https://arxiv.org/abs/2510.13786"
-          },
-          {
-            "name": "The Debate on RLVR Reasoning Capability Boundary (arXiv 2510.04028)",
-            "url": "https://arxiv.org/abs/2510.04028"
-          },
-          {
-            "name": "On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes (arXiv 2306.13649)",
-            "url": "https://arxiv.org/abs/2306.13649"
-          }
+          "Score both models on the identical question set, keep per-question results, and run `scipy.stats.ttest_rel` on the per-question difference; compare the interval width against the unpaired `ttest_ind`.",
+          "Add the non-parametric fallback (`scipy.stats.wilcoxon`) for the case where the per-question difference is far from normal.",
+          "Bootstrap the paired difference with `scipy.stats.bootstrap(..., paired=True)` and report the CI on the difference, not two overlapping CIs on two means.",
+          "Decompose variance: fix questions and resample seeds (decoding variance), then fix seeds and resample questions (question variance). Report both numbers separately.",
+          "State the conclusion explicitly: if question variance dominates, more questions beat more samples per question — and that is a budget decision, not a statistics footnote.",
+          "Add both tests to the stats notebook with a docstring saying when each applies."
         ],
         "docs": [
           {
-            "name": "The RLHF Book",
-            "url": "https://rlhfbook.com"
-          }
-        ]
-      },
-      "Fill in the post-training map": {
-        "desc": "Work through the RLHF Book alongside the runs: reward modelling, PPO versus policy-gradient variants, DPO and why it was adopted then partly displaced, regularisation and KL control. Finish with a written paragraph tracing RLHF → DPO → GRPO → rubric rewards — what each fixed and what is still open.",
-        "steps": [
-          "Read the reward-modelling chapter and implement a tiny Bradley–Terry reward model on a preference set so the loss is not abstract.",
-          "Read the policy-gradient chapter next to your GRPO code and identify, line by line, which term in your implementation is the advantage and which is the ratio clip.",
-          "Read the direct-alignment chapter and run one DPO job with TRL on the same base model, then say concretely why labs moved back toward online RL for reasoning.",
-          "Read the regularisation chapter and sweep the KL coefficient on your own run — watch reward go up and coherence go down.",
-          "Cross-reference InstructGPT for where the RLHF pipeline came from, so you can date each idea.",
-          "Write the one-page lineage paragraph: RLHF → DPO → GRPO/DAPO → rubric and checklist rewards, with what each fixed and what remains open."
-        ],
-        "docs": [
-          {
-            "name": "The RLHF Book (Nathan Lambert)",
-            "url": "https://rlhfbook.com"
+            "name": "scipy.stats.bootstrap (supports `paired=True`)",
+            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
           },
           {
-            "name": "The RLHF Book — Reward Modeling",
-            "url": "https://rlhfbook.com/c/07-reward-models"
+            "name": "scipy.stats.ttest_rel — paired t-test",
+            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html"
           },
           {
-            "name": "The RLHF Book — Direct-Alignment Algorithms",
-            "url": "https://rlhfbook.com/c/12-direct-alignment"
-          },
-          {
-            "name": "The RLHF Book — Regularization",
-            "url": "https://rlhfbook.com/c/08-regularization"
-          },
-          {
-            "name": "TRL — DPOTrainer",
-            "url": "https://huggingface.co/docs/trl/en/dpo_trainer"
-          }
-        ],
-        "courses": [
-          {
-            "name": "RLHF & Post-Training Course (Nathan Lambert, free companion course)",
-            "url": "https://rlhfbook.com/course"
-          },
-          {
-            "name": "Post-training of LLMs (DeepLearning.AI short course)",
-            "url": "https://www.deeplearning.ai/short-courses/post-training-of-llms/"
+            "name": "scipy.stats.wilcoxon — paired non-parametric test",
+            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.wilcoxon.html"
           }
         ],
         "papers": [
           {
-            "name": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model (arXiv 2305.18290)",
-            "url": "https://arxiv.org/abs/2305.18290"
-          },
-          {
-            "name": "Training language models to follow instructions with human feedback (arXiv 2203.02155)",
-            "url": "https://arxiv.org/abs/2203.02155"
+            "name": "Adding Error Bars to Evals — see the paired-comparison section (arXiv 2411.00640)",
+            "url": "https://arxiv.org/abs/2411.00640"
           }
         ],
-        "lectures": [
+        "videos": [
           {
-            "name": "RLHF and Post-training Overview — RLHF & Post-Training Book Course, Lecture 1 (Nathan Lambert)",
-            "url": "https://www.youtube.com/watch?v=o6l6tJQgUg4"
+            "title": "Bootstrapping Main Ideas!!! (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=Xz0x-8-cgaQ"
           },
           {
-            "name": "Stanford CS336 Spring 2025 — Lecture 16: Alignment, RL 1 (Stanford Online)",
-            "url": "https://www.youtube.com/watch?v=46f2QTDB08Q"
+            "title": "Using Bootstrapping to Calculate p-values!!! (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=N4ZQQqyIf6k"
+          }
+        ]
+      },
+      "Multiple comparisons and effect sizes": {
+        "desc": "Run twelve ablations against one baseline and one of them is significant by accident. Implement Benjamini–Hochberg and Bonferroni, see what survives, and then stop leading with p-values — report the effect size with a bootstrap interval instead.",
+        "steps": [
+          "Simulate the problem first: generate 12 null comparisons (no real effect) and count how often at least one p < 0.05. Seeing ~46% makes the correction non-negotiable.",
+          "Apply `statsmodels.stats.multitest.multipletests` with `method='bonferroni'` and `method='fdr_bh'` to a real family of ablations and record which survive each.",
+          "Understand the difference you are choosing between: family-wise error rate (Bonferroni, conservative) versus false discovery rate (BH, what you usually want for screening).",
+          "Rewrite your results table so the headline column is the effect size with a bootstrap CI, and the p-value is a secondary column.",
+          "Pre-register the comparison family in the notebook: which comparisons you intend to make, before you look at the numbers. Post-hoc family size is how people cheat themselves.",
+          "Write one sentence per surviving result distinguishing 'small but real' from 'large but uncertain'."
+        ],
+        "docs": [
+          {
+            "name": "statsmodels — multipletests (Bonferroni, Benjamini–Hochberg)",
+            "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.multitest.multipletests.html"
+          },
+          {
+            "name": "scipy.stats.bootstrap — effect-size confidence intervals",
+            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
           }
         ],
-        "podcasts": [
+        "videos": [
           {
-            "title": "791: Reinforcement Learning from Human Feedback (RLHF) — with Dr. Nathan Lambert (Super Data Science)",
-            "url": "https://www.youtube.com/watch?v=McaI5kkQySU"
+            "title": "False Discovery Rates, FDR, clearly explained (StatQuest with Josh Starmer)",
+            "url": "https://www.youtube.com/watch?v=L3nlGfSyHV0"
+          },
+          {
+            "title": "Statistical Learning: 13.5 False Discovery Rate and Benjamini Hochberg Method (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=4RPUrwzgO6c"
+          }
+        ]
+      },
+      "Exit check: redo an old result honestly": {
+        "desc": "Take the single-variable change you measured back in the nanochat week and redo the analysis properly — paired where possible, bootstrap CI, stated n, stated seeds. Then publish whether it survives. A public correction is worth more in an interview than the original claim.",
+        "steps": [
+          "Pull the raw per-sample outputs of the old result. If you did not keep them, that is finding number one — write it down and fix the harness so it never happens again.",
+          "Re-run the analysis paired on the same questions, with a bootstrap CI on the difference and an explicit n, seed list, and decode configuration.",
+          "Check whether the original comparison was part of a larger family; if so, apply BH correction across that family.",
+          "Write the paragraph: what you claimed, what the honest interval is, and whether the claim survives. Publish it in the same place the original went.",
+          "Turn the whole thing into a reusable `analysis.ipynb` with functions — power, paired test, bootstrap CI, multiple-comparison correction — that every later task in this phase imports.",
+          "Add a results-schema check: any number your harness emits without n, seeds, and a CI should fail validation."
+        ],
+        "docs": [
+          {
+            "name": "Anthropic — A statistical approach to model evals",
+            "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals"
+          },
+          {
+            "name": "scipy.stats.bootstrap",
+            "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
+          },
+          {
+            "name": "Inspect — Scoring Metrics (how a mature harness reports stderr)",
+            "url": "https://inspect.aisi.org.uk/metrics.html"
+          }
+        ],
+        "papers": [
+          {
+            "name": "Adding Error Bars to Evals (arXiv 2411.00640)",
+            "url": "https://arxiv.org/abs/2411.00640"
+          },
+          {
+            "name": "BetterBench: Assessing AI Benchmarks, Uncovering Issues, and Establishing Best Practices (arXiv 2411.12990)",
+            "url": "https://arxiv.org/abs/2411.12990"
           }
         ]
       }
     },
-    "p3-eval-infra": {
+    "p2-judge-validation": {
+      "Label the gold set yourself first": {
+        "desc": "Hand-label at least 100 samples before the judge sees them, writing down the decision rule as you go. Then measure judge–human agreement properly: raw agreement, Cohen's kappa, and a per-class breakdown — because a judge that is 90% accurate overall can be useless on the 10% of cases you actually care about.",
+        "steps": [
+          "Sample 100+ items *stratified* over the outcomes you care about, not uniformly. A gold set with three failures in it cannot measure failure detection.",
+          "Label them yourself before writing the judge prompt, and write the decision rule down as you go — every time you hesitate, that hesitation is a rubric line you owe the judge.",
+          "Re-label 20 of them a week later and compute your own self-agreement. That number is the ceiling on any judge you build; report it.",
+          "Compute raw agreement, Cohen's kappa (`sklearn.metrics.cohen_kappa_score`), and the full confusion matrix — kappa alone hides which class is failing.",
+          "Add the confidence interval: bootstrap agreement over the 100 samples with the Task 01 machinery and report the interval, not the point estimate.",
+          "Commit the gold set and labels to the repo as data, with the decision rule as a markdown file next to it."
+        ],
+        "docs": [
+          {
+            "name": "scikit-learn — cohen_kappa_score",
+            "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cohen_kappa_score.html"
+          },
+          {
+            "name": "scikit-learn — Metrics and scoring (confusion matrix, per-class report)",
+            "url": "https://scikit-learn.org/stable/modules/model_evaluation.html"
+          },
+          {
+            "name": "Inspect — Model Grading (model_graded_qa / model_graded_fact)",
+            "url": "https://inspect.aisi.org.uk/model-graded.html"
+          },
+          {
+            "name": "Hamel Husain — Creating a LLM-as-a-Judge that drives business results",
+            "url": "https://hamel.dev/blog/posts/llm-judge/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena (arXiv 2306.05685)",
+            "url": "https://arxiv.org/abs/2306.05685"
+          },
+          {
+            "name": "A Survey on LLM-as-a-Judge (arXiv 2411.15594)",
+            "url": "https://arxiv.org/abs/2411.15594"
+          }
+        ]
+      },
+      "Run the bias battery": {
+        "desc": "Test the known failure modes on your own judge: position bias (swap A and B, measure how often the verdict flips), length bias (pad a response without adding content), and self-preference. The MT-Bench paper is where these were characterised and it gives you the experimental designs to copy.",
+        "steps": [
+          "Position bias: run every pairwise comparison in both orders and report the flip rate. Anything above a few percent means you must always evaluate both orders and average.",
+          "Length bias: pad the losing response with on-topic but contentless filler at 1.2x, 1.5x, 2x length and plot win rate against length ratio.",
+          "Self-preference: have judge model A grade outputs from A and from B on items where your human labels say they are equal, and report the gap.",
+          "Add a sanity arm the field keeps rediscovering — a degenerate constant response — and confirm your judge does not reward it.",
+          "Report each bias as an effect size with a bootstrap CI, not a single anecdote, and correct across the battery with Benjamini–Hochberg from Task 01.",
+          "Fix what you can in the prompt (order randomisation, explicit length-neutrality instruction, reference-guided grading) and re-measure — the delta is your result."
+        ],
+        "papers": [
+          {
+            "name": "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena (arXiv 2306.05685)",
+            "url": "https://arxiv.org/abs/2306.05685"
+          },
+          {
+            "name": "Large Language Models are not Fair Evaluators — position bias and calibration (arXiv 2305.17926)",
+            "url": "https://arxiv.org/abs/2305.17926"
+          },
+          {
+            "name": "Cheating Automatic LLM Benchmarks: Null Models Achieve High Win Rates (arXiv 2410.07137)",
+            "url": "https://arxiv.org/abs/2410.07137"
+          },
+          {
+            "name": "Prometheus 2: An Open Source Language Model Specialized in Evaluating Other Language Models (arXiv 2405.01535)",
+            "url": "https://arxiv.org/abs/2405.01535"
+          }
+        ],
+        "docs": [
+          {
+            "name": "Eugene Yan — Evaluating the Effectiveness of LLM-Evaluators (aka LLM-as-Judge)",
+            "url": "https://eugeneyan.com/writing/llm-evaluators/"
+          },
+          {
+            "name": "Inspect — Model Grading",
+            "url": "https://inspect.aisi.org.uk/model-graded.html"
+          }
+        ]
+      },
+      "Rubrics and checklists, not scalar scores": {
+        "desc": "In non-verifiable domains, explicit criteria beat learned reward models — see Rubrics as Rewards (2507.17746) and Checklists Are Better Than Reward Models (2507.18624). HealthBench is the standard testbed: 48,562 physician-written criteria attached to individual conversations. Rewrite one judge prompt as a checklist and re-measure agreement.",
+        "steps": [
+          "Read the two 2025 rubric papers and HealthBench, and note the common structure: per-item criteria attached to the specific conversation, not a global scale.",
+          "Take your worst-performing judge prompt and decompose its scalar score into 5–10 binary checklist items, each independently checkable.",
+          "Score the checklist items separately and aggregate in code, not in the model. Aggregation in the prompt is where scalar judges lose their calibration.",
+          "Re-run the gold set and report the agreement delta with a CI. Also report which individual items the judge gets wrong — that is where the rubric is ambiguous, not where the model is dumb.",
+          "Write the rubric so a second human can apply it, then have someone apply it. Inter-rater agreement on the rubric bounds what the judge can achieve.",
+          "Wire the checklist into a custom scorer so the per-item results land in the sample log, not just the aggregate."
+        ],
+        "papers": [
+          {
+            "name": "Rubrics as Rewards: Reinforcement Learning Beyond Verifiable Domains (arXiv 2507.17746)",
+            "url": "https://arxiv.org/abs/2507.17746"
+          },
+          {
+            "name": "Checklists Are Better Than Reward Models For Aligning Language Models (arXiv 2507.18624)",
+            "url": "https://arxiv.org/abs/2507.18624"
+          },
+          {
+            "name": "HealthBench: Evaluating Large Language Models Towards Improved Human Health (arXiv 2505.08775)",
+            "url": "https://arxiv.org/abs/2505.08775"
+          },
+          {
+            "name": "Prometheus 2 — rubric-conditioned open evaluator models (arXiv 2405.01535)",
+            "url": "https://arxiv.org/abs/2405.01535"
+          }
+        ],
+        "docs": [
+          {
+            "name": "Inspect — Custom Scorers",
+            "url": "https://inspect.aisi.org.uk/custom-scorers.html"
+          },
+          {
+            "name": "Inspect — Scorers",
+            "url": "https://inspect.aisi.org.uk/scorers.html"
+          },
+          {
+            "name": "Hamel Husain — LLM Evals FAQ",
+            "url": "https://hamel.dev/blog/posts/evals-faq/"
+          }
+        ]
+      },
+      "Calibration drift and version pinning": {
+        "desc": "A judge is a model and it changes under you. Pin the exact judge model version in results, keep the gold set in the repo, and re-run it whenever the judge model, its prompt, or its decode parameters change. Record agreement per version so you can tell a real score move from a judge move.",
+        "steps": [
+          "Pin the judge to a dated model id — never an alias like `-latest`. Store the resolved id in every result row.",
+          "Treat the judge prompt as versioned code: hash it into the result and into the cache key from Task 05, so a prompt edit invalidates cached grades.",
+          "Set judge decode parameters explicitly (temperature 0 or a fixed seed) and record them; a judge sampled at default temperature is a different judge every run.",
+          "Build `judge_regression.py`: re-run the gold set, compute agreement plus CI, and fail if it drops more than a stated threshold from the recorded baseline.",
+          "Keep an agreement-per-version table in the repo. When a score moves, the first question is always 'did the judge move?' — this table answers it in seconds.",
+          "Run the regression on a schedule, not only on change: providers update models under stable-looking names."
+        ],
+        "docs": [
+          {
+            "name": "Inspect — Caching (why the judge prompt belongs in the cache key)",
+            "url": "https://inspect.aisi.org.uk/caching.html"
+          },
+          {
+            "name": "Inspect — Model Grading",
+            "url": "https://inspect.aisi.org.uk/model-graded.html"
+          },
+          {
+            "name": "Inspect — Log Files (record the resolved model id per sample)",
+            "url": "https://inspect.aisi.org.uk/eval-logs.html"
+          },
+          {
+            "name": "Hamel Husain — LLM Evals FAQ",
+            "url": "https://hamel.dev/blog/posts/evals-faq/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "A Survey on LLM-as-a-Judge (arXiv 2411.15594)",
+            "url": "https://arxiv.org/abs/2411.15594"
+          },
+          {
+            "name": "Can We Trust AI Benchmarks? An Interdisciplinary Review of Current Issues in AI Evaluation (arXiv 2502.06559)",
+            "url": "https://arxiv.org/abs/2502.06559"
+          }
+        ],
+        "courses": [
+          {
+            "name": "Evaluating AI Agents (DeepLearning.AI short course)",
+            "url": "https://www.deeplearning.ai/short-courses/evaluating-ai-agents/"
+          }
+        ]
+      }
+    },
+    "p2-eval-infra": {
       "A job queue over checkpoints": {
         "desc": "Build the thing the job req lists first: submit (model, task, sample) jobs to a persistent queue, run them with bounded concurrency, retry transient failures with backoff, and resume cleanly after you kill the process halfway through. Idempotent job keys are the whole design — get them right and everything else is bookkeeping.",
         "steps": [
@@ -4009,175 +2900,7 @@ window.RESOURCES_DB = {
         ]
       }
     },
-    "p3-judge-validation": {
-      "Label the gold set yourself first": {
-        "desc": "Hand-label at least 100 samples before the judge sees them, writing down the decision rule as you go. Then measure judge–human agreement properly: raw agreement, Cohen's kappa, and a per-class breakdown — because a judge that is 90% accurate overall can be useless on the 10% of cases you actually care about.",
-        "steps": [
-          "Sample 100+ items *stratified* over the outcomes you care about, not uniformly. A gold set with three failures in it cannot measure failure detection.",
-          "Label them yourself before writing the judge prompt, and write the decision rule down as you go — every time you hesitate, that hesitation is a rubric line you owe the judge.",
-          "Re-label 20 of them a week later and compute your own self-agreement. That number is the ceiling on any judge you build; report it.",
-          "Compute raw agreement, Cohen's kappa (`sklearn.metrics.cohen_kappa_score`), and the full confusion matrix — kappa alone hides which class is failing.",
-          "Add the confidence interval: bootstrap agreement over the 100 samples with the Task 01 machinery and report the interval, not the point estimate.",
-          "Commit the gold set and labels to the repo as data, with the decision rule as a markdown file next to it."
-        ],
-        "docs": [
-          {
-            "name": "scikit-learn — cohen_kappa_score",
-            "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cohen_kappa_score.html"
-          },
-          {
-            "name": "scikit-learn — Metrics and scoring (confusion matrix, per-class report)",
-            "url": "https://scikit-learn.org/stable/modules/model_evaluation.html"
-          },
-          {
-            "name": "Inspect — Model Grading (model_graded_qa / model_graded_fact)",
-            "url": "https://inspect.aisi.org.uk/model-graded.html"
-          },
-          {
-            "name": "Hamel Husain — Creating a LLM-as-a-Judge that drives business results",
-            "url": "https://hamel.dev/blog/posts/llm-judge/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena (arXiv 2306.05685)",
-            "url": "https://arxiv.org/abs/2306.05685"
-          },
-          {
-            "name": "A Survey on LLM-as-a-Judge (arXiv 2411.15594)",
-            "url": "https://arxiv.org/abs/2411.15594"
-          }
-        ]
-      },
-      "Run the bias battery": {
-        "desc": "Test the known failure modes on your own judge: position bias (swap A and B, measure how often the verdict flips), length bias (pad a response without adding content), and self-preference. The MT-Bench paper is where these were characterised and it gives you the experimental designs to copy.",
-        "steps": [
-          "Position bias: run every pairwise comparison in both orders and report the flip rate. Anything above a few percent means you must always evaluate both orders and average.",
-          "Length bias: pad the losing response with on-topic but contentless filler at 1.2x, 1.5x, 2x length and plot win rate against length ratio.",
-          "Self-preference: have judge model A grade outputs from A and from B on items where your human labels say they are equal, and report the gap.",
-          "Add a sanity arm the field keeps rediscovering — a degenerate constant response — and confirm your judge does not reward it.",
-          "Report each bias as an effect size with a bootstrap CI, not a single anecdote, and correct across the battery with Benjamini–Hochberg from Task 01.",
-          "Fix what you can in the prompt (order randomisation, explicit length-neutrality instruction, reference-guided grading) and re-measure — the delta is your result."
-        ],
-        "papers": [
-          {
-            "name": "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena (arXiv 2306.05685)",
-            "url": "https://arxiv.org/abs/2306.05685"
-          },
-          {
-            "name": "Large Language Models are not Fair Evaluators — position bias and calibration (arXiv 2305.17926)",
-            "url": "https://arxiv.org/abs/2305.17926"
-          },
-          {
-            "name": "Cheating Automatic LLM Benchmarks: Null Models Achieve High Win Rates (arXiv 2410.07137)",
-            "url": "https://arxiv.org/abs/2410.07137"
-          },
-          {
-            "name": "Prometheus 2: An Open Source Language Model Specialized in Evaluating Other Language Models (arXiv 2405.01535)",
-            "url": "https://arxiv.org/abs/2405.01535"
-          }
-        ],
-        "docs": [
-          {
-            "name": "Eugene Yan — Evaluating the Effectiveness of LLM-Evaluators (aka LLM-as-Judge)",
-            "url": "https://eugeneyan.com/writing/llm-evaluators/"
-          },
-          {
-            "name": "Inspect — Model Grading",
-            "url": "https://inspect.aisi.org.uk/model-graded.html"
-          }
-        ]
-      },
-      "Rubrics and checklists, not scalar scores": {
-        "desc": "In non-verifiable domains, explicit criteria beat learned reward models — see Rubrics as Rewards (2507.17746) and Checklists Are Better Than Reward Models (2507.18624). HealthBench is the standard testbed: 48,562 physician-written criteria attached to individual conversations. Rewrite one judge prompt as a checklist and re-measure agreement.",
-        "steps": [
-          "Read the two 2025 rubric papers and HealthBench, and note the common structure: per-item criteria attached to the specific conversation, not a global scale.",
-          "Take your worst-performing judge prompt and decompose its scalar score into 5–10 binary checklist items, each independently checkable.",
-          "Score the checklist items separately and aggregate in code, not in the model. Aggregation in the prompt is where scalar judges lose their calibration.",
-          "Re-run the gold set and report the agreement delta with a CI. Also report which individual items the judge gets wrong — that is where the rubric is ambiguous, not where the model is dumb.",
-          "Write the rubric so a second human can apply it, then have someone apply it. Inter-rater agreement on the rubric bounds what the judge can achieve.",
-          "Wire the checklist into a custom scorer so the per-item results land in the sample log, not just the aggregate."
-        ],
-        "papers": [
-          {
-            "name": "Rubrics as Rewards: Reinforcement Learning Beyond Verifiable Domains (arXiv 2507.17746)",
-            "url": "https://arxiv.org/abs/2507.17746"
-          },
-          {
-            "name": "Checklists Are Better Than Reward Models For Aligning Language Models (arXiv 2507.18624)",
-            "url": "https://arxiv.org/abs/2507.18624"
-          },
-          {
-            "name": "HealthBench: Evaluating Large Language Models Towards Improved Human Health (arXiv 2505.08775)",
-            "url": "https://arxiv.org/abs/2505.08775"
-          },
-          {
-            "name": "Prometheus 2 — rubric-conditioned open evaluator models (arXiv 2405.01535)",
-            "url": "https://arxiv.org/abs/2405.01535"
-          }
-        ],
-        "docs": [
-          {
-            "name": "Inspect — Custom Scorers",
-            "url": "https://inspect.aisi.org.uk/custom-scorers.html"
-          },
-          {
-            "name": "Inspect — Scorers",
-            "url": "https://inspect.aisi.org.uk/scorers.html"
-          },
-          {
-            "name": "Hamel Husain — LLM Evals FAQ",
-            "url": "https://hamel.dev/blog/posts/evals-faq/"
-          }
-        ]
-      },
-      "Calibration drift and version pinning": {
-        "desc": "A judge is a model and it changes under you. Pin the exact judge model version in results, keep the gold set in the repo, and re-run it whenever the judge model, its prompt, or its decode parameters change. Record agreement per version so you can tell a real score move from a judge move.",
-        "steps": [
-          "Pin the judge to a dated model id — never an alias like `-latest`. Store the resolved id in every result row.",
-          "Treat the judge prompt as versioned code: hash it into the result and into the cache key from Task 05, so a prompt edit invalidates cached grades.",
-          "Set judge decode parameters explicitly (temperature 0 or a fixed seed) and record them; a judge sampled at default temperature is a different judge every run.",
-          "Build `judge_regression.py`: re-run the gold set, compute agreement plus CI, and fail if it drops more than a stated threshold from the recorded baseline.",
-          "Keep an agreement-per-version table in the repo. When a score moves, the first question is always 'did the judge move?' — this table answers it in seconds.",
-          "Run the regression on a schedule, not only on change: providers update models under stable-looking names."
-        ],
-        "docs": [
-          {
-            "name": "Inspect — Caching (why the judge prompt belongs in the cache key)",
-            "url": "https://inspect.aisi.org.uk/caching.html"
-          },
-          {
-            "name": "Inspect — Model Grading",
-            "url": "https://inspect.aisi.org.uk/model-graded.html"
-          },
-          {
-            "name": "Inspect — Log Files (record the resolved model id per sample)",
-            "url": "https://inspect.aisi.org.uk/eval-logs.html"
-          },
-          {
-            "name": "Hamel Husain — LLM Evals FAQ",
-            "url": "https://hamel.dev/blog/posts/evals-faq/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "A Survey on LLM-as-a-Judge (arXiv 2411.15594)",
-            "url": "https://arxiv.org/abs/2411.15594"
-          },
-          {
-            "name": "Can We Trust AI Benchmarks? An Interdisciplinary Review of Current Issues in AI Evaluation (arXiv 2502.06559)",
-            "url": "https://arxiv.org/abs/2502.06559"
-          }
-        ],
-        "courses": [
-          {
-            "name": "Evaluating AI Agents (DeepLearning.AI short course)",
-            "url": "https://www.deeplearning.ai/short-courses/evaluating-ai-agents/"
-          }
-        ]
-      }
-    },
-    "p3-benchmark-audit": {
+    "p2-benchmark-audit": {
       "Pick a live benchmark and a specific published result": {
         "desc": "Choose from the benchmarks that are actually alive: Terminal-Bench 2.1 with the Harbor harness, τ²-bench, Mind2Web 2, or WorkArena-L2. Then pick one reported number from one submission — a named model, a named scaffold, a date. Auditing \"a benchmark\" is not a project; auditing one number is.",
         "steps": [
@@ -4487,7 +3210,377 @@ window.RESOURCES_DB = {
         ]
       }
     },
-    "p3-safety-evals": {
+    "p2-finetuning": {
+      "LoRA from scratch — it is two matrices and a scale factor": {
+        "desc": "Implement a LoRA layer in PyTorch: A initialised Gaussian, B initialised to zero, output scaled by alpha over r. Inject it into your Phase 1 transformer, verify the trainable parameter count drops by the factor you predicted, confirm gradients flow only into A and B, and merge the adapter back into the base weights.",
+        "steps": [
+          "Write `LoRALinear(base: nn.Linear, r: int, alpha: float)` that freezes `base.weight`, adds `A` (r × in, Gaussian) and `B` (out × r, zeros), and returns `base(x) + (alpha/r) * (x @ A.T @ B.T)`.",
+          "Prove B=0 matters: assert the wrapped module's output equals the base module's output exactly at initialisation. If it does not, your merge will be wrong too.",
+          "Inject into q_proj and v_proj of your Phase 1 transformer, then compute `trainable/total` and check it against the number you predicted from r, alpha, and the injected shapes.",
+          "Run one backward pass and assert `base.weight.grad is None` while `A.grad` and `B.grad` are populated — that is the actual PEFT invariant.",
+          "Implement `merge()` that folds `(alpha/r) * B @ A` into `base.weight`, and assert merged-model outputs match unmerged within float tolerance.",
+          "Sweep r ∈ {1, 4, 16, 64} on a tiny task and plot quality against trainable parameters so you have your own version of the paper's rank ablation."
+        ],
+        "papers": [
+          {
+            "name": "LoRA: Low-Rank Adaptation of Large Language Models (arXiv 2106.09685)",
+            "url": "https://arxiv.org/abs/2106.09685"
+          },
+          {
+            "name": "QLoRA: Efficient Finetuning of Quantized LLMs (arXiv 2305.14314)",
+            "url": "https://arxiv.org/abs/2305.14314"
+          },
+          {
+            "name": "LoRA Learns Less and Forgets Less (arXiv 2405.09673)",
+            "url": "https://arxiv.org/abs/2405.09673"
+          }
+        ],
+        "docs": [
+          {
+            "name": "PEFT — LoRA conceptual guide",
+            "url": "https://huggingface.co/docs/peft/en/developer_guides/lora"
+          },
+          {
+            "name": "PEFT documentation",
+            "url": "https://huggingface.co/docs/peft/en/index"
+          }
+        ],
+        "videos": [
+          {
+            "title": "LoRA: Low-Rank Adaptation of Large Language Models — Explained visually + PyTorch code from scratch (Umar Jamil)",
+            "url": "https://www.youtube.com/watch?v=PXWYUTMt-AU"
+          },
+          {
+            "title": "What is Low-Rank Adaptation (LoRA) | explained by the inventor (Edward Hu)",
+            "url": "https://www.youtube.com/watch?v=DhRoTONcyZE"
+          },
+          {
+            "title": "LoRA: Low-Rank Adaptation of LLMs Explained (Gabriel Mongaras)",
+            "url": "https://www.youtube.com/watch?v=_K3HgjnRHCY"
+          }
+        ]
+      },
+      "One real SFT run with peft and trl": {
+        "desc": "Fine-tune a small open-weights model on an instruction dataset with peft plus TRL's SFTTrainer. One run, logged properly: loss curve, hyperparameters, hardware, wall-clock, cost. The point is to have executed the standard pipeline once so you can reason about post-training — not to produce a good model.",
+        "steps": [
+          "Pick a model small enough to iterate on a single GPU and a dataset already in a TRL-supported format (prompt-completion or conversational) — read the dataset-formats page before you write a formatting function.",
+          "Configure `SFTTrainer` with a `LoraConfig` from peft, and check `print_trainable_parameters()` against the prediction you made in the from-scratch task.",
+          "Turn on completion-only loss (mask the prompt) and confirm it is actually applied — training on the prompt is the most common silent SFT bug.",
+          "Log to a tracker: loss curve, LR schedule, grad norm, tokens/sec, peak memory, wall-clock, and the dollar figure. Record the exact package versions.",
+          "Evaluate before/after on a held-out set with the paired machinery from Task 01 — not on the training loss.",
+          "Push the adapter to the Hub with a model card stating base model, data, hyperparameters, and what it is not good for."
+        ],
+        "docs": [
+          {
+            "name": "TRL — SFTTrainer",
+            "url": "https://huggingface.co/docs/trl/en/sft_trainer"
+          },
+          {
+            "name": "TRL — Dataset formats and types",
+            "url": "https://huggingface.co/docs/trl/en/dataset_formats"
+          },
+          {
+            "name": "TRL — PEFT integration",
+            "url": "https://huggingface.co/docs/trl/en/peft_integration"
+          },
+          {
+            "name": "TRL — Reducing memory usage",
+            "url": "https://huggingface.co/docs/trl/en/reducing_memory_usage"
+          },
+          {
+            "name": "TRL releases (check the version you pin — v1.9.0 changed RL defaults)",
+            "url": "https://github.com/huggingface/trl/releases"
+          }
+        ],
+        "courses": [
+          {
+            "name": "Hugging Face LLM Course — Chapter 11: Supervised Fine-Tuning",
+            "url": "https://huggingface.co/learn/llm-course/chapter11/1"
+          },
+          {
+            "name": "Post-training of LLMs (DeepLearning.AI short course)",
+            "url": "https://www.deeplearning.ai/short-courses/post-training-of-llms/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "Training language models to follow instructions with human feedback (InstructGPT, arXiv 2203.02155)",
+            "url": "https://arxiv.org/abs/2203.02155"
+          }
+        ]
+      },
+      "Dataset card and leakage check": {
+        "desc": "Write the dataset card before you publish the adapter — provenance, licence, size, splits, known limitations. Then actually check for train/eval contamination with exact-match and near-duplicate search between your training set and whatever you plan to evaluate on. Report the overlap number even when it is zero.",
+        "steps": [
+          "Write the card from the Hub template first: source, collection method, licence, size, split definition, intended use, and known limitations. Doing it before the run changes what you collect.",
+          "Run exact-match contamination: normalise whitespace and case, hash every training example and every eval question, and report the intersection size.",
+          "Run near-duplicate contamination: n-gram overlap (13-gram is the common convention) or MinHash/LSH, with a stated threshold. Report the count and show the top ten matches by hand.",
+          "Check the base model too — you cannot fix pretraining contamination, but you can say which benchmarks are compromised for the model you chose and cite the leakage literature.",
+          "Publish the overlap number in the card as a first-class field, including when it is zero, plus the exact script that produced it.",
+          "Add the check to CI so the number is recomputed whenever the training set changes."
+        ],
+        "docs": [
+          {
+            "name": "Hugging Face Hub — Dataset cards",
+            "url": "https://huggingface.co/docs/hub/en/datasets-cards"
+          },
+          {
+            "name": "TRL — Dataset formats and types",
+            "url": "https://huggingface.co/docs/trl/en/dataset_formats"
+          }
+        ],
+        "papers": [
+          {
+            "name": "Investigating Data Contamination in Modern Benchmarks for Large Language Models (arXiv 2311.09783)",
+            "url": "https://arxiv.org/abs/2311.09783"
+          },
+          {
+            "name": "Benchmarking Benchmark Leakage in Large Language Models (arXiv 2404.18824)",
+            "url": "https://arxiv.org/abs/2404.18824"
+          },
+          {
+            "name": "Evaluating Large Language Models Trained on Code — the original decontamination discussion (arXiv 2107.03374)",
+            "url": "https://arxiv.org/abs/2107.03374"
+          }
+        ]
+      }
+    },
+    "p2-rl-posttraining": {
+      "Run a GRPO-family loop on a verifiable task": {
+        "desc": "Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. TRL v1.9.0 flipped the default `loss_type` to \"dapo\" and marks plain `grpo` as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.",
+        "steps": [
+          "Write the checker first, as a pure function with unit tests. If you cannot write the reward as code you do not have a verifiable task.",
+          "Use two reward functions, not one: a format reward and a correctness reward, logged separately — the first almost always saturates before the second moves.",
+          "Read the `loss_type` section of the GRPOTrainer docs and write down in your own words what `dapo` changes versus `grpo` (token-level normalisation) before you keep the default.",
+          "Stand up an OpenAI-compatible vLLM endpoint for generation; on-policy sampling throughput, not gradient steps, is what bounds this run.",
+          "Log per-step: mean reward, reward std within group, completion length, KL to reference, and fraction of groups with zero advantage (all-correct or all-wrong groups contribute nothing).",
+          "Report the honest outcome: reward curve versus held-out eval, with the paired CI from Task 01. Reward going up while eval does not is the interesting result, not a failure."
+        ],
+        "docs": [
+          {
+            "name": "TRL — GRPOTrainer (see `loss_type`)",
+            "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+          },
+          {
+            "name": "TRL releases — v1.9.0 changed the default loss_type",
+            "url": "https://github.com/huggingface/trl/releases"
+          },
+          {
+            "name": "TRL — Speeding up training (vLLM-backed generation)",
+            "url": "https://huggingface.co/docs/trl/en/speeding_up_training"
+          },
+          {
+            "name": "vLLM",
+            "url": "https://github.com/vllm-project/vllm"
+          }
+        ],
+        "courses": [
+          {
+            "name": "Reinforcement Fine-Tuning LLMs With GRPO (DeepLearning.AI short course)",
+            "url": "https://www.deeplearning.ai/short-courses/reinforcement-fine-tuning-llms-grpo/"
+          },
+          {
+            "name": "Hugging Face LLM Course — Chapter 12: Open R1 / reasoning models",
+            "url": "https://huggingface.co/learn/llm-course/chapter12/1"
+          }
+        ],
+        "videos": [
+          {
+            "title": "DeepSeek's GRPO (Group Relative Policy Optimization) | Reinforcement Learning for LLMs (Julia Turc)",
+            "url": "https://www.youtube.com/watch?v=xT4jxQUl0X8"
+          },
+          {
+            "title": "GRPO Reinforcement Learning Explained (DeepSeekMath Paper) (AI Papers Academy)",
+            "url": "https://www.youtube.com/watch?v=YCawyzAOg1Y"
+          }
+        ]
+      },
+      "Know where GRPO and DAPO came from": {
+        "desc": "GRPO is introduced in the DeepSeekMath paper: drop the value model, normalise advantage within a sampled group. DAPO then fixes four concrete failures — clip-higher, dynamic sampling, token-level loss, overlong-reward shaping — and that token-level loss is exactly the length-bias fix behind TRL's new default. Read both and you can explain your config line by line.",
+        "steps": [
+          "Read DeepSeekMath (arXiv 2402.03300) §4 and derive the GRPO objective yourself from PPO by replacing the learned value baseline with the within-group mean.",
+          "Read DAPO (arXiv 2503.14476) and write one paragraph per fix: clip-higher (entropy collapse), dynamic sampling (zero-gradient groups), token-level loss (length bias), overlong reward shaping (truncation noise).",
+          "Map each fix onto a TRL config field and note which ones TRL exposes and which it does not.",
+          "Read DeepSeek-R1 (arXiv 2501.12948) for the part most people skip: they dropped process reward models for rule-based outcome rewards. Know why before someone asks.",
+          "Skim the PPO paper for the clipped surrogate objective so you can say precisely what GRPO kept and what it threw away.",
+          "Write the one-page explainer of your own run's config, citing the paper section behind each non-default value."
+        ],
+        "papers": [
+          {
+            "name": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models — introduces GRPO (arXiv 2402.03300)",
+            "url": "https://arxiv.org/abs/2402.03300"
+          },
+          {
+            "name": "DAPO: An Open-Source LLM Reinforcement Learning System at Scale (arXiv 2503.14476)",
+            "url": "https://arxiv.org/abs/2503.14476"
+          },
+          {
+            "name": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (arXiv 2501.12948)",
+            "url": "https://arxiv.org/abs/2501.12948"
+          },
+          {
+            "name": "Proximal Policy Optimization Algorithms (arXiv 1707.06347)",
+            "url": "https://arxiv.org/abs/1707.06347"
+          }
+        ],
+        "docs": [
+          {
+            "name": "TRL — GRPOTrainer",
+            "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+          },
+          {
+            "name": "The RLHF Book — Reinforcement Learning / policy gradients",
+            "url": "https://rlhfbook.com/c/11-policy-gradients"
+          }
+        ],
+        "lectures": [
+          {
+            "name": "Stanford CS336 Spring 2025 — Lecture 16: Alignment, RL 1 (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=46f2QTDB08Q"
+          },
+          {
+            "name": "Stanford CS336 Spring 2025 — Lecture 17: Alignment, RL 2 (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=JdGFdViaOJk"
+          }
+        ]
+      },
+      "Read the RLVR capability debate honestly": {
+        "desc": "This is contested ground and knowing that is the point. Read 2504.13837 (base models win at large k), 2506.10947 (Spurious Rewards — random rewards help Qwen but not Llama or OLMo), 2505.24864 (ProRL — prolonged RL does expand the boundary), then 2510.04028, which reconciles them: early training exploits and narrows, prolonged training explores and expands.",
+        "steps": [
+          "Read 2504.13837 first and get precise about pass@k: at k=1 RL wins, at large k the base model catches up. The claim is about the *support* of the distribution, not the mean.",
+          "Read Spurious Rewards (2506.10947) and note the load-bearing detail: the effect appears on Qwen and not on Llama or OLMo. Any RLVR result on a single model family is a result about that family.",
+          "Read ProRL (2505.24864) as the rebuttal — enough steps, enough task diversity, and the boundary does move.",
+          "Read the two-stage reconciliation (2510.04028) last and write the synthesis: the camps measured different phases of the same curve.",
+          "Test one claim on your own run: compute pass@1 and pass@k for base and RL'd model on your verifiable task and see which side your data lands on.",
+          "Write the 300-word position you would defend in an interview, naming which evidence would change your mind."
+        ],
+        "papers": [
+          {
+            "name": "Does Reinforcement Learning Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model? (arXiv 2504.13837)",
+            "url": "https://arxiv.org/abs/2504.13837"
+          },
+          {
+            "name": "Spurious Rewards: Rethinking Training Signals in RLVR (arXiv 2506.10947)",
+            "url": "https://arxiv.org/abs/2506.10947"
+          },
+          {
+            "name": "ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in Large Language Models (arXiv 2505.24864)",
+            "url": "https://arxiv.org/abs/2505.24864"
+          },
+          {
+            "name": "The Debate on RLVR Reasoning Capability Boundary: Shrinkage, Expansion, or Both? A Two-Stage Dynamic View (arXiv 2510.04028)",
+            "url": "https://arxiv.org/abs/2510.04028"
+          }
+        ],
+        "docs": [
+          {
+            "name": "The RLHF Book — Reasoning and Inference-Time Scaling",
+            "url": "https://rlhfbook.com/c/14-reasoning"
+          }
+        ]
+      },
+      "Learn what actually moves the number": {
+        "desc": "\"The Art of Scaling RL Compute\" spends 400k+ GPU-hours and finds sigmoidal rather than power-law curves: design choices buy compute efficiency, they do not raise the asymptote. The practical lesson is to stop collecting GRPO variants — pick one, scale it as far as your budget goes, and measure the curve you get.",
+        "steps": [
+          "Read 2510.13786 and extract the two parameters that matter: the asymptote (what the recipe can ever reach) and the efficiency (how fast it gets there). Most published wins move the second.",
+          "Fit the same shape to your own run: plot held-out score against cumulative training compute, not against steps, and try a sigmoid fit rather than a line.",
+          "Freeze your recipe. Spend the remaining budget on one long run instead of five short ablations — the paper's whole point is that short runs mispredict.",
+          "Pair it with the two-stage RLVR paper: an early-phase measurement of your own run will look like narrowing, and that is expected rather than a bug.",
+          "Read the on-policy distillation paper so you know the 2026 pipeline shape — SFT-distill cold start, RLVR, then distillation as compaction — even if you only run the first two stages.",
+          "Write the budget conclusion: given your compute, what is the largest claim your curve supports?"
+        ],
+        "papers": [
+          {
+            "name": "The Art of Scaling Reinforcement Learning Compute for LLMs (arXiv 2510.13786)",
+            "url": "https://arxiv.org/abs/2510.13786"
+          },
+          {
+            "name": "The Debate on RLVR Reasoning Capability Boundary (arXiv 2510.04028)",
+            "url": "https://arxiv.org/abs/2510.04028"
+          },
+          {
+            "name": "On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes (arXiv 2306.13649)",
+            "url": "https://arxiv.org/abs/2306.13649"
+          }
+        ],
+        "docs": [
+          {
+            "name": "The RLHF Book",
+            "url": "https://rlhfbook.com"
+          }
+        ]
+      },
+      "Fill in the post-training map": {
+        "desc": "Work through the RLHF Book alongside the runs: reward modelling, PPO versus policy-gradient variants, DPO and why it was adopted then partly displaced, regularisation and KL control. Finish with a written paragraph tracing RLHF → DPO → GRPO → rubric rewards — what each fixed and what is still open.",
+        "steps": [
+          "Read the reward-modelling chapter and implement a tiny Bradley–Terry reward model on a preference set so the loss is not abstract.",
+          "Read the policy-gradient chapter next to your GRPO code and identify, line by line, which term in your implementation is the advantage and which is the ratio clip.",
+          "Read the direct-alignment chapter and run one DPO job with TRL on the same base model, then say concretely why labs moved back toward online RL for reasoning.",
+          "Read the regularisation chapter and sweep the KL coefficient on your own run — watch reward go up and coherence go down.",
+          "Cross-reference InstructGPT for where the RLHF pipeline came from, so you can date each idea.",
+          "Write the one-page lineage paragraph: RLHF → DPO → GRPO/DAPO → rubric and checklist rewards, with what each fixed and what remains open."
+        ],
+        "docs": [
+          {
+            "name": "The RLHF Book (Nathan Lambert)",
+            "url": "https://rlhfbook.com"
+          },
+          {
+            "name": "The RLHF Book — Reward Modeling",
+            "url": "https://rlhfbook.com/c/07-reward-models"
+          },
+          {
+            "name": "The RLHF Book — Direct-Alignment Algorithms",
+            "url": "https://rlhfbook.com/c/12-direct-alignment"
+          },
+          {
+            "name": "The RLHF Book — Regularization",
+            "url": "https://rlhfbook.com/c/08-regularization"
+          },
+          {
+            "name": "TRL — DPOTrainer",
+            "url": "https://huggingface.co/docs/trl/en/dpo_trainer"
+          }
+        ],
+        "courses": [
+          {
+            "name": "RLHF & Post-Training Course (Nathan Lambert, free companion course)",
+            "url": "https://rlhfbook.com/course"
+          },
+          {
+            "name": "Post-training of LLMs (DeepLearning.AI short course)",
+            "url": "https://www.deeplearning.ai/short-courses/post-training-of-llms/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model (arXiv 2305.18290)",
+            "url": "https://arxiv.org/abs/2305.18290"
+          },
+          {
+            "name": "Training language models to follow instructions with human feedback (arXiv 2203.02155)",
+            "url": "https://arxiv.org/abs/2203.02155"
+          }
+        ],
+        "lectures": [
+          {
+            "name": "RLHF and Post-training Overview — RLHF & Post-Training Book Course, Lecture 1 (Nathan Lambert)",
+            "url": "https://www.youtube.com/watch?v=o6l6tJQgUg4"
+          },
+          {
+            "name": "Stanford CS336 Spring 2025 — Lecture 16: Alignment, RL 1 (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=46f2QTDB08Q"
+          }
+        ],
+        "podcasts": [
+          {
+            "title": "791: Reinforcement Learning from Human Feedback (RLHF) — with Dr. Nathan Lambert (Super Data Science)",
+            "url": "https://www.youtube.com/watch?v=McaI5kkQySU"
+          }
+        ]
+      }
+    },
+    "p2-safety-evals": {
       "Read one frontier safety framework properly": {
         "desc": "Read Anthropic's Responsible Scaling Policy end to end, then skim Google DeepMind's Frontier Safety Framework for contrast. Learn the vocabulary that structures the whole field: capability thresholds, safety cases, evaluation triggers, and what it means for a model to be deployed under a specific safety level.",
         "steps": [
@@ -4673,7 +3766,7 @@ window.RESOURCES_DB = {
         ]
       }
     },
-    "p3-environment": {
+    "p2-environment": {
       "Choose the task, and write the verifier first": {
         "desc": "Task selection is the hardest judgement call in the plan. You want programmatic verification, meaningful spread across models (not saturated, not impossible), and narrow enough scope to diagnose specific failure types. Write the verifier before the task content — if you cannot state the pass condition as code, the task is not ready.",
         "steps": [
@@ -4860,6 +3953,977 @@ window.RESOURCES_DB = {
       }
     }
   },
+  "phase3.html": {
+    "p3-jax-core": {
+      "Purity and the tracing model": {
+        "desc": "JAX's transformations work by tracing your function with abstract values, so anything that is not a pure function of the declared inputs either silently disappears or blows up with an error you have never seen before. The goal of this item is not to memorise rules but to burn the three canonical error messages into recognition memory.",
+        "steps": [
+          "Read \"How to think in JAX\" end to end, then re-read the section on tracers until you can say in one sentence what a `Traced<ShapedArray>` object actually is.",
+          "Deliberately leak a tracer: store the value of an intermediate inside a Python list from within a `jit`-ed function, then use it outside. Record the `UnexpectedTracerError` text verbatim.",
+          "Deliberately mutate in place: write `x[0] = 1.0` on a `jax.Array` and read the error; then rewrite it with `x.at[0].set(1.0)` and confirm it returns a new array rather than mutating.",
+          "Deliberately branch on a traced boolean: `if x > 0:` inside a `jit`-ed function. Read the `ConcretizationTypeError`, then fix it with `jnp.where` and note which fix applies when (`where` for values, `lax.cond` for expensive branches).",
+          "Work the JAX Sharp Bits notebook's PRNG section: replace a global `np.random` seed with explicit `jax.random.key` splitting and understand why JAX refuses implicit global state.",
+          "Write a one-page cheat sheet in your notes mapping each error string to its cause and its fix. This is the artifact — you will consult it for the rest of the phase."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Quickstart: How to think in JAX",
+            "url": "https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html"
+          },
+          {
+            "name": "JAX — 🔪 The Sharp Bits 🔪 (common gotchas)",
+            "url": "https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html"
+          },
+          {
+            "name": "JAX — Errors reference (UnexpectedTracerError, ConcretizationTypeError)",
+            "url": "https://docs.jax.dev/en/latest/errors.html"
+          },
+          {
+            "name": "JAX — Stateful computations (why purity is enforced)",
+            "url": "https://docs.jax.dev/en/latest/stateful-computations.html"
+          },
+          {
+            "name": "JAX — Frequently asked questions",
+            "url": "https://docs.jax.dev/en/latest/faq.html"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Intro to JAX: Accelerating Machine Learning research (TensorFlow)",
+            "url": "https://www.youtube.com/watch?v=WdTeDXsOSj4"
+          }
+        ]
+      },
+      "grad, value_and_grad, and jit": {
+        "desc": "Autodiff and compilation are the two transformations you will see in literally every JAX snippet. `grad` differentiates with respect to the first argument by default and happily takes a whole parameter pytree; `jit` caches compiled code on a key made of shapes and dtypes, which is the single fact that explains most JAX performance surprises.",
+        "steps": [
+          "Write a scalar loss over a nested dict of parameters and take `jax.grad(loss)(params, batch)`. Confirm the returned gradient is a pytree with exactly the same structure as `params`.",
+          "Swap to `jax.value_and_grad(loss)` and verify you get the loss and the gradient from a single forward pass; time both versions to see the saving.",
+          "Use `argnums` to differentiate with respect to something other than argument 0, and `has_aux=True` to return per-step metrics alongside the gradient.",
+          "Wrap a training step in `jax.jit` and time call 1 and call 2 separately with `block_until_ready()`. The delta is the compile cost — write the number down.",
+          "Trigger a recompile on purpose by changing the batch size, and confirm it with `jax.jit(f).lower(x).compile()` or by watching the timing jump. Then pass a Python int as a config flag and mark it `static_argnums` so it stops recompiling every call.",
+          "Read the autodiff cookbook's sections on `jvp` and `vjp` so you know what `grad` is built out of, even though you will rarely call them directly."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Just-in-time compilation",
+            "url": "https://docs.jax.dev/en/latest/jit-compilation.html"
+          },
+          {
+            "name": "JAX API — jax.grad",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.grad.html"
+          },
+          {
+            "name": "JAX API — jax.value_and_grad",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.value_and_grad.html"
+          },
+          {
+            "name": "JAX — The Autodiff Cookbook (jvp, vjp, and what grad is made of)",
+            "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
+          },
+          {
+            "name": "JAX — Pytrees (how grad traverses parameter trees)",
+            "url": "https://docs.jax.dev/en/latest/pytrees.html"
+          }
+        ]
+      },
+      "vmap": {
+        "desc": "`vmap` is a program transformation, not a loop: it rewrites the traced computation so a leading batch axis is pushed into every primitive. Reading `in_axes` and `out_axes` fluently is a prerequisite for reading anyone else's JAX, and `vmap(grad(...))` is the pattern that makes per-example gradients trivial.",
+        "steps": [
+          "Write a single-example loss, then get per-example gradients with `jax.vmap(jax.grad(loss))(params, xs, ys)` — no batch dimension anywhere in the loss body.",
+          "Use `in_axes=(None, 0, 0)` to broadcast the parameter pytree while mapping over data, and confirm what happens if you get the `None` wrong.",
+          "Write a pairwise-distance function for a single pair, then build the full N×N matrix with nested `vmap` and compare it against a hand-broadcast NumPy version for both correctness and readability.",
+          "Play with `out_axes` to move the mapped axis somewhere other than position 0, and check the resulting shape.",
+          "Compose the three: `jax.jit(jax.vmap(jax.grad(loss)))`, and confirm the composition order does not change the result.",
+          "Read the autodiff cookbook's per-example-gradient section so you can explain why `vmap(grad(f))` is cheaper than a Python loop over `grad(f)`."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Automatic vectorization",
+            "url": "https://docs.jax.dev/en/latest/automatic-vectorization.html"
+          },
+          {
+            "name": "JAX API — jax.vmap (in_axes / out_axes reference)",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.vmap.html"
+          },
+          {
+            "name": "JAX — The Autodiff Cookbook (per-example gradients)",
+            "url": "https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html"
+          }
+        ]
+      },
+      "lax.scan and structured control flow": {
+        "desc": "Python control flow runs at trace time and gets baked into the graph; `lax` control flow runs at execution time inside XLA. Getting this distinction wrong is the difference between a 3-second compile and a 10-minute one, and `lax.scan` is how every real JAX training loop is written.",
+        "steps": [
+          "Write a jit-ed function with a Python `for` loop of 500 iterations, time the compile, then rewrite it with `jax.lax.scan` and time the compile again. Record both numbers.",
+          "Build a scan-based training step where `carry = (params, opt_state)` and the per-step outputs are the metrics you want stacked; confirm the output leading axis equals the number of steps.",
+          "Get the scan signature right by hand: `f(carry, x) -> (carry, y)`. Deliberately return a carry whose dtype differs from the input carry and read the error you get.",
+          "Write one `lax.cond` where both branches are traced, and note that unlike Python `if`, both branches must return the same pytree structure and shapes.",
+          "Write one `lax.while_loop` and confirm you cannot reverse-differentiate through it — this is the reason `scan` is preferred wherever the trip count is known.",
+          "Use `jax.lax.scan`'s `length` and `unroll` arguments once each so you recognise them when you meet them in the scaling book or in MaxText."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Control flow and logical operators with JIT",
+            "url": "https://docs.jax.dev/en/latest/control-flow.html"
+          },
+          {
+            "name": "JAX API — jax.lax.scan",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html"
+          },
+          {
+            "name": "JAX API — jax.lax.cond",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.cond.html"
+          },
+          {
+            "name": "JAX API — jax.lax.while_loop",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.while_loop.html"
+          }
+        ]
+      },
+      "Explicit sharding and meshes": {
+        "desc": "Since JAX 0.9.0 explicit sharding is the default: `jax.make_mesh` creates axes typed `AxisType.Explicit`, shardings propagate through the type system, and a communication the compiler cannot infer is an error rather than a silent all-gather. This is the concept that maps one-for-one onto PyTorch's DeviceMesh and DTensor placements in Task 03.",
+        "steps": [
+          "Before importing anything else, run `jax.config.update(\"jax_num_cpu_devices\", 8)` so you have eight devices to mesh, then check `jax.devices()`.",
+          "Build a mesh with `mesh = jax.make_mesh((4, 2), ('data', 'model'))` and activate it with `jax.set_mesh(mesh)` — do not use `with mesh:`, which was deprecated in 0.10.1.",
+          "Annotate arrays with `jax.P` (the top-level PartitionSpec alias): shard a batch as `jax.P('data', None)` and replicate parameters as `jax.P()`. Inspect the result with `jax.debug.visualize_array_sharding`.",
+          "Write one full training step that replicates parameters and shards the batch along `'data'`, and print `x.sharding` at three points inside the step to watch the sharding propagate.",
+          "Deliberately combine two arrays with incompatible specs and read the error explicit mode raises — then fix it by resharding one of them instead of letting a compiler guess.",
+          "Write down the mapping you will need in week 27: mesh → DeviceMesh, `jax.P('data')` → `Shard(0)`, `jax.P()` → `Replicate()`."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Distributed arrays and automatic parallelization (canonical parallelism doc)",
+            "url": "https://docs.jax.dev/en/latest/parallel.html"
+          },
+          {
+            "name": "JAX API — jax.make_mesh",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.make_mesh.html"
+          },
+          {
+            "name": "JAX API — jax.set_mesh",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.set_mesh.html"
+          },
+          {
+            "name": "JAX API — jax.sharding module (Mesh, PartitionSpec, NamedSharding)",
+            "url": "https://docs.jax.dev/en/latest/jax.sharding.html"
+          },
+          {
+            "name": "Scaling book — Programming TPUs in JAX (meshes and specs in context)",
+            "url": "https://jax-ml.github.io/scaling-book/jax-stuff/"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Intro to Parallel Programming in JAX, all 3 flavors (Nodematic Tutorials)",
+            "url": "https://www.youtube.com/watch?v=wADzdMOZbF8"
+          }
+        ]
+      },
+      "Collectives and shard_map": {
+        "desc": "`shard_map` is JAX's manual mode: inside it you write the program a single device runs, and you place the collectives yourself. Every parallelism strategy in the scaling book is ultimately a question of which axis you `psum` over and when — so this is the item that makes chapter 3 legible.",
+        "steps": [
+          "Read the shard_map notebook, then write a toy `jax.shard_map` (top-level import — not `jax.experimental.shard_map`) that shards a matrix along `'data'` and does nothing but return its own shard, printing the local shape to confirm it is the per-device slice.",
+          "Add `jax.lax.psum(x, 'data')` and verify by hand that the result equals the global sum; then swap it for `lax.pmean` and check it equals the global mean.",
+          "Implement a data-parallel gradient step manually: compute per-shard grads inside `shard_map`, `pmean` them over `'data'`, and apply the update.",
+          "Implement one collective matmul that requires `lax.all_gather` or `lax.psum_scatter`, and reason about how many bytes cross the interconnect versus how many FLOPs you do.",
+          "Trigger the 0.9.1 behaviour on purpose: pass an array whose sharding does not match `in_specs` under explicit mode, read the assertion, and fix it by calling `jax.reshard` first rather than relying on an implicit reshard.",
+          "Read the shard_map JEP for the design rationale — it is the clearest statement of why manual mode exists alongside automatic sharding."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Manual parallelism with shard_map",
+            "url": "https://docs.jax.dev/en/latest/notebooks/shard_map.html"
+          },
+          {
+            "name": "JAX API — jax.shard_map",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.shard_map.html"
+          },
+          {
+            "name": "JAX API — jax.lax.psum",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.psum.html"
+          },
+          {
+            "name": "JAX API — jax.lax.pmean",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.pmean.html"
+          },
+          {
+            "name": "JAX enhancement proposal — shmap (shard_map) for simple per-device code",
+            "url": "https://docs.jax.dev/en/latest/jep/14273-shard-map.html"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Sharding the Sphere with jax.shard_map — JAX/OpenXLA DevLab Fall 2025 (OpenXLA)",
+            "url": "https://www.youtube.com/watch?v=jVWSuEj9hWE"
+          }
+        ]
+      },
+      "Read pmap, never write it": {
+        "desc": "The JAX corpus on the public internet is overwhelmingly pmap-era, and JAX 0.10.0 removed the C++ pmap infrastructure. `jax.pmap` survives only as a thin wrapper over `jit(shard_map)`; `PmapSharding`, `device_put_sharded` and `device_put_replicated` now raise AttributeError. You need to read this code and date it, not write it.",
+        "steps": [
+          "Skim the changelog for the 0.9.x–0.11 entries and pull out the removals by name: the pmap C++ path, `PmapSharding`, `device_put_sharded`, `device_put_replicated`. Paste them into your notes with version numbers.",
+          "Read the `jax.pmap` API page and note what it now says about being implemented on top of `shard_map` — this is the sentence that tells you the semantics you actually get.",
+          "Take any pmap-era tutorial snippet you can find and translate it on paper: `pmap(f)` over the leading axis becomes a mesh with one axis plus `jax.P('devices', ...)` specs; `axis_name='batch'` becomes the mesh axis name; `lax.pmean(g, 'batch')` stays exactly the same.",
+          "Do the same for the setup code: `device_put_replicated(params, devices)` becomes `jax.device_put(params, NamedSharding(mesh, jax.P()))`.",
+          "Write a three-line rule in your notes for dating a snippet on sight: `pmap` + `device_put_replicated` = pre-0.10; `with mesh:` = pre-0.10.1; `jax.experimental.shard_map` import = pre-top-level promotion.",
+          "Sanity-check the rule against two real repos you find in the wild and record which era each is from."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Change log (search for the pmap removals)",
+            "url": "https://docs.jax.dev/en/latest/changelog.html"
+          },
+          {
+            "name": "JAX API — jax.pmap (now a wrapper over jit(shard_map))",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.pmap.html"
+          },
+          {
+            "name": "JAX — Distributed arrays and automatic parallelization (what to translate pmap into)",
+            "url": "https://docs.jax.dev/en/latest/parallel.html"
+          }
+        ]
+      },
+      "Get devices without a budget": {
+        "desc": "You do not need to spend anything to do the mesh and sharding work in this task. Eight fake CPU devices behave identically for every exercise here; Kaggle and the TPU Research Cloud are the free paths to a real accelerator if you want one. Colab no longer hands out TPU slices, so do not plan around it.",
+        "steps": [
+          "Put `jax.config.update(\"jax_num_cpu_devices\", 8)` at the very top of a fresh script — before the first JAX call, or it silently has no effect — then print `jax.devices()` and confirm you see eight.",
+          "Re-run one mesh exercise and one `shard_map` exercise from this task against the fake devices to prove they behave the same as real ones.",
+          "Register a Kaggle account and start one TPU notebook session so you know the quota, the session limits and the accelerator selector before you need them under time pressure.",
+          "Read the TPU Research Cloud page and decide whether to apply; if you do, apply now, because approval is not instant.",
+          "If you want a paid fallback, price a small GCP TPU slice and write the hourly number in the same budget note you made for the multi-GPU box in Task 03.",
+          "Record in your repo README exactly what each JAX exercise actually ran on — fake CPU devices, Kaggle TPU, or rented hardware. Future-you and any interviewer will ask."
+        ],
+        "docs": [
+          {
+            "name": "JAX — Installation (CPU, GPU and TPU wheels)",
+            "url": "https://docs.jax.dev/en/latest/installation.html"
+          },
+          {
+            "name": "JAX API — jax.config (jax_num_cpu_devices and friends)",
+            "url": "https://docs.jax.dev/en/latest/_autosummary/jax.config.html"
+          },
+          {
+            "name": "Kaggle — Tensor Processing Units (TPUs) documentation",
+            "url": "https://www.kaggle.com/docs/tpu"
+          },
+          {
+            "name": "Google TPU Research Cloud — about and application",
+            "url": "https://sites.research.google/trc/about/"
+          },
+          {
+            "name": "JAX — Introduction to multi-controller (multi-process/multi-host) JAX",
+            "url": "https://docs.jax.dev/en/latest/multi_process.html"
+          }
+        ]
+      }
+    },
+    "p3-scaling-book": {
+      "Chapters 1–2: rooflines and the hardware": {
+        "desc": "The roofline chapter is the highest-value reading in the whole phase: it teaches you to answer \"is this compute-bound or memory-bound?\" with division instead of a profiler. Chapter 2 attaches real numbers — FLOP/s, HBM bandwidth, interconnect bandwidth — so the arithmetic produces predictions you can check.",
+        "steps": [
+          "Read chapter 1 and derive arithmetic intensity for three ops by hand: a big square matmul, an elementwise GELU, and a layernorm. Classify each as compute- or memory-bound before reading the answer.",
+          "Compute the crossover intensity for one accelerator you can actually rent (peak FLOP/s ÷ HBM bandwidth) and write the number on a sticky note — it is the constant you will use all phase.",
+          "Read chapter 2 for the TPU numbers, then read chapter 12 (GPUs) only far enough to pull the equivalent GPU numbers into the same table.",
+          "Do the chapter exercises with pencil and paper first. Record every answer you got wrong plus the corrected working — that log is a deliverable at the milestone.",
+          "Predict the time for a single large matmul on your hardware from the roofline, then measure it. Write down the ratio of predicted to measured and a one-line theory for the gap.",
+          "Repeat the prediction-then-measure loop for one memory-bound op so you have both sides of the roofline calibrated."
+        ],
+        "docs": [
+          {
+            "name": "Scaling book — All About Rooflines (chapter 1)",
+            "url": "https://jax-ml.github.io/scaling-book/roofline/"
+          },
+          {
+            "name": "Scaling book — How to Think About TPUs (chapter 2)",
+            "url": "https://jax-ml.github.io/scaling-book/tpus/"
+          },
+          {
+            "name": "Scaling book — table of contents",
+            "url": "https://jax-ml.github.io/scaling-book/"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
+          }
+        ]
+      },
+      "Chapters 3–4: sharding and transformer math": {
+        "desc": "Chapter 3 is the cost model: for every sharding strategy, what gets communicated, how much, and at what point the communication dominates. Chapter 4 is the accounting: parameters, FLOPs and activation memory for a transformer forward and backward. Together they let you size a run on paper, which is the stated deliverable of this task.",
+        "steps": [
+          "Read chapter 3 and build a table with one row per strategy — data parallel, FSDP/ZeRO-3, tensor parallel, pipeline parallel — and columns for what is communicated per step, how much, and what breaks it.",
+          "Derive the 6ND training-FLOP estimate from scratch: 2ND for the forward matmuls, 4ND for the backward. Then list what it ignores — attention's quadratic term, layernorms, the embedding/unembedding, activation recompute — and estimate at what sequence length the attention term stops being negligible.",
+          "Count activation memory per layer for a concrete config (hidden size, heads, sequence length, batch, dtype) and compare it against parameter plus optimizer-state memory. Note which one dominates and when.",
+          "Read chapter 5 on parallelising a transformer for training so the strategies in your table have a worked example attached.",
+          "Size one specific run end to end: pick a model, a batch size and a two-GPU box, and predict memory per device and step time. Put the prediction in your repo before you touch a GPU in Task 03.",
+          "Cross-check your tensor-parallel row against the Megatron-LM papers so you can name the original source of the column-then-row MLP trick."
+        ],
+        "docs": [
+          {
+            "name": "Scaling book — Sharded Matrices and How to Multiply Them (chapter 3)",
+            "url": "https://jax-ml.github.io/scaling-book/sharding/"
+          },
+          {
+            "name": "Scaling book — All the Transformer Math You Need to Know (chapter 4)",
+            "url": "https://jax-ml.github.io/scaling-book/transformers/"
+          },
+          {
+            "name": "Scaling book — How to Parallelize a Transformer for Training (chapter 5)",
+            "url": "https://jax-ml.github.io/scaling-book/training/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 1909.08053 — Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism",
+            "url": "https://arxiv.org/abs/1909.08053"
+          },
+          {
+            "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM",
+            "url": "https://arxiv.org/abs/2104.04473"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
+          },
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
+          }
+        ]
+      },
+      "Chapter 12: how to think about GPUs": {
+        "desc": "Chapter 12 is the newest chapter and the one about hardware you can rent this afternoon. It covers the NVIDIA memory hierarchy, NVLink versus InfiniBand, what collectives actually cost on a GPU fabric, and how the whole GPU picture maps back onto the TPU model the rest of the book uses.",
+        "steps": [
+          "Read the chapter and extract a numbers table for one GPU you plan to rent: SM count, tensor-core FLOP/s at bf16, HBM capacity and bandwidth, NVLink bandwidth, and node-to-node bandwidth.",
+          "Work through the collectives section and compute the wall-clock cost of one all-reduce of your model's gradients at your parameter count, both intra-node over NVLink and inter-node over the network.",
+          "Write down where the GPU and TPU stories genuinely differ — topology, collective implementation, the role of the compiler — rather than treating the chapters as interchangeable.",
+          "Redo the chapter 1 roofline crossover with GPU numbers and confirm it agrees with the table you built in the previous item.",
+          "Read the Ultra-Scale Playbook's parallelism chapter immediately after, and note every place its GPU-measured guidance contradicts or refines the book's arithmetic.",
+          "End with one paragraph in your notes: given a 2×A100 or 2×L40S box, which parallelism strategy you would reach for first and why. You will test that answer next week."
+        ],
+        "docs": [
+          {
+            "name": "Scaling book — How to Think About GPUs (chapter 12)",
+            "url": "https://jax-ml.github.io/scaling-book/gpus/"
+          },
+          {
+            "name": "Scaling book — All About Rooflines (the arithmetic this chapter grounds)",
+            "url": "https://jax-ml.github.io/scaling-book/roofline/"
+          },
+          {
+            "name": "Hugging Face — The Ultra-Scale Playbook",
+            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+          },
+          {
+            "name": "NVIDIA NCCL — environment variables (the fabric knobs the chapter describes)",
+            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
+          }
+        ]
+      },
+      "Chinchilla as the anchor": {
+        "desc": "Chinchilla is the reference point everyone quotes and few people state correctly. The actual claim is narrow: for a fixed training-compute budget, model size and training tokens should scale roughly in proportion, landing near 20 tokens per parameter. It says nothing about inference cost and it assumes you never run out of unique data.",
+        "steps": [
+          "Read the paper and identify the three separate estimation approaches — fixed model size, IsoFLOP, and the parametric loss fit — and note that they broadly agree, which is why the result stuck.",
+          "Write the compute-optimal claim in your own words in two sentences, then write the two assumptions it rests on in two more.",
+          "Read the earlier Kaplan et al. scaling-laws paper so you can say exactly which choice (the learning-rate schedule and the treatment of embedding parameters) made its exponents differ from Chinchilla's.",
+          "Skim the replication attempt paper for the fitted-parameter dispute; the point is not to adjudicate it but to know that the exact coefficients are contested while the shape is not.",
+          "Compute the Chinchilla-optimal token count for three parameter counts you care about, then look up how many tokens a recent open model of that size was actually trained on and note the ratio.",
+          "Keep that ratio handy — the next item explains why it is 10× or more."
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (Chinchilla)",
+            "url": "https://arxiv.org/abs/2203.15556"
+          },
+          {
+            "name": "arXiv 2001.08361 — Scaling Laws for Neural Language Models (Kaplan et al.)",
+            "url": "https://arxiv.org/abs/2001.08361"
+          },
+          {
+            "name": "arXiv 2404.10102 — Chinchilla Scaling: A replication attempt",
+            "url": "https://arxiv.org/abs/2404.10102"
+          }
+        ]
+      },
+      "Inference-aware and data-constrained scaling": {
+        "desc": "Two results explain why nobody trains Chinchilla-optimal any more. Put inference demand in the objective and the optimum moves to a smaller model trained on far more data. Put a cap on unique data and repeated epochs start decaying in value until extra compute buys essentially nothing.",
+        "steps": [
+          "Read arXiv 2401.00448 and identify what changed in the objective: total cost is now training compute plus inference compute over an expected serving volume, not training compute alone.",
+          "Work one concrete example from that framing — pick a model size and an expected lifetime token volume, and show which of two training configurations is cheaper overall.",
+          "Read arXiv 2305.16264 and extract the two headline numbers: how many epochs of repeated data are roughly as good as fresh data, and where the returns flatten out.",
+          "Write one paragraph reconciling the two: inference-awareness pushes you to more tokens, data-constraints cap how many useful tokens exist, and the intersection is where 2025–2026 models actually sit.",
+          "Revisit the ratios you computed in the Chinchilla item and explain each one using these two papers rather than hand-waving about \"overtraining\".",
+          "Add the whole argument to your written scaling-book notes; being able to deliver it out loud in two minutes is the deliverable."
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2401.00448 — Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws",
+            "url": "https://arxiv.org/abs/2401.00448"
+          },
+          {
+            "name": "arXiv 2305.16264 — Scaling Data-Constrained Language Models",
+            "url": "https://arxiv.org/abs/2305.16264"
+          },
+          {
+            "name": "arXiv 2203.15556 — Training Compute-Optimal Large Language Models (the baseline being attacked)",
+            "url": "https://arxiv.org/abs/2203.15556"
+          }
+        ]
+      },
+      "The GPU counterpart": {
+        "desc": "The Ultra-Scale Playbook is the PyTorch-and-GPU twin of the scaling book: 5D parallelism, ZeRO stages, activation recomputation, kernel fusion, all backed by thousands of measured runs up to 512 GPUs. Where the scaling book gives you arithmetic, this gives you the empirical failure modes with the exact error you will see.",
+        "steps": [
+          "Read the memory chapter first and reproduce its memory breakdown for your own model config: parameters, gradients, optimizer states, activations.",
+          "Read the parallelism chapters — data parallel, ZeRO, tensor parallel, sequence/context parallel, pipeline parallel — and add a \"measured gotcha\" column to the strategy table you built for chapter 3.",
+          "Note every place the playbook's measured guidance sharpens the book's arithmetic, especially around overlap of communication and compute.",
+          "Skim the activation-recomputation and kernel-fusion sections so the levers in Task 03 have names before you pull them.",
+          "Skim the Smol Training Playbook for the operational side — the decisions and debugging that surround a real run rather than the parallelism theory.",
+          "Keep both tabs open through weeks 27–29 and add your own measured numbers next to theirs."
+        ],
+        "docs": [
+          {
+            "name": "Hugging Face — The Ultra-Scale Playbook",
+            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+          },
+          {
+            "name": "Hugging Face — The Smol Training Playbook",
+            "url": "https://huggingface.co/spaces/HuggingFaceTB/smol-training-playbook"
+          },
+          {
+            "name": "Scaling book — How to Think About GPUs (the arithmetic side of the same material)",
+            "url": "https://jax-ml.github.io/scaling-book/gpus/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+            "url": "https://arxiv.org/abs/1910.02054"
+          }
+        ]
+      }
+    },
+    "p3-pytorch-distributed": {
+      "FSDP2": {
+        "desc": "FSDP2 (`fully_shard`) shards each parameter on dim-0 into a DTensor rather than flattening everything into one per-rank buffer the way FSDP1 did. That single design change is what makes per-parameter mixed precision, per-parameter optimizer state and resharded checkpointing behave sanely — and it is why FSDP1 blog posts will mislead you.",
+        "steps": [
+          "Initialise the process group first, then apply `fully_shard` to your Phase 1 transformer bottom-up: each block, then the root module. Print `p.shape` and `p.to_local().shape` for one parameter to see the DTensor.",
+          "Run on two GPUs and record peak memory with `torch.cuda.max_memory_allocated()` before and after sharding; check the saving against the parameters + gradients + optimizer-state arithmetic from chapter 4.",
+          "Trace one step: which parameters get all-gathered in forward, when they are freed, and which gradients get reduce-scattered in backward. Confirm with `TORCH_DISTRIBUTED_DEBUG` or a profiler trace rather than by assumption.",
+          "Change the wrapping granularity — whole model versus per-block versus per-layer — and measure peak memory and step time at each. Explain the trade-off in terms of all-gather size versus all-gather count.",
+          "Turn on mixed precision via `MixedPrecisionPolicy` and confirm which tensors are bf16 (params, reduce) and which stay fp32 (master weights, optimizer state).",
+          "Read torchtitan's fsdp.md to see how a production codebase configures the same API."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch — Getting Started with Fully Sharded Data Parallel (FSDP2)",
+            "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
+          },
+          {
+            "name": "PyTorch API — torch.distributed.fsdp.fully_shard",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.fsdp.fully_shard.html"
+          },
+          {
+            "name": "torchtitan — docs/fsdp.md",
+            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
+          },
+          {
+            "name": "Hugging Face — The Ultra-Scale Playbook (ZeRO stages and measured behaviour)",
+            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+            "url": "https://arxiv.org/abs/1910.02054"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Too Big to Train 2: PyTorch's Upgraded Interface for Fully Sharded Data Parallel (Sharcnet HPC)",
+            "url": "https://www.youtube.com/watch?v=SgRKWKwQbQE"
+          },
+          {
+            "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
+            "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
+          }
+        ]
+      },
+      "DTensor and DeviceMesh": {
+        "desc": "DTensor is the substrate: a local tensor, plus a DeviceMesh, plus a placement per mesh axis (`Shard(dim)`, `Replicate()`, `Partial()`). FSDP2, tensor parallel and distributed checkpointing are all expressed in it. This is the exact analogue of the JAX mesh and `jax.P` work from Task 01, and building the mapping explicitly saves you a week.",
+        "steps": [
+          "Initialise the process group before you construct a DeviceMesh — a mesh built on uninitialised process groups will fail later under `torch.compile`, and the failure surfaces far from the cause.",
+          "Build a 1D mesh with `init_device_mesh`, distribute a tensor with `Shard(0)`, and print `.to_local().shape` on each rank to confirm the split.",
+          "Build a 2D mesh named `('dp', 'tp')`, slice it with `mesh['tp']`, and place a tensor as `[Shard(0), Replicate()]`.",
+          "Call `redistribute` to go from `Shard(0)` to `Replicate()` and back, and read the collectives PyTorch inserted using a profiler trace or `TORCH_DISTRIBUTED_DEBUG=DETAIL`. Name each one — all-gather, reduce-scatter, all-to-all.",
+          "Produce a `Partial()` placement deliberately (an unreduced local partial sum) and watch the all-reduce fire when you redistribute it to `Replicate()`.",
+          "Write the JAX↔PyTorch mapping table in your notes: Mesh↔DeviceMesh, `jax.P('data')`↔`Shard(0)`, `jax.P()`↔`Replicate()`, unreduced psum operand↔`Partial()`."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch API — torch.distributed.tensor (DTensor)",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
+          },
+          {
+            "name": "PyTorch — Getting Started with DeviceMesh",
+            "url": "https://docs.pytorch.org/tutorials/recipes/distributed_device_mesh.html"
+          },
+          {
+            "name": "PyTorch API — torch.distributed (collectives, process groups, debug flags)",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+          },
+          {
+            "name": "JAX — Distributed arrays and automatic parallelization (the Task 01 counterpart)",
+            "url": "https://docs.jax.dev/en/latest/parallel.html"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Introduction to PyTorch DeviceMesh and DTensor (Edward Z. Yang's PyTorch and PL)",
+            "url": "https://www.youtube.com/watch?v=yd37O-xu2-4"
+          },
+          {
+            "title": "Two Dimensional Parallelism Using Distributed Tensors — PyTorch Conference 2022 (PyTorch)",
+            "url": "https://www.youtube.com/watch?v=MEx2kJPmjHo"
+          }
+        ]
+      },
+      "Tensor parallel and 2D parallelism": {
+        "desc": "Tensor parallel splits individual matmuls across devices. Done right through an MLP block — column-parallel then row-parallel — only one all-reduce is needed per block instead of two. Compose it with FSDP2 on a second mesh axis and you have 2D parallelism, which is what every real training run above one node looks like.",
+        "steps": [
+          "Apply `parallelize_module` to one transformer block with a plan of `ColwiseParallel` on the up-projection and `RowwiseParallel` on the down-projection, and verify by inspecting weight shapes per rank.",
+          "Count the collectives per block with a profiler and confirm you see one all-reduce, not two. If you see two, your column/row ordering is wrong — fix it and re-measure.",
+          "Extend the plan to attention (colwise on q/k/v, rowwise on the output projection) and note how the head dimension constrains the TP degree.",
+          "Build a 2D mesh `('dp', 'tp')`, apply TP on the `tp` axis and `fully_shard` on the `dp` axis, and confirm both are active by printing placements.",
+          "Measure step time at TP=2 versus pure data parallel at the same device count, and explain the difference using the chapter 3 cost model — communication volume per step, not vibes.",
+          "Read torchtitan's composability.md to see the ordering constraints a production stack imposes when TP, FSDP and compile are combined."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch — Large Scale Transformer model training with Tensor Parallel (TP)",
+            "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
+          },
+          {
+            "name": "PyTorch API — Tensor Parallelism (torch.distributed.tensor.parallel)",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.parallel.html"
+          },
+          {
+            "name": "torchtitan — docs/composability.md",
+            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
+          },
+          {
+            "name": "Scaling book — Sharded Matrices and How to Multiply Them (the cost model)",
+            "url": "https://jax-ml.github.io/scaling-book/sharding/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 1909.08053 — Megatron-LM (the original column-then-row MLP split)",
+            "url": "https://arxiv.org/abs/1909.08053"
+          },
+          {
+            "name": "arXiv 2104.04473 — Efficient Large-Scale Language Model Training on GPU Clusters",
+            "url": "https://arxiv.org/abs/2104.04473"
+          }
+        ]
+      },
+      "Read torchtitan": {
+        "desc": "torchtitan is PyTorch's own reference training stack: FSDP2, tensor parallel, pipeline parallel, float8, distributed checkpointing and compile, in a codebase small enough to read end to end. With torchtune wound down, it is the answer to \"how would you set up a real pretraining run\" that a PyTorch-shop interviewer expects.",
+        "steps": [
+          "Clone the repo and read the training loop first, top to bottom, without chasing every helper. Note where parallelism is applied relative to model construction and optimizer creation.",
+          "Read the parallelism application code and map each strategy back to the API you used yourself: `fully_shard`, `parallelize_module`, the pipeline schedule.",
+          "Read the TOML config for one model and list every knob that changes parallelism, precision or checkpointing. Change two of them and predict the effect before running anything.",
+          "Read docs/composability.md and docs/fsdp.md for the ordering rules — which wrapper must be applied before which, and what breaks under `torch.compile` if you get it wrong.",
+          "Read docs/converging.md so you know what a healthy loss curve looks like in their harness and what they consider a convergence regression.",
+          "Write half a page in your notes: how you would configure torchtitan for a 1B model on eight GPUs, and which three settings you would change first if you saw an OOM."
+        ],
+        "docs": [
+          {
+            "name": "github.com/pytorch/torchtitan",
+            "url": "https://github.com/pytorch/torchtitan"
+          },
+          {
+            "name": "torchtitan — docs/composability.md",
+            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
+          },
+          {
+            "name": "torchtitan — docs/fsdp.md",
+            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/fsdp.md"
+          },
+          {
+            "name": "torchtitan — docs/converging.md",
+            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/converging.md"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Torchtitan: Large-Scale LLM Training Using Native PyTorch 3D Parallelism — Wanchao Liang & Linsong Chu (PyTorch)",
+            "url": "https://www.youtube.com/watch?v=WsNEBxPDljU"
+          },
+          {
+            "title": "GPU MODE Lecture 39: Torchtitan",
+            "url": "https://www.youtube.com/watch?v=VYWRjcUqW6w"
+          }
+        ]
+      },
+      "Activation checkpointing and gradient accumulation": {
+        "desc": "These are the two levers that trade compute for memory, and both have arithmetic you should be able to do in your head. Checkpointing drops stored activations and recomputes them in backward — roughly a 30% compute tax for a large memory cut. Gradient accumulation buys effective batch size for free in memory but costs a reduce per microbatch unless you suppress it.",
+        "steps": [
+          "Measure baseline peak memory and step time, then wrap your transformer blocks in `torch.utils.checkpoint.checkpoint` and measure both again. Compute the actual memory saved and the actual compute tax on your hardware.",
+          "Switch to selective checkpointing — keep the cheap-to-store, expensive-to-recompute ops (matmul outputs) and recompute the rest — and show it beats full checkpointing on the memory-per-unit-slowdown curve.",
+          "Confirm the interaction with autocast: recomputation must run under the same precision context as the original forward, or your numerics drift.",
+          "Implement gradient accumulation over N microbatches and verify the resulting update matches a single large batch to tight tolerance (watch the loss-scaling-by-1/N detail).",
+          "Under FSDP2, suppress the gradient reduce on all but the last microbatch (`set_requires_gradient_sync(False)`), and measure the step time with and without. The delta is the reduce you were paying N times.",
+          "Read the Ultra-Scale Playbook's recomputation section and compare its measured numbers against yours — if you are far off, you measured the wrong thing."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch API — torch.utils.checkpoint",
+            "url": "https://docs.pytorch.org/docs/stable/checkpoint.html"
+          },
+          {
+            "name": "Hugging Face — The Ultra-Scale Playbook (activation recomputation and gradient accumulation)",
+            "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+          },
+          {
+            "name": "PyTorch — Getting Started with FSDP2 (where the no-sync knob lives)",
+            "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
+          },
+          {
+            "name": "Scaling book — All the Transformer Math You Need to Know (the activation-memory accounting)",
+            "url": "https://jax-ml.github.io/scaling-book/transformers/"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Slaying OOMs with PyTorch FSDP and torchao (Hamel Husain)",
+            "url": "https://www.youtube.com/watch?v=UvRl4ansfCg"
+          }
+        ]
+      },
+      "bf16 and fp8": {
+        "desc": "bf16 is the default training dtype because it keeps fp32's exponent range, which is exactly why it does not need loss scaling and fp16 does. float8 goes a step further with per-tensor scaling and a real speedup on Hopper-class hardware and later — but only on some layers, and the measured number on your box is rarely the marketing number.",
+        "steps": [
+          "Write down the exponent and mantissa bit counts for fp32, bf16 and fp16, then explain in one sentence why fp16 needs a `GradScaler` and bf16 does not.",
+          "Train the same model under autocast bf16 and under fp32 on identical data and seeds, and plot both loss curves. Throughput alone is not the comparison — convergence is.",
+          "Install torchao and convert the linear layers of your model to float8 training, using its filter to skip the layers that are unsafe to cast (typically the embedding, the final projection, and any layer with a small inner dimension).",
+          "Measure tokens/second at bf16 and at float8 on your actual hardware, and check whether the layers you converted are large enough for the tensor cores to benefit at all.",
+          "Plot the float8 loss curve against the bf16 one over the same number of steps. If it diverges, look at the scaling recipe before blaming the dtype.",
+          "Record all three numbers — bf16 throughput, float8 throughput, and the loss-curve difference — in your notes. The honest measured delta is the artifact."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch API — torch.amp (Automatic Mixed Precision)",
+            "url": "https://docs.pytorch.org/docs/stable/amp.html"
+          },
+          {
+            "name": "PyTorch — Automatic Mixed Precision examples (including GradScaler)",
+            "url": "https://docs.pytorch.org/docs/stable/notes/amp_examples.html"
+          },
+          {
+            "name": "github.com/pytorch/ao (torchao)",
+            "url": "https://github.com/pytorch/ao"
+          },
+          {
+            "name": "torchao API — torchao.float8",
+            "url": "https://docs.pytorch.org/ao/stable/api_reference/api_ref_float8.html"
+          },
+          {
+            "name": "torchao tutorial — Pre-training with float8",
+            "url": "https://docs.pytorch.org/ao/stable/eager_tutorials/pretraining.html"
+          }
+        ]
+      },
+      "NCCL and OOM debugging": {
+        "desc": "Distributed jobs fail in two characteristic ways. A hang is almost always a collective that one rank never reached — divergent control flow, an early return, a rank that raised and died quietly. An OOM is either genuine exhaustion or fragmentation, and the memory snapshot tells you which. Cause both on purpose so you have seen the symptom before it costs you a rented hour.",
+        "steps": [
+          "Set `NCCL_DEBUG=INFO` and `TORCH_NCCL_ASYNC_ERROR_HANDLING=1` on a healthy run first, and read the topology and ring-construction output so you know what normal looks like.",
+          "Cause a hang deliberately: make rank 0 take an `if` branch that skips an all-reduce the other rank executes. Watch the watchdog timeout, read which collective it names, and confirm the diagnosis is \"rank divergence\", not \"network\".",
+          "Turn on `TORCH_DISTRIBUTED_DEBUG=DETAIL` and re-run the hang to see the per-rank collective mismatch reported directly.",
+          "Cause a fragmentation OOM: allocate and free alternating large and small tensors until an allocation fails while `memory_reserved` is far above `memory_allocated`. Capture a snapshot with `torch.cuda.memory._record_memory_history()` and `_dump_snapshot()`.",
+          "Load the snapshot in the PyTorch memory visualizer and identify the peak — confirm for yourself that it sits in backward, not forward, and find the allocation that triggered the failure.",
+          "Write the two playbooks up as a page each: symptom, first three commands, the diagnosis that usually holds, and the fix. This writeup is a milestone deliverable."
+        ],
+        "docs": [
+          {
+            "name": "NVIDIA NCCL — environment variables",
+            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
+          },
+          {
+            "name": "NVIDIA NCCL — troubleshooting",
+            "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html"
+          },
+          {
+            "name": "PyTorch — Understanding CUDA Memory Usage (snapshots and the visualizer)",
+            "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
+          },
+          {
+            "name": "PyTorch API — torch.distributed (TORCH_DISTRIBUTED_DEBUG and watchdog behaviour)",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+          },
+          {
+            "name": "torchtitan — docs/debugging.md",
+            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/debugging.md"
+          },
+          {
+            "name": "PyTorch blog — Understanding GPU Memory 1: Visualizing All Allocations over Time",
+            "url": "https://pytorch.org/blog/understanding-gpu-memory-1/"
+          }
+        ]
+      },
+      "Distributed checkpoint and resume": {
+        "desc": "A run you cannot resume is a run you cannot afford, and resharding on resume is the part that actually breaks. `torch.distributed.checkpoint` saves sharded state in a world-size-independent format — but only if you save the DTensor state dicts correctly, which is exactly what this exercise proves.",
+        "steps": [
+          "Save model and optimizer state with `torch.distributed.checkpoint.save` using the distributed state-dict helpers, not a naive `state_dict()` gather to rank 0.",
+          "Inspect what landed on disk: one file per rank plus metadata. Confirm the metadata describes global shapes, which is what makes resharding possible.",
+          "Kill the job mid-epoch (SIGKILL, not a clean exit) and restart it at the same world size. Verify the loss continues rather than restarting or jumping.",
+          "Now restart at a different world size — 2 ranks saved, 4 ranks loaded, or vice versa — and verify the loss curve is still continuous. This is the test that finds the bug.",
+          "Confirm you also restored the optimizer state and the dataloader position, not just the weights. A resumed run with a fresh optimizer state shows a distinctive loss bump; go and look for it.",
+          "Read torchtitan's checkpoint.md for how a production stack handles async saving and format conversion for later export."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch — Getting Started with Distributed Checkpoint (DCP)",
+            "url": "https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html"
+          },
+          {
+            "name": "PyTorch API — torch.distributed.checkpoint",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.checkpoint.html"
+          },
+          {
+            "name": "torchtitan — docs/checkpoint.md",
+            "url": "https://github.com/pytorch/torchtitan/blob/main/docs/checkpoint.md"
+          },
+          {
+            "name": "PyTorch API — torch.distributed.tensor (what DCP is actually serialising)",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
+          }
+        ]
+      }
+    },
+    "p3-cs336-systems": {
+      "Watch the systems lectures": {
+        "desc": "CS336's systems block covers GPU architecture, kernels and Triton, and distributed training in exactly the order assignment 2 needs them. Watching first is not optional — the assignment assumes the lecture content and skipping it costs days. The executable lecture code is as valuable as the video.",
+        "steps": [
+          "Watch the GPUs/TPUs lecture and take notes specifically on the memory hierarchy and occupancy, because the assignment's benchmarking section assumes both.",
+          "Watch the Kernels/Triton lecture and follow along in the corresponding executable lecture file rather than just listening.",
+          "Watch both parallelism lectures back to back, and map each collective they describe onto the PyTorch API you used in Task 03.",
+          "Clone the current lectures repo and run the systems lecture code locally; the lectures are literate Python you can step through, which is the point of the course's format.",
+          "Cross-check the course website's schedule against the video list so you know which lecture number corresponds to which topic in the year you are watching — the numbering shifted between offerings.",
+          "Write a one-paragraph summary per lecture in your notes before starting the assignment. If you cannot write it, you did not watch it closely enough."
+        ],
+        "courses": [
+          {
+            "name": "Stanford CS336 — Language Modeling from Scratch (course site)",
+            "url": "https://cs336.stanford.edu/"
+          }
+        ],
+        "lectures": [
+          {
+            "name": "github.com/stanford-cs336/lectures — current executable lecture code and slides",
+            "url": "https://github.com/stanford-cs336/lectures"
+          },
+          {
+            "name": "github.com/stanford-cs336/spring2025-lectures — Spring 2025 lecture code",
+            "url": "https://github.com/stanford-cs336/spring2025-lectures"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 5: GPUs, TPUs (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
+          },
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
+          },
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
+          },
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 8: Parallelism (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=6-cXp-aOmdg"
+          },
+          {
+            "title": "Stanford CS336: Language Modeling from Scratch | Spring 2026 — full playlist (Stanford Online)",
+            "url": "https://www.youtube.com/playlist?list=PLoROMvodv4rMqXOcazWaTUHhq-yembLCV"
+          }
+        ]
+      },
+      "Benchmark and profile before optimising": {
+        "desc": "An unsynchronised CUDA timing measures queue submission, not work — this is the single most common benchmarking mistake and it will make every optimisation look free. Get the measurement methodology right first, then profile, then read the trace, and only then change code.",
+        "steps": [
+          "Write a timing harness with explicit warmup iterations and `torch.cuda.synchronize()` on both sides of the timed region. Prove the harness matters by timing the same op with and without sync.",
+          "Time forward, backward and the optimizer step separately across a sweep of model sizes and sequence lengths, and report mean and standard deviation, not a single run.",
+          "Before each measurement, write down a predicted number from your chapter 1 roofline. Keep a prediction-versus-measured log — this is a milestone deliverable.",
+          "Profile with `torch.profiler` using `activities=[CPU, CUDA]` and `record_shapes=True`, export a Chrome trace, and open it. Identify kernel time versus gaps, and whether you are launch-bound or compute-bound.",
+          "Use the profiler's memory profiling to find the peak allocation and confirm it lands in backward.",
+          "Pick the single largest gap or the single hottest kernel and write down what you would change — but do not change it yet. Optimising before this step is the mistake the assignment is teaching against."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch — PyTorch Profiler recipe",
+            "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
+          },
+          {
+            "name": "PyTorch — Profiling your PyTorch Module",
+            "url": "https://docs.pytorch.org/tutorials/beginner/profiler.html"
+          },
+          {
+            "name": "Scaling book — All About Rooflines (make the prediction first)",
+            "url": "https://jax-ml.github.io/scaling-book/roofline/"
+          },
+          {
+            "name": "CS336 assignment 2 handout (PDF)",
+            "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
+          },
+          {
+            "name": "PyTorch — Understanding CUDA Memory Usage",
+            "url": "https://docs.pytorch.org/docs/stable/torch_cuda_memory.html"
+          }
+        ]
+      },
+      "Triton fundamentals": {
+        "desc": "Triton gives you block-level rather than thread-level semantics: you write Python, reason about tiles, and let the compiler handle intra-block scheduling. The official tutorials are the right ladder, and the fused-softmax one in particular teaches the online-normalisation trick FlashAttention is built on — do not skip ahead to attention.",
+        "steps": [
+          "Work tutorial 01 (vector add) and make sure you understand `tl.program_id`, the block-offset computation, and why the mask on `tl.load`/`tl.store` is mandatory for ragged tails.",
+          "Work tutorial 02 (fused softmax) and derive the online max-and-sum update on paper. This is the exact recurrence FlashAttention uses across key blocks — if it is not solid, the next item will fail.",
+          "Work tutorial 03 (matmul) and understand the two-level tiling, the accumulator in fp32, and the L2-friendly program ordering.",
+          "Write one kernel of your own from scratch without copying a tutorial — a fused bias+GELU is a good size — and validate it against PyTorch to tight tolerance.",
+          "Use Triton's autotuner on your kernel over a couple of block sizes and num_warps values, and record the speedup autotuning alone buys.",
+          "Skim the fused-attention tutorial now, purely to see the shape of the target, before writing your own version next week."
+        ],
+        "docs": [
+          {
+            "name": "Triton — Vector Addition tutorial",
+            "url": "https://triton-lang.org/main/getting-started/tutorials/01-vector-add.html"
+          },
+          {
+            "name": "Triton — Fused Softmax tutorial (the online-normalisation trick)",
+            "url": "https://triton-lang.org/main/getting-started/tutorials/02-fused-softmax.html"
+          },
+          {
+            "name": "Triton — Matrix Multiplication tutorial",
+            "url": "https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html"
+          },
+          {
+            "name": "Triton — Introduction and programming model",
+            "url": "https://triton-lang.org/main/programming-guide/chapter-1/introduction.html"
+          },
+          {
+            "name": "Triton — Fused Attention tutorial (the target)",
+            "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
+          }
+        ],
+        "videos": [
+          {
+            "title": "GPU MODE Lecture 14: Practitioners Guide to Triton",
+            "url": "https://www.youtube.com/watch?v=DdTsX6DQk24"
+          },
+          {
+            "title": "GPU MODE Lecture 29: Triton Internals",
+            "url": "https://www.youtube.com/watch?v=njgow_zaJMw"
+          },
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 6: Kernels, Triton, XLA (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=xnDHaNUvHBg"
+          }
+        ]
+      },
+      "FlashAttention-2 forward and backward in Triton": {
+        "desc": "This is the hard part of assignment 2 and the part actually worth doing. The tiled forward with online softmax means the N×N attention matrix never materialises; the backward is where most people stop. You summarised the paper in Phase 1 — now you write the kernel and benchmark it honestly.",
+        "steps": [
+          "Re-read the FlashAttention-2 paper's algorithm boxes and write the forward recurrence out by hand, tracking the running max, the running sum, and the rescaling of the accumulator at each key block.",
+          "Implement the forward kernel with query blocks in the program grid and a loop over key blocks. Check it against a naive PyTorch reference at several shapes to a tight tolerance before optimising anything.",
+          "Add causal masking and confirm the early-exit over key blocks past the diagonal — this is where a large chunk of the speedup comes from and where off-by-one masking bugs hide.",
+          "Implement the backward pass, saving the logsumexp from forward rather than recomputing softmax, and validate dQ, dK and dV separately against autograd so a failure localises.",
+          "Benchmark forward and forward+backward against the PyTorch reference across sequence lengths and find the crossover where tiling starts to win. Plot it.",
+          "If the backward defeats you, commit the green forward, the benchmark plot, and an honest written note on exactly where the backward broke. That is a better artifact than a silent gap."
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2205.14135 — FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+            "url": "https://arxiv.org/abs/2205.14135"
+          },
+          {
+            "name": "arXiv 2307.08691 — FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
+            "url": "https://arxiv.org/abs/2307.08691"
+          }
+        ],
+        "docs": [
+          {
+            "name": "github.com/stanford-cs336/assignment2-systems",
+            "url": "https://github.com/stanford-cs336/assignment2-systems"
+          },
+          {
+            "name": "CS336 assignment 2 handout (PDF)",
+            "url": "https://github.com/stanford-cs336/assignment2-systems/blob/main/cs336_assignment2_systems.pdf"
+          },
+          {
+            "name": "Triton — Fused Attention tutorial (reference implementation to compare against)",
+            "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
+          }
+        ],
+        "videos": [
+          {
+            "title": "GPU MODE Lecture 50: A learning journey — CUDA, Triton, Flash Attention",
+            "url": "https://www.youtube.com/watch?v=4jQTb6sRGLg"
+          }
+        ]
+      },
+      "DDP from scratch, then optimizer state sharding": {
+        "desc": "Build data parallelism yourself on raw collectives and FSDP2 stops being magic. Broadcast the initial parameters, all-reduce the gradients, then make it fast by bucketing so communication overlaps with the backward pass instead of queueing behind it. Then shard the optimizer state — that is ZeRO stage 1, by hand.",
+        "steps": [
+          "Initialise a process group with `init_process_group`, broadcast the initial parameters from rank 0, and confirm all ranks agree bit for bit.",
+          "Write the naive version: full backward, then one `all_reduce` per parameter, then the optimizer step. Measure the step time and the fraction spent in communication.",
+          "Flatten the gradients into a single contiguous buffer and issue one all-reduce instead of thousands. Re-measure — most of your naive overhead was launch cost, not bandwidth.",
+          "Add overlap: register post-accumulate gradient hooks that fire an async all-reduce as soon as a bucket fills, and wait on the handles before the optimizer step. Measure the overlap benefit and sweep the bucket size.",
+          "Implement ZeRO stage 1: each rank owns a disjoint slice of the optimizer state, updates only its slice, then all-gathers the updated parameters. Measure the memory saved and confirm it matches the arithmetic (roughly the optimizer state divided by world size).",
+          "Compare your hand-built version's step time and peak memory against PyTorch DDP and FSDP2 on the same model, and write down where you lose and why."
+        ],
+        "docs": [
+          {
+            "name": "PyTorch — Writing Distributed Applications with PyTorch (raw collectives)",
+            "url": "https://docs.pytorch.org/tutorials/intermediate/dist_tuto.html"
+          },
+          {
+            "name": "PyTorch — Getting Started with Distributed Data Parallel",
+            "url": "https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html"
+          },
+          {
+            "name": "PyTorch API — torch.distributed (all_reduce, broadcast, async work handles)",
+            "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+          },
+          {
+            "name": "github.com/stanford-cs336/assignment2-systems",
+            "url": "https://github.com/stanford-cs336/assignment2-systems"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 1910.02054 — ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+            "url": "https://arxiv.org/abs/1910.02054"
+          }
+        ],
+        "videos": [
+          {
+            "title": "Stanford CS336 Spring 2026 — Lecture 7: Parallelism (Stanford Online)",
+            "url": "https://www.youtube.com/watch?v=SzpOcwdIL0Y"
+          }
+        ]
+      }
+    }
+  },
   "phase4.html": {
     "p4-environment-harden": {
       "Measure run-to-run variance before you touch anything else": {
@@ -4965,7 +5029,7 @@ window.RESOURCES_DB = {
         "desc": "Prime Intellect pays $100–500 for open-access bounties and $1,000–5,000+ for application-only ones sponsored by third parties. Take one even if it is small. A paid bounty buys three things a merged docs PR does not: a reviewer with an incentive to read your code, a named reference, and money.",
         "steps": [
           "Open the bounties tab and read every open listing end to end before picking. Sort by whether the spec is precise enough that you can tell from the outside what \"done\" means — vague bounties are where unpaid weeks go.",
-          "Pick one whose task domain overlaps something you already built in Phase 3. You are being paid for reliability and turnaround, not for learning a new domain on the sponsor's clock.",
+          "Pick one whose task domain overlaps something you already built in Phase 2. You are being paid for reliability and turnaround, not for learning a new domain on the sponsor's clock.",
           "Install the CLI and authenticate first (`uv tool install prime`, `prime login`), then reproduce the sponsor's example environment locally so you are debugging your task rather than your toolchain.",
           "Build against the `verifiers` interface exactly as specified — dataset, rollout, rubric, reward — and resist adding scope the spec did not ask for; an external spec is the point of the exercise.",
           "Ship with the variance evidence attached: number of runs, per-task standard error, flake accounting. That is the part most bounty submissions omit and the part a reviewer remembers.",

@@ -2,321 +2,34 @@
  {
   "id": "phase2",
   "num": "02",
-  "weeks": "Weeks 21–34",
-  "title": "Systems &amp;<br>scaling",
-  "intro": "Phase 1 taught you to build a model. This phase teaches you to run one at a size that does not fit on a single device, and to serve one fast enough that an eval loop can hammer it. You start with four weeks of JAX at reading depth — enough to follow a scaling-book snippet or a Gemma reference implementation without getting stuck on tracing rules. Then two weeks of framework-agnostic scaling arithmetic: rooflines, arithmetic intensity, sharding cost models, and what Chinchilla actually claimed versus what people quote. The back half is PyTorch and it is where you spend the money: FSDP2 and DTensor, CS336 assignment 2 with a FlashAttention kernel in Triton, and finally vLLM and SGLang. Serving is not a detour. Every eval you write in Phase 3 and every RL rollout you generate runs behind an OpenAI-compatible endpoint, and if you cannot debug that endpoint you cannot debug your own results.",
+  "weeks": "Weeks 21–38",
+  "title": "Evals &amp;<br>environments",
+  "intro": "This is the phase the job req is written about, and it now starts at week 21 rather than week 35. You stand up a served endpoint, write your own tool loop, and get a crude environment public by week 26 — before you know enough to make it good. Everything after that is the second pass: statistics so the numbers mean something, judge validation so the rubric is honest, infrastructure so it runs at scale, an audit so you learn to distrust published results, and RL so something actually consumes what you built. The artifact improves for thirteen weeks in public instead of appearing finished in week 48.",
   "callouts": [
    {
     "type": "tip",
-    "html": "<strong>Budget the compute before week 21.</strong> Weeks 27–34 need real multi-GPU time. A 2×A100 or 2×L40S box on a spot market is enough for FSDP2, tensor parallel and vLLM tensor-parallel serving; you do not need eight H100s. Expect $150–400 across this phase. Set a hard cap, use spot, and kill instances the moment a run ends."
+    "html": "<strong>Ship it before it is good.</strong> A crude environment published in week 26 and improved every month beats a polished one first pushed in week 48. Reviewers can see the commit history either way, and the first version being bad is the point — it is evidence you iterate."
+   },
+   {
+    "type": "warn",
+    "html": "<strong>Evaluation is a science, not a vibe check.</strong> State the hypothesis, control the variables, name the dataset boundary, run baselines, quantify uncertainty, and classify failures systematically. A number without a stated protocol and a variance is marketing."
    },
    {
     "type": "tip",
-    "html": "<strong>Week 26 is a buffer week.</strong> Re-derive Adam, cross-entropy and a sharded training step from memory, or use it to catch up. Phase 0’s linear algebra is about to matter again for LoRA in Phase 3, and it is twenty weeks behind you."
+    "html": "<strong>Week 26 is a buffer week.</strong> Your environment just went public and that is the moment to catch up rather than push on. If you are on schedule, spend 90 minutes re-deriving backprop, attention and cross-entropy from a blank page — Phase 0 is twenty weeks behind you and the statistics work starts next week."
    }
   ],
   "tasks": [
    {
-    "id": "p2-jax-core",
+    "id": "p2-serving",
     "badge": "Task 01",
-    "title": "JAX literacy",
-    "tag": "jax",
-    "items": [
-     {
-      "title": "Purity and the tracing model",
-      "desc": "Read \"How to think in JAX.\" JAX transforms require pure functions — no side effects, no in-place mutation, no Python state captured across calls. Then deliberately cause the three failure modes: a leaked tracer, an in-place mutation that silently does nothing, and a Python `if` on a traced boolean. Knowing the error text on sight is the entire point of this item.",
-      "time": "Week 21",
-      "resource": {
-       "label": "docs.jax.dev — thinking in JAX ↗",
-       "url": "https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html"
-      }
-     },
-     {
-      "title": "grad, value_and_grad, and jit",
-      "desc": "Work `jax.grad` over a loss and a parameter pytree, then `value_and_grad` so you are not recomputing the forward pass. For jit, the thing to internalise is the cache key: shapes and dtypes. A shape change recompiles; a Python value passed as an argument recompiles every call unless you mark it `static_argnums`. Time the first call and the second call separately — the delta is compile cost.",
-      "time": "Weeks 21–22",
-      "resource": {
-       "label": "docs.jax.dev — jit compilation ↗",
-       "url": "https://docs.jax.dev/en/latest/jit-compilation.html"
-      }
-     },
-     {
-      "title": "vmap",
-      "desc": "vmap turns a single-example function into a batched one by rewriting the computation, not by looping. Build the canonical pattern — `vmap(grad(loss))` for per-example gradients — and one pairwise-distance function where broadcasting by hand would be error-prone. Learn what `in_axes` and `out_axes` do, because you will read them constantly.",
-      "time": "Week 22",
-      "resource": {
-       "label": "docs.jax.dev — automatic vectorization ↗",
-       "url": "https://docs.jax.dev/en/latest/automatic-vectorization.html"
-      }
-     },
-     {
-      "title": "lax.scan and structured control flow",
-      "desc": "A Python for-loop inside jit unrolls: N iterations become N copies of the graph and compile time explodes. `lax.scan` compiles one iteration and loops inside XLA. Write a scan-based training step with `carry = (params, opt_state)` and metrics accumulated in the outputs. Also build one working `lax.cond` and one `lax.while_loop` so you recognise them in other people's code.",
-      "time": "Weeks 22–23",
-      "resource": {
-       "label": "docs.jax.dev — control flow ↗",
-       "url": "https://docs.jax.dev/en/latest/control-flow.html"
-      }
-     },
-     {
-      "title": "Explicit sharding and meshes",
-      "desc": "Explicit sharding has been the default since JAX 0.9.0: `jax.make_mesh` builds meshes with `AxisType.Explicit`, shardings propagate through the type system, and ambiguous communication is an error rather than something the compiler silently inserts. Activate a mesh with `jax.set_mesh(mesh)` — bare `with mesh:` was deprecated in 0.10.1 — and annotate arrays with `jax.P`, the top-level PartitionSpec alias. Write one step that replicates parameters and shards the batch along the data axis.",
-      "time": "Weeks 23–24",
-      "resource": {
-       "label": "docs.jax.dev — distributed arrays ↗",
-       "url": "https://docs.jax.dev/en/latest/parallel.html"
-      }
-     },
-     {
-      "title": "Collectives and shard_map",
-      "desc": "`lax.psum` and `lax.pmean` are AllReduce with a name on the mesh axis; every parallelism strategy in the scaling book reduces to placing these correctly. `jax.shard_map` is manual mode — you write the per-device program and place the collectives yourself. Use the top-level `jax.shard_map`, not the old `jax.experimental.shard_map` import. Since 0.9.1, under Explicit mode shard_map asserts your input spec matches `in_specs` instead of resharding for you, so call `jax.reshard` first when they differ.",
-      "time": "Week 24",
-      "resource": {
-       "label": "docs.jax.dev — shard_map ↗",
-       "url": "https://docs.jax.dev/en/latest/notebooks/shard_map.html"
-      }
-     },
-     {
-      "title": "Read pmap, never write it",
-      "desc": "Almost every JAX tutorial, blog post and older scaling-book snippet you will find is built on `pmap`. JAX 0.10.0 removed the C++ pmap infrastructure; `jax.pmap` survives only as a thin wrapper over `jit(shard_map)`, and `PmapSharding`, `device_put_sharded` and `device_put_replicated` now raise AttributeError. Skim the changelog for the removals so you can date any snippet you find, then translate pmap code mentally into meshes and specs.",
-      "time": "Week 24",
-      "resource": {
-       "label": "JAX changelog ↗",
-       "url": "https://docs.jax.dev/en/latest/changelog.html"
-      }
-     },
-     {
-      "title": "Get devices without a budget",
-      "desc": "Colab no longer hands out TPU slices. Kaggle still offers free TPU time and is where the scaling book now points readers; a small GCP slice is the paid fallback. For everything in this task you do not need real accelerators at all — `jax.config.update(\"jax_num_cpu_devices\", 8)` before the first JAX call gives you eight fake devices, which is enough for every mesh, sharding and shard_map exercise here and costs nothing. Verify `jax.devices()` and record what you actually ran on.",
-      "time": "Week 24"
-     }
-    ],
-    "callouts": [
-     {
-      "type": "tip",
-      "html": "<strong>This is literacy depth on purpose.</strong> The roles you are targeting are overwhelmingly PyTorch, so shipping JAX is not the goal — reading it is. You need to open a scaling-book snippet, a MaxText training step or a Gemma reference implementation and know what it does. The concepts transfer directly: a JAX mesh is a PyTorch DeviceMesh, `jax.P` is a DTensor placement, `shard_map` is what `parallelize_module` generates for you, and psum/pmean is the NCCL AllReduce underneath FSDP2. Learn the vocabulary here and weeks 27–29 cost you half as much."
-     },
-     {
-      "type": "warn",
-      "html": "<strong>Do not build a JAX/Flax transformer.</strong> The old version of this plan rebuilt the model in Flax and did a deep dive on NNX and Optax. Both are cut. You built the transformer once in CS336 assignment 1 and that is the one that counts. Rebuilding it in a framework you will not ship in buys nothing an interviewer can check."
-     }
-    ]
-   },
-   {
-    "id": "p2-scaling-book",
-    "badge": "Task 02",
-    "title": "Scaling arithmetic",
-    "tag": "theory",
-    "items": [
-     {
-      "title": "Chapters 1–2: rooflines and the hardware",
-      "desc": "Chapter 1 is the single highest-value thing in this phase: FLOPs versus bytes moved, arithmetic intensity, and the question \"is this operation compute-bound or memory-bound?\" answered with arithmetic instead of a profiler. Chapter 2 grounds it in real accelerator numbers. Do the exercises with pencil and paper before you look at the answers.",
-      "time": "Week 25",
-      "resource": {
-       "label": "Scaling book — rooflines ↗",
-       "url": "https://jax-ml.github.io/scaling-book/roofline/"
-      }
-     },
-     {
-      "title": "Chapters 3–4: sharding and transformer math",
-      "desc": "Chapter 3 gives you the cost model for every sharding strategy — what each one communicates, when it is worth it, and where it stops scaling. Chapter 4 counts the parameters, FLOPs and activation memory of a transformer forward and backward pass. Be able to derive the 6ND training-FLOP estimate and say exactly which terms it ignores and when ignoring them becomes wrong.",
-      "time": "Weeks 25–26",
-      "resource": {
-       "label": "Scaling book — transformer math ↗",
-       "url": "https://jax-ml.github.io/scaling-book/transformers/"
-      }
-     },
-     {
-      "title": "Chapter 12: how to think about GPUs",
-      "desc": "This chapter did not exist when the book was first written and it is the one covering hardware you can actually rent. NVIDIA memory hierarchy, NVLink versus InfiniBand, collectives cost on a GPU fabric, and a direct GPU-versus-TPU comparison. Read it immediately before Task 03 — it is the bridge between the arithmetic and FSDP2.",
-      "time": "Week 26",
-      "resource": {
-       "label": "Scaling book — how to think about GPUs ↗",
-       "url": "https://jax-ml.github.io/scaling-book/gpus/"
-      }
-     },
-     {
-      "title": "Chinchilla as the anchor",
-      "desc": "Read the original compute-optimal paper and extract the actual claim: for a fixed training-compute budget, parameters and tokens should scale roughly in proportion, about 20 tokens per parameter. Then note the two things it does not say — it says nothing about inference cost, and it assumes unlimited unique data. Every later result in this item attacks one of those two assumptions.",
-      "time": "Week 26",
-      "resource": {
-       "label": "arXiv 2203.15556 — Chinchilla ↗",
-       "url": "https://arxiv.org/abs/2203.15556"
-      }
-     },
-     {
-      "title": "Inference-aware and data-constrained scaling",
-      "desc": "Read arXiv 2401.00448, which redoes the optimisation with inference demand in the objective and finds that if you will serve a lot of tokens, you should train a smaller model on far more data than Chinchilla says. Then read arXiv 2305.16264 on the data-constrained regime: repeated epochs decay in value, and there is a point past which more compute on repeated data buys nothing. Together these explain why every 2025–2026 open model is trained well past 20 tokens per parameter.",
-      "time": "Week 26",
-      "resource": {
-       "label": "arXiv 2401.00448 — inference-aware scaling ↗",
-       "url": "https://arxiv.org/abs/2401.00448"
-      }
-     },
-     {
-      "title": "The GPU counterpart",
-      "desc": "Hugging Face's Ultra-Scale Playbook is the PyTorch-side twin of the scaling book: 5D parallelism, ZeRO stages, activation recomputation, kernel fusion, all grounded in thousands of experiments up to 512 GPUs. Read the parallelism and memory chapters now and keep the tab open through Task 03 — it names the exact failure modes you are about to hit.",
-      "time": "Week 26",
-      "resource": {
-       "label": "Ultra-Scale Playbook ↗",
-       "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
-      }
-     }
-    ],
-    "callouts": [
-     {
-      "type": "warn",
-      "html": "<strong>No LaTeX write-up, no screen recordings.</strong> The old plan had you typeset your derivations and record yourself solving problems. Both were theatre — nobody reads them and they cost a week. The deliverable here is that you can size a training run out loud: given a model, a batch size and a cluster, state the memory per device, whether you are compute- or bandwidth-bound, and what the step time should be. Test it by predicting a number before every run in Task 03 and writing down how wrong you were."
-     }
-    ]
-   },
-   {
-    "id": "p2-pytorch-distributed",
-    "badge": "Task 03",
-    "title": "PyTorch distributed training",
-    "tag": "exercise",
-    "items": [
-     {
-      "title": "FSDP2",
-      "desc": "FSDP2 (`fully_shard`) is the current API and it is not a rename of FSDP1 — it shards on dim-0 into DTensors instead of flattening parameters into a single per-rank buffer, which makes per-parameter state, mixed precision and checkpointing all behave sanely. Wrap a model from Phase 1, run it on two GPUs, and watch memory before and after. Understand what gets all-gathered in forward, what gets reduce-scattered in backward, and why wrapping granularity changes both.",
-      "time": "Week 27",
-      "resource": {
-       "label": "PyTorch — FSDP tutorial ↗",
-       "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
-      }
-     },
-     {
-      "title": "DTensor and DeviceMesh",
-      "desc": "DTensor is the substrate everything else in modern PyTorch distributed is built on: a tensor plus a DeviceMesh plus placements (Shard, Replicate, Partial). This is the direct analogue of the JAX mesh and PartitionSpec work you did in Task 01, so build the mapping explicitly. Construct a 2D mesh, place a tensor, redistribute it, and read the collectives that PyTorch inserts to make the redistribution happen.",
-      "time": "Week 27",
-      "resource": {
-       "label": "PyTorch — DTensor ↗",
-       "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
-      }
-     },
-     {
-      "title": "Tensor parallel and 2D parallelism",
-      "desc": "Tensor parallel splits individual matmuls across devices — column-wise then row-wise through an MLP block so only one all-reduce is needed per block. Apply `parallelize_module` with a ColwiseParallel/RowwiseParallel plan to your transformer, then compose it with FSDP2 on a second mesh axis for 2D parallelism. Measure the step time at TP=2 versus data parallel at the same device count and explain the difference from the chapter 3 cost model.",
-      "time": "Weeks 27–28",
-      "resource": {
-       "label": "PyTorch — tensor parallel tutorial ↗",
-       "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
-      }
-     },
-     {
-      "title": "Read torchtitan",
-      "desc": "torchtitan is where PyTorch consolidated its reference training stack — FSDP2, TP, pipeline parallel, float8, distributed checkpointing and compile, in a codebase small enough to read end to end. Read the parallelism configuration and the training loop closely. This is the repo to point at when someone asks how you would set up a real pretraining run, and torchtune's wind-down means it is now the only PyTorch-blessed answer.",
-      "time": "Week 28",
-      "resource": {
-       "label": "github.com/pytorch/torchtitan ↗",
-       "url": "https://github.com/pytorch/torchtitan"
-      }
-     },
-     {
-      "title": "Activation checkpointing and gradient accumulation",
-      "desc": "These are the two levers that trade compute for memory, and you should know the arithmetic for both. Activation checkpointing drops stored activations and recomputes them in backward — roughly 30% more compute for a large memory cut; selective checkpointing keeps the expensive-to-recompute ops. Gradient accumulation buys a larger effective batch at zero memory cost but needs `no_sync` under FSDP or you pay for a reduce on every microbatch. Measure both, do not assume.",
-      "time": "Week 28"
-     },
-     {
-      "title": "bf16 and fp8",
-      "desc": "bf16 is the default training dtype because it keeps fp32's exponent range and therefore does not need loss scaling; know why fp16 does. Then go one step further with torchao's float8 training — per-tensor scaling, which layers are safe to cast, and what the measured speedup actually is on your hardware versus the marketing number. Run one training job in each precision on identical data and compare loss curves, not just throughput.",
-      "time": "Weeks 28–29",
-      "resource": {
-       "label": "github.com/pytorch/ao ↗",
-       "url": "https://github.com/pytorch/ao"
-      }
-     },
-     {
-      "title": "NCCL and OOM debugging",
-      "desc": "Distributed jobs fail in two characteristic ways and you need both playbooks. For hangs: `NCCL_DEBUG=INFO`, `TORCH_NCCL_ASYNC_ERROR_HANDLING`, and the observation that a hang is almost always a collective that one rank did not reach. For OOM: read the CUDA memory snapshot, distinguish fragmentation from genuine exhaustion, and know that the peak is usually in backward, not forward. Deliberately cause a rank-divergence hang and a fragmentation OOM so you have seen both.",
-      "time": "Week 29",
-      "resource": {
-       "label": "NCCL environment variables ↗",
-       "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
-      }
-     },
-     {
-      "title": "Distributed checkpoint and resume",
-      "desc": "A training run you cannot resume is a training run you cannot afford. Use `torch.distributed.checkpoint` to save sharded state, then prove it: kill the job mid-epoch, restart it on a different world size, and verify the loss curve continues rather than jumping. Resharding on resume is the part that breaks, which is exactly why you test it.",
-      "time": "Week 29",
-      "resource": {
-       "label": "PyTorch — distributed checkpoint ↗",
-       "url": "https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html"
-      }
-     }
-    ],
-    "callouts": [
-     {
-      "type": "warn",
-      "html": "<strong>Two GPUs beat zero GPUs by more than eight beat two.</strong> Nearly every bug in this task — wrong wrapping granularity, a collective one rank skips, a resharded checkpoint that will not load — reproduces at world size 2. Rent the smallest multi-GPU box you can find, debug there, and only scale up when the thing already works."
-     }
-    ]
-   },
-   {
-    "id": "p2-cs336-systems",
-    "badge": "Task 04",
-    "title": "CS336 assignment 2 — systems",
-    "tag": "exercise",
-    "items": [
-     {
-      "title": "Watch the systems lectures",
-      "desc": "CS336's lecture material covers kernels, profiling, GPU architecture and distributed training in the order the assignment needs them. Watch the systems block before writing any code — the assignment assumes the lecture content and will otherwise cost you days. Slides and executable lecture code are in the course repo.",
-      "time": "Week 30",
-      "resource": {
-       "label": "CS336 lectures repo ↗",
-       "url": "https://github.com/stanford-cs336/spring2025-lectures"
-      }
-     },
-     {
-      "title": "Benchmark and profile before optimising",
-      "desc": "Time the forward pass, the backward pass and a full optimizer step separately, with proper CUDA synchronisation and warmup iterations — an unsynchronised timing is measuring queue submission, not work. Then profile with the PyTorch profiler and read the trace: kernel time versus gaps, memory traffic, where the launch overhead lives. Write down a predicted number from your chapter 1 roofline before each measurement.",
-      "time": "Week 30",
-      "resource": {
-       "label": "PyTorch profiler recipe ↗",
-       "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
-      }
-     },
-     {
-      "title": "Triton fundamentals",
-      "desc": "Triton lets you write a fused kernel in Python with block-level rather than thread-level semantics. Work the official tutorials in order — vector add, fused softmax, matmul — before attempting attention, because the softmax one teaches the exact online-normalisation trick FlashAttention depends on. Understand block pointers, masking for ragged tails, and `tl.load`/`tl.store` with boundary checks.",
-      "time": "Weeks 30–31",
-      "resource": {
-       "label": "Triton — fused attention tutorial ↗",
-       "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
-      }
-     },
-     {
-      "title": "FlashAttention-2 forward and backward in Triton",
-      "desc": "This is the hard part of the assignment and the part worth doing. Write the tiled forward with online softmax so the full attention matrix never materialises, then the backward pass, then check both against a naive PyTorch reference to tight tolerance. Benchmark against the reference across sequence lengths and show the crossover point where tiling starts to win. You wrote the paper's summary in Phase 1; now you write the kernel.",
-      "time": "Week 31",
-      "resource": {
-       "label": "CS336 assignment 2 — systems ↗",
-       "url": "https://github.com/stanford-cs336/assignment2-systems"
-      }
-     },
-     {
-      "title": "DDP from scratch, then optimizer state sharding",
-      "desc": "Implement data-parallel training yourself on top of raw collectives: broadcast the initial parameters, all-reduce gradients after backward, and then improve it by bucketing gradients so communication overlaps with the backward pass instead of following it. Then shard the optimizer state (ZeRO stage 1) and measure the memory saved. Having built this by hand is what makes FSDP2's behaviour in Task 03 stop being magic.",
-      "time": "Week 31"
-     }
-    ],
-    "callouts": [
-     {
-      "type": "warn",
-      "html": "<strong>Partial credit is the plan, not the fallback.</strong> Two weeks is tight for this assignment. Rank it: benchmarking and profiling first, then DDP with overlap, then the Triton forward, then the Triton backward. A green forward kernel with honest benchmarks and a written note on what defeated the backward pass is a better artifact than a silently abandoned repo. Commit the failure notes."
-     }
-    ]
-   },
-   {
-    "id": "p2-inference-serving",
-    "badge": "Task 05",
     "title": "Inference and serving",
     "tag": "exercise",
     "items": [
      {
       "title": "Stand up vLLM",
       "desc": "Serve a small open model with `vllm serve` and hit it through the OpenAI-compatible endpoint. Get comfortable with the knobs that actually matter: `--max-model-len`, `--gpu-memory-utilization`, `--max-num-seqs`, and the engine's startup log where it reports how many KV cache blocks it allocated. Everything else in this task is a variation on this server.",
-      "time": "Week 32",
+      "time": "Week 21",
       "resource": {
        "label": "vLLM docs ↗",
        "url": "https://docs.vllm.ai/en/latest/"
@@ -325,7 +38,7 @@
      {
       "title": "Continuous batching and paged KV cache",
       "desc": "Static batching wastes the GPU whenever sequences in a batch finish at different times; continuous batching admits new requests at every decode step instead. PagedAttention stores the KV cache in fixed-size blocks with an indirection table, which is what makes that admission cheap and eliminates the fragmentation of contiguous per-sequence allocation. Read how blocks are allocated, shared and evicted — preemption under memory pressure is a real behaviour you will have to explain when throughput collapses.",
-      "time": "Week 32",
+      "time": "Week 21",
       "resource": {
        "label": "vLLM — paged attention ↗",
        "url": "https://docs.vllm.ai/en/latest/design/paged_attention.html"
@@ -334,7 +47,7 @@
      {
       "title": "Read the PagedAttention paper",
       "desc": "The original vLLM paper is short and states the problem cleanly: KV cache memory, not compute, is what bounds serving throughput for LLMs, and pre-allocating contiguous cache for the maximum sequence length wastes most of it. Read it for the framing and the memory accounting, which carry over to every serving system that came after.",
-      "time": "Week 32",
+      "time": "Week 21",
       "resource": {
        "label": "arXiv 2309.06180 — PagedAttention ↗",
        "url": "https://arxiv.org/abs/2309.06180"
@@ -343,7 +56,7 @@
      {
       "title": "Prefix caching",
       "desc": "Automatic prefix caching hashes KV blocks so requests sharing a prefix reuse them instead of recomputing. This is the single largest win available to eval and RL workloads, where hundreds of samples share one long system prompt and few-shot block. Measure it: run the same eval batch with prefix caching on and off and record time-to-first-token and total throughput. That measured delta is a number worth putting in a writeup.",
-      "time": "Weeks 32–33",
+      "time": "Week 21",
       "resource": {
        "label": "vLLM — automatic prefix caching ↗",
        "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html"
@@ -352,7 +65,7 @@
      {
       "title": "Tensor-parallel and multi-GPU serving",
       "desc": "Serving a model too large for one card means `--tensor-parallel-size`, and possibly pipeline parallel across nodes. Understand what this buys and what it costs: TP splits the weights and the KV cache so you get more cache headroom as well as more compute, but adds an all-reduce per layer, so latency improves sub-linearly. Run the same model at TP=1 and TP=2 and compare tokens/second per GPU, not just tokens/second.",
-      "time": "Week 33",
+      "time": "Week 21",
       "resource": {
        "label": "vLLM — parallelism and scaling ↗",
        "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling.html"
@@ -361,12 +74,12 @@
      {
       "title": "Throughput versus latency, measured",
       "desc": "Build a small load generator and sweep concurrency, recording time-to-first-token, inter-token latency and total output tokens/second at each level. You will see the shape everyone talks about: throughput rises with concurrency until the KV cache saturates, while per-request latency degrades from the first request onward. Know where your endpoint's knee is, because Phase 3 eval runs will sit right on it.",
-      "time": "Week 33"
+      "time": "Week 22"
      },
      {
       "title": "Quantization",
       "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you have. Learn the distinctions that matter in practice: weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and KV-cache quantization as a separate decision from weight quantization. Serve one model at bf16 and one quantized, and evaluate both on the same task — the accuracy cost is workload-dependent and you should measure yours rather than quote a blog post.",
-      "time": "Weeks 33–34",
+      "time": "Week 22",
       "resource": {
        "label": "vLLM — quantization ↗",
        "url": "https://docs.vllm.ai/en/latest/features/quantization/index.html"
@@ -375,7 +88,7 @@
      {
       "title": "Speculative decoding",
       "desc": "A small draft model, or n-gram lookup, or a self-speculation head proposes several tokens; the target model verifies them in one forward pass and accepts the longest correct prefix. Output is distributionally identical to normal decoding, so it is a pure latency win — but only when the acceptance rate is high and the batch is small, which means it can hurt a throughput-bound eval run. Enable it, measure acceptance rate and end-to-end latency, and know when to turn it off.",
-      "time": "Week 34",
+      "time": "Week 22",
       "resource": {
        "label": "vLLM — speculative decoding ↗",
        "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
@@ -384,7 +97,7 @@
      {
       "title": "SGLang and structured generation",
       "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which matters for branching agent traces — and fast constrained decoding for JSON and grammar-constrained output. Serve the same model on SGLang, run your load generator against it, and be able to say which engine you would pick for an agentic eval and why.",
-      "time": "Week 34",
+      "time": "Week 22",
       "resource": {
        "label": "SGLang docs ↗",
        "url": "https://docs.sglang.ai/"
@@ -392,8 +105,8 @@
      },
      {
       "title": "Wire the endpoint to an RL and eval harness",
-      "desc": "Close the loop that motivates this whole task. Prime Intellect's `verifiers` library assumes an OpenAI-compatible endpoint backed by vLLM, so point it at the server you just built and run a trivial rollout. You are not learning the library yet — that is Phase 3 — you are proving the plumbing works and seeing where the endpoint becomes the bottleneck in a rollout loop.",
-      "time": "Week 34",
+      "desc": "Close the loop that motivates this whole task. Prime Intellect's `verifiers` library assumes an OpenAI-compatible endpoint backed by vLLM, so point it at the server you just built and run a trivial rollout. You are not learning the library yet — that comes in week 25 — you are proving the plumbing works and seeing where the endpoint becomes the bottleneck in a rollout loop.",
+      "time": "Week 22",
       "resource": {
        "label": "github.com/willccbb/verifiers ↗",
        "url": "https://github.com/willccbb/verifiers"
@@ -406,28 +119,564 @@
       "html": "<strong>This is the task that makes Phase 3 possible.</strong> Every eval you write and every RL rollout you generate goes through a served endpoint. When an eval run is inexplicably slow, when throughput collapses at sample 400, when two runs of the same eval disagree — the cause is usually the serving layer, not your harness. Owning this layer is also what separates an evals engineer from someone who calls an API."
      }
     ]
+   },
+   {
+    "id": "p2-agent-harness",
+    "badge": "Task 02",
+    "title": "Write your own agent harness",
+    "tag": "agent",
+    "items": [
+     {
+      "title": "The loop, from a blank file",
+      "desc": "No framework. Write the while loop yourself: send messages, parse the tool call out of the response, dispatch to a Python function, append the result as a tool-result message, repeat until the model stops or you hit a limit. Two hundred lines gets you a working agent, and afterwards every agent framework reads as a config file rather than magic.",
+      "time": "Week 23",
+      "resource": {
+       "label": "Building effective agents ↗",
+       "url": "https://www.anthropic.com/engineering/building-effective-agents"
+      }
+     },
+     {
+      "title": "Tool schema design is the actual skill",
+      "desc": "Write five tools and then rewrite them. Names and descriptions are prompt, not documentation; the model fails on ambiguous parameters far more than on hard reasoning. Return errors as content the model can act on rather than as exceptions, and keep tool outputs small enough that ten calls do not blow the context.",
+      "time": "Week 23",
+      "resource": {
+       "label": "Writing tools for agents ↗",
+       "url": "https://www.anthropic.com/engineering/writing-tools-for-agents"
+      }
+     },
+     {
+      "title": "Multi-turn state, error recovery, hard limits",
+      "desc": "Add the things that keep a harness alive over 50 turns: bounded concurrency with the asyncio patterns from Phase 0, retries with backoff on transient API errors, a step limit, a wall-clock limit, and a cost cap that aborts the run. Then deliberately break a tool and watch whether your agent loops forever — most first drafts do.",
+      "time": "Week 23"
+     },
+     {
+      "title": "Context compaction",
+      "desc": "Long agentic runs die from context, not capability. Implement one strategy and measure it: summarise older turns, drop stale tool outputs while keeping their identifiers, or offload results to files the agent can re-read. Compare task success with and without compaction on the same tasks so you have a number, not a preference.",
+      "time": "Week 24",
+      "resource": {
+       "label": "Effective context engineering ↗",
+       "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
+      }
+     },
+     {
+      "title": "Speak MCP",
+      "desc": "Wrap two of your tools as an MCP server and connect your harness to it as a client. Read enough of the spec to know what a tool, a resource, and a prompt are, and how transport and capability negotiation work. Interview-relevant and directly relevant to shipping an environment other people's harnesses can call.",
+      "time": "Week 24",
+      "resource": {
+       "label": "MCP introduction ↗",
+       "url": "https://modelcontextprotocol.io/docs/getting-started/intro"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "tip",
+      "html": "<strong>This harness is a tool you will use for the rest of the plan.</strong> The benchmark audit in weeks 45–46 needs a scaffold you fully control, and the environment in week 48 needs a client you can point at it. Build it well now and you stop paying for it later."
+     },
+     {
+      "type": "warn",
+      "html": "<strong>Put the cost cap in on day one.</strong> An agent loop that retries a failing tool call can burn a hundred dollars overnight without producing a single completed task. Cap tokens per run and total spend per experiment before you leave anything unattended."
+     }
+    ]
+   },
+   {
+    "id": "p2-environment-v0",
+    "badge": "Task 03",
+    "title": "Ship a bad environment",
+    "tag": "agent",
+    "items": [
+     {
+      "title": "Pick a task you can verify without an LLM",
+      "desc": "Choose something with a programmatic answer: multi-step arithmetic with hidden state, structured extraction against known ground truth, or code generation checked by execution. Narrow is good — you want to be able to diagnose a specific failure, not admire a broad score. If you need a judge to grade it, you are not ready for it yet; that comes in week 29.",
+      "time": "Week 25"
+     },
+     {
+      "title": "Write the four interfaces and nothing else",
+      "desc": "An environment is a task, a programmatic verifier, a reset, and a reward. Write those four and stop. No config system, no plugin architecture, no abstraction for the second environment you have not built. Twenty tasks is plenty. It should run end to end against your served endpoint from week 21.",
+      "time": "Week 25",
+      "resource": {
+       "label": "verifiers ↗",
+       "url": "https://github.com/PrimeIntellect-ai/verifiers"
+      }
+     },
+     {
+      "title": "Run two models and write down the numbers",
+      "desc": "Run a small open model and a frontier API model over your tasks. Record success rate, per-sample cost, and how long it took. Do not tune anything yet. These are your baselines, and their main job right now is to prove the harness works end to end rather than to be interesting.",
+      "time": "Week 26"
+     },
+     {
+      "title": "Publish it and say it is version zero",
+      "desc": "Push the repo public with a README stating what the environment measures, how to run it in one command, what the baselines were, and — explicitly — what you know is wrong with it. Post it in the community you joined in week 1 and ask one specific question. The known-limitations section is the part that reads as competence.",
+      "time": "Week 26"
+     }
+    ],
+    "callouts": [
+     {
+      "type": "tip",
+      "html": "<strong>This is deliberately too early.</strong> You do not yet know enough statistics to defend these numbers, or enough about judges to grade anything subjective — that is what the next twelve weeks are for. The point is that everything after this improves something real and public, instead of accumulating toward a first attempt in week 48."
+     }
+    ]
+   },
+   {
+    "id": "p2-stats",
+    "badge": "Task 04",
+    "title": "Statistics &amp; experimental design",
+    "tag": "theory",
+    "items": [
+     {
+      "title": "Decide the sample size before you run anything",
+      "desc": "Work through power analysis for the comparisons you actually make: two models on one benchmark, one model before and after a change. Compute the minimum detectable effect for n = 100, 500, 2000 questions and see how brutal the small-n case is. The reflex you want is refusing to run an eval until you know what difference it could even detect.",
+      "time": "Week 27",
+      "resource": {
+       "label": "statsmodels power ↗",
+       "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.TTestPower.html"
+      }
+     },
+     {
+      "title": "Read the error-bars paper and apply it the same day",
+      "desc": "Read Anthropic's \"Adding Error Bars to Evals\" end to end. It gives you the standard error for a mean over questions, the clustered case when questions come in groups, and the paired analysis that makes model comparisons far tighter. Then recompute error bars on a real eval result you already have.",
+      "time": "Week 27",
+      "resource": {
+       "label": "arXiv 2411.00640 ↗",
+       "url": "https://arxiv.org/abs/2411.00640"
+      }
+     },
+     {
+      "title": "Paired comparison and variance decomposition",
+      "desc": "Two models scored on the same questions are paired data — analysing them as independent samples throws away most of your power. Implement the paired difference test, then decompose total variance into question difficulty, sampling temperature, and seed. Report which source dominates; usually it is question variance and that changes what you should buy more of.",
+      "time": "Week 27",
+      "resource": {
+       "label": "scipy.stats.bootstrap ↗",
+       "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
+      }
+     },
+     {
+      "title": "Multiple comparisons and effect sizes",
+      "desc": "Once you run twelve ablations against one baseline, one of them is significant by accident. Implement Benjamini–Hochberg and Bonferroni corrections and see what survives. Then stop reporting p-values as the headline: report the effect size with a bootstrap confidence interval, because a real but tiny difference and a large uncertain one are different findings.",
+      "time": "Week 28",
+      "resource": {
+       "label": "statsmodels multipletests ↗",
+       "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.multitest.multipletests.html"
+      }
+     },
+     {
+      "title": "Exit check: redo an old result honestly",
+      "desc": "Take the single-variable change you measured in the nanochat week and redo the analysis: paired where possible, bootstrap CI, stated n, stated seeds. Write one paragraph saying whether the difference you reported survives. If it does not, say so publicly — that paragraph is worth more in an interview than the original result.",
+      "time": "Week 28",
+      "resource": {
+       "label": "A statistical approach to model evals ↗",
+       "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "warn",
+      "html": "<strong>Resampling seeds is not resampling questions.</strong> Running the same 50 questions ten times tells you about decoding variance and nothing about whether your benchmark generalises. Both matter, they are different error bars, and conflating them is the single most common mistake in public eval reports."
+     },
+     {
+      "type": "tip",
+      "html": "<strong>\"Statistics and experimental design\" is a named minimum qualification</strong> on Anthropic's Research Engineer, Model Evaluations req. Two weeks here is the cheapest qualification-matching you will do all year, and every later task in this phase reuses it."
+     }
+    ]
+   },
+   {
+    "id": "p2-judge-validation",
+    "badge": "Task 05",
+    "title": "LLM-as-judge validation",
+    "tag": "exercise",
+    "items": [
+     {
+      "title": "Label the gold set yourself first",
+      "desc": "Hand-label at least 100 samples before the judge sees them, writing down the decision rule as you go. Then measure judge–human agreement properly: raw agreement, Cohen's kappa, and per-class breakdown, because a judge that is 90% accurate overall can be useless on the 10% of cases you care about.",
+      "time": "Week 29",
+      "resource": {
+       "label": "cohen_kappa_score ↗",
+       "url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cohen_kappa_score.html"
+      }
+     },
+     {
+      "title": "Run the bias battery",
+      "desc": "Test the known failure modes on your own judge: position bias (swap A and B, measure how often the verdict flips), length bias (pad a response without adding content), and self-preference. The MT-Bench paper is where these were characterised and gives you the experimental designs to copy.",
+      "time": "Week 29",
+      "resource": {
+       "label": "arXiv 2306.05685 ↗",
+       "url": "https://arxiv.org/abs/2306.05685"
+      }
+     },
+     {
+      "title": "Rubrics and checklists, not scalar scores",
+      "desc": "In non-verifiable domains, explicit criteria beat learned reward models — see Rubrics as Rewards (2507.17746) and Checklists Are Better Than Reward Models (2507.18624). HealthBench is the standard testbed: 48,562 physician-written criteria attached to individual conversations. Rewrite one of your judge prompts as a checklist and re-measure agreement.",
+      "time": "Week 29",
+      "resource": {
+       "label": "arXiv 2505.08775 ↗",
+       "url": "https://arxiv.org/abs/2505.08775"
+      }
+     },
+     {
+      "title": "Calibration drift and version pinning",
+      "desc": "A judge is a model and it changes under you. Pin the exact judge model version in your results, keep the gold set in the repo, and re-run it whenever the judge model, its prompt, or its decode parameters change. Record the agreement number per version so you can tell a real score move from a judge move.",
+      "time": "Week 29"
+     }
+    ],
+    "callouts": [
+     {
+      "type": "warn",
+      "html": "<strong>An unvalidated judge is not a metric, it is a vibe.</strong> The old plan explicitly avoided judges by only using verifiable tasks. That dodges the most-demanded eval skill in the field: almost everything worth evaluating in 2026 is partly non-verifiable, and someone has to say how much to trust the grader."
+     },
+     {
+      "type": "tip",
+      "html": "<strong>Judge accuracy has error bars too.</strong> Agreement measured on 100 samples has a confidence interval wide enough to matter. Reuse the Week 35–36 machinery on the judge itself and report the interval, not the point estimate."
+     }
+    ]
+   },
+   {
+    "id": "p2-eval-infra",
+    "badge": "Task 06",
+    "title": "Eval infrastructure",
+    "tag": "exercise",
+    "items": [
+     {
+      "title": "A job queue over checkpoints",
+      "desc": "Build the thing the job req lists first: submit (model, task, sample) jobs to a persistent queue, run them with bounded concurrency, retry transient failures with backoff, and resume cleanly after you kill the process halfway through. Idempotent job keys are the whole design — get them right and everything else is bookkeeping.",
+      "time": "Week 30"
+     },
+     {
+      "title": "Caching and dedupe that you can trust",
+      "desc": "Cache completed samples keyed on model id, prompt, decode parameters, and harness version. Deduplicate identical work inside a batch. Then test the failure mode deliberately: change a prompt template and confirm the cache misses instead of silently serving last week's answers. Study how Inspect scopes its cache before you invent your own.",
+      "time": "Week 30",
+      "resource": {
+       "label": "Inspect caching ↗",
+       "url": "https://inspect.aisi.org.uk/caching.html"
+      }
+     },
+     {
+      "title": "Sandbox the agentic tasks",
+      "desc": "Agentic evals run untrusted model-generated code. Run each sample in a container with no network by default, an explicit allowlist when a task needs one, CPU and memory limits, a timeout, and guaranteed cleanup even when the run crashes. Inspect's sandbox model is the reference implementation to copy rather than reinvent.",
+      "time": "Week 30",
+      "resource": {
+       "label": "Inspect sandboxing ↗",
+       "url": "https://inspect.aisi.org.uk/sandboxing.html"
+      }
+     },
+     {
+      "title": "Per-sample cost and token accounting",
+      "desc": "Record input tokens, output tokens, cached tokens, tool calls, wall-clock, and dollar cost for every sample — not per run, per sample. This is how you answer \"what would it cost to run this eval on the next model\" without guessing, and how you find the one task that is eating 40% of your budget.",
+      "time": "Week 31"
+     },
+     {
+      "title": "A dashboard someone else can read",
+      "desc": "Ship a view that shows score per task per checkpoint with confidence intervals from Task 01, run status and failure counts, cost to date, and a link from any number to the raw sample logs behind it. Test it by handing it to someone who did not build it and watching where they get confused.",
+      "time": "Week 31",
+      "resource": {
+       "label": "Inspect eval logs ↗",
+       "url": "https://inspect.aisi.org.uk/eval-logs.html"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "warn",
+      "html": "<strong>A stale cache is worse than no cache.</strong> The classic failure is a cache key that omits the prompt template or the harness version, so a code change produces identical numbers and you conclude the change did nothing. Version the key and write the test that proves it invalidates."
+     },
+     {
+      "type": "tip",
+      "html": "<strong>Distributed-systems judgement is the differentiator here.</strong> Plenty of candidates can write an eval script. Far fewer can run 20,000 samples across checkpoints, survive a crash, and produce a per-sample cost table afterwards. That is the top bullet of the real req."
+     }
+    ]
+   },
+   {
+    "id": "p2-benchmark-audit",
+    "badge": "Task 07",
+    "title": "Benchmark protocol-compliance audit",
+    "tag": "agent",
+    "items": [
+     {
+      "title": "Pick a live benchmark and a specific published result",
+      "desc": "Pick something live, contested and cheap enough to rerun. AndroidWorld is the best solo target in 2026: 116 tasks on a free local Android emulator, deterministic rewards, no VMware licence and no cloud VM fleet — and its own leaderboard is community-submitted with no independent verification, where the top three all sit at 97.4% with a single trial each. Reproducing one entry at three to five seeds and publishing the per-task variance is a real contribution. OSWorld-Verified is the more prestigious target but costs $2,000–8,000 per run at frontier prices.",
+      "time": "Week 32",
+      "resource": {
+       "label": "AndroidWorld ↗",
+       "url": "https://github.com/google-research/android_world"
+      }
+     },
+     {
+      "title": "Read the protocol before you read the numbers",
+      "desc": "Write down what the benchmark's own rules say: step limits, retries and pass@k, allowed tools, scaffold constraints, model version, and which splits count. τ²-bench is a good one to study because its dual-control setup makes the protocol assumptions explicit rather than implicit. You cannot detect a violation you never wrote down.",
+      "time": "Week 32",
+      "resource": {
+       "label": "arXiv 2506.07982 ↗",
+       "url": "https://arxiv.org/abs/2506.07982"
+      }
+     },
+     {
+      "title": "Reproduce it with your own harness",
+      "desc": "Run the same model on the same tasks through the harness you built in weeks 37–38, with your queue, sandbox, and cost accounting from weeks 42–43. Log every trajectory. Set a budget cap first — this is the most expensive single task in the phase, and a partial reproduction with honest coverage beats a full one you cannot afford.",
+      "time": "Week 32"
+     },
+     {
+      "title": "Learn where computer-use numbers hide",
+      "desc": "Computer-use evals are the worst offenders and the best teacher. Step budget is an undeclared free parameter — the same Claude Sonnet scores 42.9%, 58.1% and 62.9% on OSWorld-Verified at 15, 50 and 100 max steps, and one model scored *worse* with more steps. Labs run their own harness and retroactively restate: an Anthropic post claims 84.3% while the maintainer's verified table tops out at 72.1%, same benchmark name, different harness. Best-of-N gets reported as if it were pass@1 — a headline \"72.6%, above the 72.36% human baseline\" was ten rollouts plus a judge. Read the flag columns before the score column.",
+      "time": "Week 32"
+     },
+     {
+      "title": "Measure what a single number hides",
+      "desc": "Rerun your chosen tasks several times and report the spread, because the same task and the same model will succeed once and fail on repeat — execution stochasticity, ambiguous task specs and behavioural variability all contribute, and both single-run and Best-of-N figures conceal it. Price it too: OSWorld 2.0 reports roughly $72 per task at the frontier, so a 108-task run is $2,700–7,800, and on GAIA the top agent costs 23× a cheap model for 42 more points. Cost per solved task belongs next to accuracy in your report.",
+      "time": "Week 33"
+     },
+     {
+      "title": "Report the discrepancy",
+      "desc": "Write up your number against the published one with confidence intervals, and separate the explanations: protocol deviation, scaffold difference, model version drift, or genuine irreproducibility. Check the submitted result JSON for protocol-compliance flags — published results have shipped with raised step limits and followed_evaluation_protocol set to \"No\". File an issue with the maintainers.",
+      "time": "Week 33",
+      "resource": {
+       "label": "Harbor harness ↗",
+       "url": "https://github.com/laude-institute/harbor"
+      }
+     },
+     {
+      "title": "Learn which benchmarks are dead and still cited",
+      "desc": "Part of the writeup is a short survey of what not to trust. WebArena sits within a few points of its human baseline. WebVoyager never had a leaderboard at all. AssistantBench and WebGames are still cited long past usefulness, and the original τ-bench repo is deprecated with README numbers roughly eighteen months stale. Being able to name three dead benchmarks and why they persist is an interview answer. In the computer-use cluster specifically: WindowsAgentArena has had no real commit since Nov 2024 and never had a leaderboard, OSUniverse was abandoned in May 2025, and Computer Agent Arena's leaderboard is returning 522s. GAIA is effectively saturated and unauditable — 93.4% against a 92% human baseline, with 3,532 submissions including top-ten entries carrying blank model names and no code or trajectories.",
+      "time": "Week 33",
+      "resource": {
+       "label": "arXiv 2307.13854 ↗",
+       "url": "https://arxiv.org/abs/2307.13854"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "tip",
+      "html": "<strong>Flagship deliverable 2.</strong> Almost nobody applying for evals roles has reproduced someone else's agentic result and reported the gap. It demonstrates the exact skill the work requires — reading a protocol, running it faithfully, and being willing to publish a number that disagrees with a leaderboard."
+     },
+     {
+      "type": "warn",
+      "html": "<strong>Be precise and be fair.</strong> Say what you ran, what you could not run, and what your own uncertainty is, and contact the maintainers before publishing anything that reads as an accusation. The goal is a credible discrepancy report, not a takedown; most gaps turn out to be scaffold and version differences rather than misconduct."
+     },
+     {
+      "type": "warn",
+      "html": "<strong>Human baselines are usually one undocumented number.</strong> OSWorld’s 72.36% and GAIA’s 92% both ship with no variance, no annotator count and no time limit, and both have now been “beaten”. When a system passes a human baseline, your first question is how that baseline was built — not what the system did."
+     }
+    ]
+   },
+   {
+    "id": "p2-finetuning",
+    "badge": "Task 08",
+    "title": "Fine-tuning: LoRA and one SFT run",
+    "tag": "exercise",
+    "items": [
+     {
+      "title": "LoRA from scratch — it is two matrices and a scale factor",
+      "desc": "Implement a LoRA layer in PyTorch: A initialised Gaussian, B initialised to zero, output scaled by alpha over r. Inject it into the transformer you built in Phase 1, verify the trainable parameter count drops by the factor you predicted, check gradients flow only into A and B, and merge the adapter back into the base weights.",
+      "time": "Week 34",
+      "resource": {
+       "label": "arXiv 2106.09685 ↗",
+       "url": "https://arxiv.org/abs/2106.09685"
+      }
+     },
+     {
+      "title": "One real SFT run with peft and trl",
+      "desc": "Fine-tune a small open-weights model on an instruction dataset using peft plus TRL's SFTTrainer. One run, logged properly: loss curve, hyperparameters, hardware, wall-clock, cost. The point is to have executed the standard pipeline once so you can reason about post-training, not to produce a good model.",
+      "time": "Week 34",
+      "resource": {
+       "label": "TRL SFTTrainer ↗",
+       "url": "https://huggingface.co/docs/trl/en/sft_trainer"
+      }
+     },
+     {
+      "title": "Dataset card and leakage check",
+      "desc": "Write the dataset card before you publish the adapter: provenance, licence, size, splits, known limitations. Then actually check for train/eval contamination — exact-match and near-duplicate search between your training set and whatever you plan to evaluate on. Report the overlap number even when it is zero.",
+      "time": "Week 34",
+      "resource": {
+       "label": "Dataset cards ↗",
+       "url": "https://huggingface.co/docs/hub/en/datasets-cards"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "warn",
+      "html": "<strong>One week, not four.</strong> Fine-tuning is a commodity skill and the old plan over-weighted it. Do not start anything new on torchtune, which has been wound down, or torchforge, which is paused — PyTorch is consolidating on torchtitan. TRL or Axolotl for this week; then move on."
+     }
+    ]
+   },
+   {
+    "id": "p2-rl-posttraining",
+    "badge": "Task 09",
+    "title": "RL with verifiable rewards",
+    "tag": "exercise",
+    "items": [
+     {
+      "title": "Run a GRPO-family loop on a verifiable task",
+      "desc": "Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. Note that TRL v1.9.0 flipped the default loss_type to \"dapo\" and marks plain grpo as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.",
+      "time": "Week 35",
+      "resource": {
+       "label": "TRL GRPOTrainer ↗",
+       "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+      }
+     },
+     {
+      "title": "Know where GRPO and DAPO came from",
+      "desc": "GRPO is introduced in the DeepSeekMath paper: drop the value model, normalise advantage within a sampled group. DAPO then fixes four concrete failures — clip-higher, dynamic sampling, token-level loss, overlong-reward shaping — and the token-level loss is exactly the length-bias fix behind TRL's new default. Read both and you can explain your own config line by line.",
+      "time": "Week 35",
+      "resource": {
+       "label": "arXiv 2503.14476 ↗",
+       "url": "https://arxiv.org/abs/2503.14476"
+      }
+     },
+     {
+      "title": "Read the RLVR capability debate honestly",
+      "desc": "This is contested ground and knowing that is the point. Read 2504.13837 (base models win at large k), 2506.10947 (Spurious Rewards — random rewards help Qwen but not Llama or OLMo), 2505.24864 (ProRL — prolonged RL does expand the boundary), then 2510.04028, which reconciles them: early training exploits and narrows, prolonged training explores and expands. The camps were measuring different phases.",
+      "time": "Week 35",
+      "resource": {
+       "label": "arXiv 2510.04028 ↗",
+       "url": "https://arxiv.org/abs/2510.04028"
+      }
+     },
+     {
+      "title": "Learn what actually moves the number",
+      "desc": "\"The Art of Scaling RL Compute\" spends 400k+ GPU-hours and finds sigmoidal rather than power-law curves: design choices buy compute efficiency, they do not raise the asymptote. The practical lesson for you is to stop collecting GRPO variants. Pick one, scale it as far as your budget goes, and measure the curve you get.",
+      "time": "Week 36",
+      "resource": {
+       "label": "arXiv 2510.13786 ↗",
+       "url": "https://arxiv.org/abs/2510.13786"
+      }
+     },
+     {
+      "title": "Fill in the post-training map",
+      "desc": "Work through the RLHF Book alongside the runs: reward modelling, PPO versus policy-gradient variants, DPO and why it was adopted then partly displaced, regularisation and KL control. Finish with a written paragraph tracing RLHF to DPO to GRPO to rubric rewards — what each fixed and what is still open.",
+      "time": "Week 36",
+      "resource": {
+       "label": "The RLHF Book ↗",
+       "url": "https://rlhfbook.com"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "tip",
+      "html": "<strong>On-policy distillation is the 2026 shape.</strong> The accepted pipeline is SFT-distill for a cold start, then RLVR, then on-policy distillation as a compaction step — reported at roughly a tenth of the GPU-hours of RL alone for comparable reasoning scores. Know the shape even if you only run the first two stages."
+     },
+     {
+      "type": "warn",
+      "html": "<strong>Your RL run will be small and that is fine.</strong> Nobody hiring for evals expects you to have trained a frontier reasoning model. They expect you to explain why your reward curve went up while your eval did not, and to have a verifiable task and a checker you wrote yourself."
+     }
+    ]
+   },
+   {
+    "id": "p2-safety-evals",
+    "badge": "Task 10",
+    "title": "Safety &amp; dangerous-capability evals",
+    "tag": "theory",
+    "items": [
+     {
+      "title": "Read one frontier safety framework properly",
+      "desc": "Read Anthropic's Responsible Scaling Policy end to end, then skim Google DeepMind's Frontier Safety Framework for contrast. Learn the vocabulary that structures the whole field: capability thresholds, safety cases, evaluation triggers, and what it means for a model to be deployed under a specific safety level.",
+      "time": "Week 37",
+      "resource": {
+       "label": "Anthropic RSP ↗",
+       "url": "https://www.anthropic.com/rsp"
+      }
+     },
+     {
+      "title": "Sandbagging: when the eval is adversarial",
+      "desc": "A model that underperforms on purpose breaks the core assumption of capability evaluation. Read the sandbagging paper for the threat model and the demonstrations, and understand why this makes elicitation — not measurement — the hard part of a dangerous-capability eval.",
+      "time": "Week 37",
+      "resource": {
+       "label": "arXiv 2406.07358 ↗",
+       "url": "https://arxiv.org/abs/2406.07358"
+      }
+     },
+     {
+      "title": "Evaluation awareness",
+      "desc": "Frontier models often detect that they are being evaluated, which means behaviour under test may not be behaviour in deployment. Read the evaluation-awareness paper, then look at your own agentic transcripts from Task 07 for the tells: unusually cautious refusals, meta-commentary about the task being a test, suspiciously tidy tool use.",
+      "time": "Week 37",
+      "resource": {
+       "label": "arXiv 2505.23836 ↗",
+       "url": "https://arxiv.org/abs/2505.23836"
+      }
+     },
+     {
+      "title": "Run one real safety eval and measure the elicitation gap",
+      "desc": "Pick a task from inspect_evals, run it, then improve the scaffold — better prompting, more tools, more attempts — and measure how much the score moves. That delta is the elicitation gap, and it is the reason a single number from a weak scaffold is a lower bound on capability rather than a measurement of it.",
+      "time": "Week 37",
+      "resource": {
+       "label": "inspect_evals ↗",
+       "url": "https://github.com/UKGovernmentBEIS/inspect_evals"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "tip",
+      "html": "<strong>You get asked this in the first twenty minutes.</strong> Any evals interview at a lab, at UK AISI, METR, or Apollo will probe whether you understand that measured capability is a function of elicitation effort. One week of reading plus one real run is enough to answer well."
+     }
+    ]
+   },
+   {
+    "id": "p2-environment",
+    "badge": "Task 11",
+    "title": "Build the environment (begins)",
+    "tag": "agent",
+    "items": [
+     {
+      "title": "Choose the task, and write the verifier first",
+      "desc": "Task selection is the hardest judgement call in the plan. You want programmatic verification, meaningful spread across models (not saturated, not impossible), and narrow enough scope to diagnose specific failure types. Write the verifier before the task content — if you cannot state the pass condition as code, the task is not ready.",
+      "time": "Week 38"
+     },
+     {
+      "title": "Implement the four interfaces",
+      "desc": "An environment is a task, a reset, a step-and-reward, and a verifier. Build it against Prime Intellect's verifiers, whose v1 restructured around taskset, harness, and runtime — matching that structure now saves a rewrite in Phase 4. Reset is the part people get wrong: state must not leak between episodes.",
+      "time": "Week 38",
+      "resource": {
+       "label": "verifiers ↗",
+       "url": "https://github.com/PrimeIntellect-ai/verifiers"
+      }
+     },
+     {
+      "title": "Measure run-to-run variance and reliability",
+      "desc": "Run the same model on the same tasks n times and report the spread, not the best number. Separately, quantify how often the environment itself fails — timeouts, container errors, verifier crashes — because a task that flakes 8% of the time cannot detect a 3% capability difference. An environment nobody can trust the numbers from is not an environment.",
+      "time": "Week 38"
+     },
+     {
+      "title": "Make it callable from someone else's harness",
+      "desc": "Write the README, the install path, and one runnable example that a stranger can execute in under ten minutes. Check what publishing to the Environments Hub requires now, and look at how Inspect structures tasks and scorers so your environment can be wrapped either way. Phase 4 hardens and publishes it; this week ends with something that runs.",
+      "time": "Week 38",
+      "resource": {
+       "label": "Environments Hub ↗",
+       "url": "https://app.primeintellect.ai/dashboard/environments"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "tip",
+      "html": "<strong>Flagship deliverable 1, and it does not finish this week.</strong> Week 48 is the start: task, verifier, reset, reward, and a first variance measurement. Weeks 49–50 harden it, get a stranger to install it, and publish. Plan the scope accordingly — small and reliable beats ambitious and flaky."
+     },
+     {
+      "type": "warn",
+      "html": "<strong>Reliability is the contribution.</strong> Anyone can write a task. The reason environments are scarce is that most of them silently leak state between episodes, depend on a network resource that changes, or score inconsistently. Your variance and failure-rate numbers are what make yours worth using."
+     }
+    ]
    }
   ],
   "milestone": {
    "id": "p2-milestone",
    "badge": "Milestone",
    "title": "Phase 2 complete",
-   "heading": "What you ship at end of Phase 2",
+   "heading": "What you ship by the end of Phase 2",
    "items": [
-    "SHIP: You can read a JAX training step — mesh, jax.P annotations, shard_map, psum — and explain what each device holds and what crosses the interconnect, without writing JAX yourself",
-    "SHIP: You can spot pmap-era code on sight and say why it no longer runs on JAX 0.11",
-    "SHIP: Written scaling-book answers for chapters 1–4 and 12, in your repo as plain notes — including the ones you got wrong and the corrected working",
-    "SHIP: Given a model size, batch size and cluster, you can predict memory per device and step time on paper, and you have a log of predictions versus measured reality",
-    "SHIP: A working FSDP2 + tensor-parallel training run on a rented multi-GPU box, with a checkpoint that resumes correctly at a different world size",
-    "SHIP: A debugging writeup covering one NCCL hang and one OOM you caused deliberately, with the diagnosis and the fix",
-    "SHIP: CS336 assignment 2 in your repo — benchmarking and profiling complete, DDP with gradient bucketing built from scratch, and a Triton attention kernel benchmarked against the PyTorch reference (partial credit stated honestly)",
-    "SHIP: A vLLM endpoint you configured yourself, with a measured throughput-versus-latency curve, a measured prefix-caching speedup on a repeated-prompt workload, and a TP=1 versus TP=2 comparison",
-    "SHIP: A short comparison of vLLM and SGLang with a stated pick for agentic eval workloads and the reason",
-    "SHIP: `verifiers` running a rollout against your own endpoint — the plumbing Phase 3 depends on, proven end to end"
+    "A published environment — task, programmatic verifier, reset, reward — public since week 26 and improved monthly since",
+    "Measured run-to-run variance and a stated reliability figure for it, not just a success rate",
+    "A benchmark protocol-compliance audit: one published result reproduced at several seeds, with the discrepancy written up",
+    "An eval harness that runs across checkpoints with retries, caching and per-sample cost accounting",
+    "An LLM judge validated against your own human labels, with position and length bias measured",
+    "A GRPO-family run on a verifiable task, with reward curves and the DAPO default explained rather than accepted",
+    "A scratch-built LoRA verified against your Phase 1 transformer",
+    "You can name three agentic benchmarks that are effectively dead and say why they are still cited"
    ],
    "next": {
     "href": "#phase3",
-    "label": "Phase 3 — Evals, RL &amp; environments →"
+    "label": "Phase 3 — Systems &amp; scaling →"
    }
   }
  }

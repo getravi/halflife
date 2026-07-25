@@ -4,7 +4,7 @@
   "num": "00",
   "weeks": "Weeks 1–8",
   "title": "Programming<br>foundations",
-  "intro": "This phase assumes you are starting close to zero. You will learn Python properly, then async Python, then array thinking, then the math deep learning is actually made of. Nothing here is optional — every later phase silently assumes all of it, and the two things people most often skip (async concurrency and sampling variance) are exactly the two that block Phase 3. Eight weeks at 25 hours is about 200 hours. Spend them on your own keyboard.",
+  "intro": "This phase assumes you are starting close to zero. You will learn Python properly, then async Python, then array thinking, then the math deep learning is actually made of. Nothing here is optional — every later phase silently assumes all of it, and the two things people most often skip (async concurrency and sampling variance) are exactly the two that block Phase 2. Eight weeks at 25 hours is about 200 hours. Spend them on your own keyboard.",
   "callouts": [
    {
     "type": "warn",
@@ -56,7 +56,7 @@
      },
      {
       "title": "Put the buffer and the reviews in the calendar",
-      "desc": "Weeks 13, 26 and 39 are catch-up, not content — and you will need them, because everyone loses four to eight weeks a year to work, illness and travel. Spend 90 minutes of each re-deriving from a blank page: backprop, attention, Adam, cross-entropy, sharding. Material from week 6 is next used at week 35; without deliberate review it will be gone.",
+      "desc": "Weeks 13, 26 and 44 are catch-up, not content — and you will need them, because everyone loses four to eight weeks a year to work, illness and travel. Spend 90 minutes of each re-deriving from a blank page: backprop, attention, Adam, cross-entropy, sharding. Material from week 6 is next used at week 35; without deliberate review it will be gone.",
       "time": "Week 1"
      },
      {
@@ -348,7 +348,7 @@
    ],
    "next": {
     "href": "#phase1",
-    "label": "Phase 1 — Deep learning & transformers →"
+    "label": "Phase 1 — Deep learning &amp; transformers →"
    }
   }
  },
@@ -655,7 +655,7 @@
    ],
    "next": {
     "href": "#phase2",
-    "label": "Phase 2 — Systems & scaling →"
+    "label": "Phase 2 — Evals &amp; environments →"
    }
   }
  }

@@ -104,7 +104,7 @@
     "desc": "Prime Intellect pays $100–500 for open-access bounties and $1,000–5,000+ for application-only ones sponsored by third parties. Take one even if it is small. A paid bounty buys three things a merged docs PR does not: a reviewer with an incentive to read your code, a named reference, and money.",
     "steps": [
      "Open the bounties tab and read every open listing end to end before picking. Sort by whether the spec is precise enough that you can tell from the outside what \"done\" means — vague bounties are where unpaid weeks go.",
-     "Pick one whose task domain overlaps something you already built in Phase 3. You are being paid for reliability and turnaround, not for learning a new domain on the sponsor's clock.",
+     "Pick one whose task domain overlaps something you already built in Phase 2. You are being paid for reliability and turnaround, not for learning a new domain on the sponsor's clock.",
      "Install the CLI and authenticate first (`uv tool install prime`, `prime login`), then reproduce the sponsor's example environment locally so you are debugging your task rather than your toolchain.",
      "Build against the `verifiers` interface exactly as specified — dataset, rollout, rubric, reward — and resist adding scope the spec did not ask for; an external spec is the point of the exercise.",
      "Ship with the variance evidence attached: number of runs, per-task standard error, flake accounting. That is the part most bounty submissions omit and the part a reviewer remembers.",
