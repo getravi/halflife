@@ -5,7 +5,7 @@
    "num": "04",
    "weeks": "Weeks 49–52",
    "title": "Ship &amp;<br>apply",
-   "intro": "Four weeks of finishing, not starting. The environment from Phase 2 gets hardened until a stranger can install it and reproduce your numbers; the work gets written up once, in three formats a reviewer will actually open; the code goes where the people who hire for this read code. Applications are not a Phase 4 activity — you started sending them in week 20 and this is the last checkpoint, not the first attempt.",
+   "intro": "Four weeks of finishing, not starting. The environment from Phase 2 stops being yours alone: it gets re-measured, de-flaked, installed by a stranger, and submitted for a bounty until a stranger can install it and reproduce your numbers; the work gets written up once, in three formats a reviewer will actually open; the code goes where the people who hire for this read code. Applications are not a Phase 4 activity — you started sending them in week 20 and this is the last checkpoint, not the first attempt.",
    "callouts": [
     {
      "type": "warn",
@@ -20,12 +20,12 @@
     {
      "id": "p4-environment-harden",
      "badge": "Task 01",
-     "title": "Harden and publish the environment",
+     "title": "Make it something other people use",
      "tag": "agent",
      "items": [
       {
-       "title": "Measure run-to-run variance before you touch anything else",
-       "desc": "Run the full task suite at least five times against a fixed model and seed set, and record the spread per task, not just the mean. Decompose it: sampling noise from the model, nondeterminism in your verifier, flaky container startup, network timeouts. Report a number — \"pass rate 0.62 ± 0.04 over 5 runs, n=120\" — and name which source dominates. An environment whose numbers move and cannot say why is not usable by anyone.",
+       "title": "Re-measure it — eleven weeks have passed",
+       "desc": "You published variance numbers in week 38. Rerun the whole suite now against current model versions and a clean image, and diff against what you published. Provider models change under fixed names, dependencies drift, and a number that was true in week 38 may not be true today. Whatever moved is your first finding of this phase, and a regression check you can run on demand is itself part of the artifact.",
        "time": "Week 49"
       },
       {

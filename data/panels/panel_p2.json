@@ -17,13 +17,17 @@
    {
     "type": "tip",
     "html": "<strong>Week 26 is a buffer week.</strong> Your environment just went public and that is the moment to catch up rather than push on. If you are on schedule, spend 90 minutes re-deriving backprop, attention and cross-entropy from a blank page — Phase 0 is twenty weeks behind you and the statistics work starts next week."
+   },
+   {
+    "type": "warn",
+    "html": "<strong>The application funnel opens during this phase, not after it.</strong> From week 20 you should be sending real applications — to structured programmes on their fixed windows, and to adjacent employers who hire at this level. You will be rejected while your environment is still v0, and that is the point: the rejections tell you what to fix while you still have eighteen weeks to fix it."
    }
   ],
   "tasks": [
    {
     "id": "p2-serving",
     "badge": "Task 01",
-    "title": "Inference and serving",
+    "title": "Stand up a served endpoint",
     "tag": "exercise",
     "items": [
      {
@@ -56,52 +60,16 @@
      {
       "title": "Prefix caching",
       "desc": "Automatic prefix caching hashes KV blocks so requests sharing a prefix reuse them instead of recomputing. This is the single largest win available to eval and RL workloads, where hundreds of samples share one long system prompt and few-shot block. Measure it: run the same eval batch with prefix caching on and off and record time-to-first-token and total throughput. That measured delta is a number worth putting in a writeup.",
-      "time": "Week 21",
+      "time": "Week 22",
       "resource": {
        "label": "vLLM — automatic prefix caching ↗",
        "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html"
       }
      },
      {
-      "title": "Tensor-parallel and multi-GPU serving",
-      "desc": "Serving a model too large for one card means `--tensor-parallel-size`, and possibly pipeline parallel across nodes. Understand what this buys and what it costs: TP splits the weights and the KV cache so you get more cache headroom as well as more compute, but adds an all-reduce per layer, so latency improves sub-linearly. Run the same model at TP=1 and TP=2 and compare tokens/second per GPU, not just tokens/second.",
-      "time": "Week 21",
-      "resource": {
-       "label": "vLLM — parallelism and scaling ↗",
-       "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling.html"
-      }
-     },
-     {
       "title": "Throughput versus latency, measured",
       "desc": "Build a small load generator and sweep concurrency, recording time-to-first-token, inter-token latency and total output tokens/second at each level. You will see the shape everyone talks about: throughput rises with concurrency until the KV cache saturates, while per-request latency degrades from the first request onward. Know where your endpoint's knee is, because Phase 3 eval runs will sit right on it.",
       "time": "Week 22"
-     },
-     {
-      "title": "Quantization",
-      "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you have. Learn the distinctions that matter in practice: weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and KV-cache quantization as a separate decision from weight quantization. Serve one model at bf16 and one quantized, and evaluate both on the same task — the accuracy cost is workload-dependent and you should measure yours rather than quote a blog post.",
-      "time": "Week 22",
-      "resource": {
-       "label": "vLLM — quantization ↗",
-       "url": "https://docs.vllm.ai/en/latest/features/quantization/index.html"
-      }
-     },
-     {
-      "title": "Speculative decoding",
-      "desc": "A small draft model, or n-gram lookup, or a self-speculation head proposes several tokens; the target model verifies them in one forward pass and accepts the longest correct prefix. Output is distributionally identical to normal decoding, so it is a pure latency win — but only when the acceptance rate is high and the batch is small, which means it can hurt a throughput-bound eval run. Enable it, measure acceptance rate and end-to-end latency, and know when to turn it off.",
-      "time": "Week 22",
-      "resource": {
-       "label": "vLLM — speculative decoding ↗",
-       "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
-      }
-     },
-     {
-      "title": "SGLang and structured generation",
-      "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which matters for branching agent traces — and fast constrained decoding for JSON and grammar-constrained output. Serve the same model on SGLang, run your load generator against it, and be able to say which engine you would pick for an agentic eval and why.",
-      "time": "Week 22",
-      "resource": {
-       "label": "SGLang docs ↗",
-       "url": "https://docs.sglang.ai/"
-      }
      },
      {
       "title": "Wire the endpoint to an RL and eval harness",
@@ -479,9 +447,9 @@
     ]
    },
    {
-    "id": "p2-finetuning",
+    "id": "p2-rl-posttraining",
     "badge": "Task 08",
-    "title": "Fine-tuning: LoRA and one SFT run",
+    "title": "Post-training: LoRA, SFT and RL",
     "tag": "exercise",
     "items": [
      {
@@ -510,21 +478,7 @@
        "label": "Dataset cards ↗",
        "url": "https://huggingface.co/docs/hub/en/datasets-cards"
       }
-     }
-    ],
-    "callouts": [
-     {
-      "type": "warn",
-      "html": "<strong>One week, not four.</strong> Fine-tuning is a commodity skill and the old plan over-weighted it. Do not start anything new on torchtune, which has been wound down, or torchforge, which is paused — PyTorch is consolidating on torchtitan. TRL or Axolotl for this week; then move on."
-     }
-    ]
-   },
-   {
-    "id": "p2-rl-posttraining",
-    "badge": "Task 09",
-    "title": "RL with verifiable rewards",
-    "tag": "exercise",
-    "items": [
+     },
      {
       "title": "Run a GRPO-family loop on a verifiable task",
       "desc": "Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. Note that TRL v1.9.0 flipped the default loss_type to \"dapo\" and marks plain grpo as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.",
@@ -589,7 +543,7 @@
    },
    {
     "id": "p2-safety-evals",
-    "badge": "Task 10",
+    "badge": "Task 09",
     "title": "Safety &amp; dangerous-capability evals",
     "tag": "theory",
     "items": [
@@ -644,7 +598,7 @@
    },
    {
     "id": "p2-environment",
-    "badge": "Task 11",
+    "badge": "Task 10",
     "title": "Environment v1 — make it defensible",
     "tag": "agent",
     "items": [

@@ -370,6 +370,10 @@
    {
     "type": "tip",
     "html": "<strong>Week 13 is a buffer week.</strong> If you are on schedule, spend it re-deriving backprop and attention from a blank page rather than starting new material. If you are behind — and most people are by now — this is the week that lets you stay on the plan instead of abandoning it."
+   },
+   {
+    "type": "tip",
+    "html": "<strong>Three public artifacts come out of this phase, not one at the end.</strong> Micrograd and makemore at week 11, the green CS336 tests at week 17, the nanochat writeup at week 20. Push each as you finish it. Nobody is watching yet, which is exactly why it costs nothing to build the habit now."
    }
   ],
   "tasks": [
@@ -409,6 +413,11 @@
      {
       "title": "Exit check: autograd from memory",
       "desc": "Close every tab and reimplement scalar autograd from scratch: add, multiply, tanh, and a backward pass that handles a node used twice. It passes when the gradients match a PyTorch reference on a small expression graph, including the reused-node case that catches people who accumulate instead of overwrite.",
+      "time": "Week 11"
+     },
+     {
+      "title": "Publish it, week 11",
+      "desc": "Push micrograd and makemore to the public repo you created in week 1, with a README that says what each one is and links the notebook where the gradients check out numerically. Write one short post about the bug that cost you the most time. This is your first technical artifact and its job is to exist, not to impress — but it is also the thing that makes weeks 9 to 11 visible to anyone who looks.",
       "time": "Week 11"
      }
     ],
@@ -519,6 +528,11 @@
      {
       "title": "Exit check with explicit partial credit",
       "desc": "You pass this task when the tokenizer tests and the transformer tests are green — those two are mandatory and non-negotiable. The optimizer and training-loop tests are optional: if they are still red at the end of week 17, write down exactly which assertions fail and what you think is wrong, commit that note, and move on. Do not let week 18 slip.",
+      "time": "Week 17"
+     },
+     {
+      "title": "Publish the green tests, week 17",
+      "desc": "Push the assignment work public with the test output in the README, including whatever you left as partial credit and a sentence on why. A passing course test suite is the only externally graded evidence in the entire 52 weeks — it is worth more than three self-assessed projects, and it is worth linking directly rather than burying in a repo tree.",
       "time": "Week 17"
      }
     ],

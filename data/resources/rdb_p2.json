@@ -143,43 +143,6 @@
      }
     ]
    },
-   "Tensor-parallel and multi-GPU serving": {
-    "desc": "Serving a model too large for one card means `--tensor-parallel-size`. TP splits both the weights and the KV cache, so you get cache headroom as well as compute — but you also pay an all-reduce per layer, so latency improves sub-linearly and per-GPU throughput usually goes down. Measure per-GPU, not aggregate.",
-    "steps": [
-     "Serve the same model at TP=1 and at TP=2 and record the KV block count each reports at startup. The increase is the cache headroom TP buys you.",
-     "Run an identical load at both settings and record tokens/second, then divide by the GPU count. Compare tokens/second per GPU, which is the number that tells you whether TP paid for itself.",
-     "Measure inter-token latency at low concurrency in both configurations — this is where TP should genuinely win, because decode is memory-bandwidth-bound.",
-     "Read the parallelism doc on when to prefer pipeline parallel (across nodes, where the interconnect is slow) versus tensor parallel (within a node over NVLink), and relate it to the fabric numbers from scaling-book chapter 12.",
-     "Deliberately break it: request a TP size that does not divide the attention head count, and read the error so you recognise it later.",
-     "Read the distributed-troubleshooting page and note the two or three environment variables it tells you to set when a multi-GPU server hangs at startup."
-    ],
-    "docs": [
-     {
-      "name": "vLLM — Parallelism and Scaling",
-      "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
-     },
-     {
-      "name": "vLLM — Troubleshooting distributed deployments",
-      "url": "https://docs.vllm.ai/en/latest/serving/distributed_troubleshooting/"
-     },
-     {
-      "name": "Scaling book — How to Think About GPUs (interconnect costs)",
-      "url": "https://jax-ml.github.io/scaling-book/gpus/"
-     }
-    ],
-    "papers": [
-     {
-      "name": "arXiv 2211.05102 — Efficiently Scaling Transformer Inference",
-      "url": "https://arxiv.org/abs/2211.05102"
-     }
-    ],
-    "videos": [
-     {
-      "title": "vLLM Office Hours — Distributed Inference with vLLM (Neural Magic)",
-      "url": "https://www.youtube.com/watch?v=LH2QZehVJoc"
-     }
-    ]
-   },
    "Throughput versus latency, measured": {
     "desc": "There is one curve every serving engineer should be able to draw from memory: throughput rises with concurrency until the KV cache saturates and then flattens or collapses, while per-request latency degrades from the very first concurrent request. Find the knee on your own endpoint, because Phase 3's eval runs will sit right on it.",
     "steps": [
@@ -210,133 +173,6 @@
      {
       "name": "SGLang — Hyperparameter Tuning (throughput vs latency knobs)",
       "url": "https://docs.sglang.ai/docs/advanced_features/hyperparameter_tuning"
-     }
-    ]
-   },
-   "Quantization": {
-    "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you already rent. The distinctions that matter in practice are weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and — separately from all of that — whether you quantize the KV cache. The accuracy cost is workload-dependent, so measure yours.",
-    "steps": [
-     "Read the quantization index and write down which schemes your GPU actually supports in hardware; FP8 on pre-Hopper cards is emulated and will not give you the speedup you expect.",
-     "Serve one model at bf16 and the same model at FP8 W8A8, and record tokens/second, KV block count and peak memory for each.",
-     "Separately enable KV cache quantization (FP8 KV) at bf16 weights, and record the increase in KV blocks. Note that this is an independent decision from weight quantization and often the better one for long-context eval workloads.",
-     "Try one 4-bit weight-only scheme and note where it wins (memory-bound single-stream decode) and where it loses (compute-bound large-batch prefill).",
-     "Evaluate all the configurations you served on the same task with the same prompts, and record the accuracy delta alongside the throughput delta. A throughput number without an accuracy number is not a result.",
-     "Write a short recommendation for your own Phase 3 workload with the measured numbers attached, and say explicitly which configuration you rejected and why."
-    ],
-    "docs": [
-     {
-      "name": "vLLM — Quantization",
-      "url": "https://docs.vllm.ai/en/latest/features/quantization/"
-     },
-     {
-      "name": "vLLM — Quantized KV Cache",
-      "url": "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/"
-     },
-     {
-      "name": "vLLM — FP8 W8A8 with llm-compressor",
-      "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/"
-     },
-     {
-      "name": "vLLM — INT8 W8A8 with llm-compressor",
-      "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/int8_w8a8/"
-     },
-     {
-      "name": "SGLang — Quantization",
-      "url": "https://docs.sglang.ai/docs/advanced_features/quantization"
-     }
-    ]
-   },
-   "Speculative decoding": {
-    "desc": "A draft model, an n-gram lookup or a self-speculation head proposes several tokens; the target model verifies them in a single forward pass and accepts the longest correct prefix. The output distribution is provably unchanged, so it is a pure latency win — but only at high acceptance and small batch. On a throughput-bound eval run it can make things worse.",
-    "steps": [
-     "Read one of the two original papers far enough to convince yourself of the correctness argument: modified rejection sampling makes the output distribution identical to plain sampling from the target.",
-     "Enable n-gram (prompt-lookup) speculation first, since it needs no second model, and measure inter-token latency at concurrency 1 against your baseline.",
-     "Enable a real draft model and measure both acceptance rate and end-to-end latency. Acceptance rate is the number that predicts whether it will help.",
-     "Now re-run the same configuration at high concurrency and show that the benefit shrinks or inverts, because verification FLOPs compete with the batch you are already running.",
-     "Vary the number of speculative tokens and find the optimum for your workload — more proposals help only until the acceptance probability of the last one gets small.",
-     "Write the decision rule you will apply in Phase 3: on for interactive single-stream work, off for throughput-bound batch eval, with your measured numbers as evidence."
-    ],
-    "docs": [
-     {
-      "name": "vLLM — Speculative Decoding",
-      "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
-     },
-     {
-      "name": "vLLM — Speculative Decoding with draft models",
-      "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/draft_model/"
-     },
-     {
-      "name": "SGLang — Speculative Decoding",
-      "url": "https://docs.sglang.ai/docs/advanced_features/speculative_decoding"
-     }
-    ],
-    "papers": [
-     {
-      "name": "arXiv 2211.17192 — Fast Inference from Transformers via Speculative Decoding",
-      "url": "https://arxiv.org/abs/2211.17192"
-     },
-     {
-      "name": "arXiv 2302.01318 — Accelerating Large Language Model Decoding with Speculative Sampling",
-      "url": "https://arxiv.org/abs/2302.01318"
-     }
-    ],
-    "videos": [
-     {
-      "title": "GPU MODE Lecture 22: Hacker's Guide to Speculative Decoding in vLLM",
-      "url": "https://www.youtube.com/watch?v=9wNAgpX6z_4"
-     },
-     {
-      "title": "vLLM Office Hours — Speculative Decoding in vLLM (Neural Magic)",
-      "url": "https://www.youtube.com/watch?v=eVJBFajJRIU"
-     }
-    ]
-   },
-   "SGLang and structured generation": {
-    "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which is exactly what branching agent traces produce — and fast constrained decoding for JSON and grammar-bounded output.",
-    "steps": [
-     "Read the SGLang paper for RadixAttention and the LRU eviction policy over the radix tree, and articulate how it differs from vLLM's block-hash prefix caching for a branching workload.",
-     "Install SGLang and serve the same model you used on vLLM, then hit its OpenAI-compatible endpoint to confirm the client code is unchanged.",
-     "Run your own load generator against SGLang at the same concurrency sweep and compare the throughput and latency curves against your vLLM numbers directly.",
-     "Build a branching workload — one shared prompt, several divergent continuations, then further branches — and compare both engines on it. This is where RadixAttention should show its advantage.",
-     "Use SGLang's structured outputs to force a JSON schema and then a small grammar, and measure the latency cost of constrained decoding versus free generation.",
-     "Write the comparison: which engine you would pick for an agentic eval workload, the measured evidence, and the one thing that would change your mind. That writeup is a milestone deliverable."
-    ],
-    "docs": [
-     {
-      "name": "SGLang — documentation home",
-      "url": "https://docs.sglang.ai/"
-     },
-     {
-      "name": "SGLang — Server Arguments",
-      "url": "https://docs.sglang.ai/docs/advanced_features/server_arguments"
-     },
-     {
-      "name": "SGLang — Structured Outputs (JSON and grammar-constrained decoding)",
-      "url": "https://docs.sglang.ai/docs/advanced_features/structured_outputs"
-     },
-     {
-      "name": "SGLang — OpenAI-Compatible APIs",
-      "url": "https://docs.sglang.ai/docs/basic_usage/openai_api"
-     },
-     {
-      "name": "SGLang — Installation",
-      "url": "https://docs.sglang.ai/docs/get-started/install"
-     }
-    ],
-    "papers": [
-     {
-      "name": "arXiv 2312.07104 — SGLang: Efficient Execution of Structured Language Model Programs",
-      "url": "https://arxiv.org/abs/2312.07104"
-     }
-    ],
-    "videos": [
-     {
-      "title": "GPU MODE Lecture 35: SGLang",
-      "url": "https://www.youtube.com/watch?v=XQylGyG7yp8"
-     },
-     {
-      "title": "Lianmin Zheng on Efficient LLM Inference with SGLang (AMD Developer Central)",
-      "url": "https://www.youtube.com/watch?v=G4ZeVP7n0Ik"
      }
     ]
    },
@@ -776,141 +612,6 @@
     ]
    }
   },
-  "p2-finetuning": {
-   "LoRA from scratch — it is two matrices and a scale factor": {
-    "desc": "Implement a LoRA layer in PyTorch: A initialised Gaussian, B initialised to zero, output scaled by alpha over r. Inject it into your Phase 1 transformer, verify the trainable parameter count drops by the factor you predicted, confirm gradients flow only into A and B, and merge the adapter back into the base weights.",
-    "steps": [
-     "Write `LoRALinear(base: nn.Linear, r: int, alpha: float)` that freezes `base.weight`, adds `A` (r × in, Gaussian) and `B` (out × r, zeros), and returns `base(x) + (alpha/r) * (x @ A.T @ B.T)`.",
-     "Prove B=0 matters: assert the wrapped module's output equals the base module's output exactly at initialisation. If it does not, your merge will be wrong too.",
-     "Inject into q_proj and v_proj of your Phase 1 transformer, then compute `trainable/total` and check it against the number you predicted from r, alpha, and the injected shapes.",
-     "Run one backward pass and assert `base.weight.grad is None` while `A.grad` and `B.grad` are populated — that is the actual PEFT invariant.",
-     "Implement `merge()` that folds `(alpha/r) * B @ A` into `base.weight`, and assert merged-model outputs match unmerged within float tolerance.",
-     "Sweep r ∈ {1, 4, 16, 64} on a tiny task and plot quality against trainable parameters so you have your own version of the paper's rank ablation."
-    ],
-    "papers": [
-     {
-      "name": "LoRA: Low-Rank Adaptation of Large Language Models (arXiv 2106.09685)",
-      "url": "https://arxiv.org/abs/2106.09685"
-     },
-     {
-      "name": "QLoRA: Efficient Finetuning of Quantized LLMs (arXiv 2305.14314)",
-      "url": "https://arxiv.org/abs/2305.14314"
-     },
-     {
-      "name": "LoRA Learns Less and Forgets Less (arXiv 2405.09673)",
-      "url": "https://arxiv.org/abs/2405.09673"
-     }
-    ],
-    "docs": [
-     {
-      "name": "PEFT — LoRA conceptual guide",
-      "url": "https://huggingface.co/docs/peft/en/developer_guides/lora"
-     },
-     {
-      "name": "PEFT documentation",
-      "url": "https://huggingface.co/docs/peft/en/index"
-     }
-    ],
-    "videos": [
-     {
-      "title": "LoRA: Low-Rank Adaptation of Large Language Models — Explained visually + PyTorch code from scratch (Umar Jamil)",
-      "url": "https://www.youtube.com/watch?v=PXWYUTMt-AU"
-     },
-     {
-      "title": "What is Low-Rank Adaptation (LoRA) | explained by the inventor (Edward Hu)",
-      "url": "https://www.youtube.com/watch?v=DhRoTONcyZE"
-     },
-     {
-      "title": "LoRA: Low-Rank Adaptation of LLMs Explained (Gabriel Mongaras)",
-      "url": "https://www.youtube.com/watch?v=_K3HgjnRHCY"
-     }
-    ]
-   },
-   "One real SFT run with peft and trl": {
-    "desc": "Fine-tune a small open-weights model on an instruction dataset with peft plus TRL's SFTTrainer. One run, logged properly: loss curve, hyperparameters, hardware, wall-clock, cost. The point is to have executed the standard pipeline once so you can reason about post-training — not to produce a good model.",
-    "steps": [
-     "Pick a model small enough to iterate on a single GPU and a dataset already in a TRL-supported format (prompt-completion or conversational) — read the dataset-formats page before you write a formatting function.",
-     "Configure `SFTTrainer` with a `LoraConfig` from peft, and check `print_trainable_parameters()` against the prediction you made in the from-scratch task.",
-     "Turn on completion-only loss (mask the prompt) and confirm it is actually applied — training on the prompt is the most common silent SFT bug.",
-     "Log to a tracker: loss curve, LR schedule, grad norm, tokens/sec, peak memory, wall-clock, and the dollar figure. Record the exact package versions.",
-     "Evaluate before/after on a held-out set with the paired machinery from Task 01 — not on the training loss.",
-     "Push the adapter to the Hub with a model card stating base model, data, hyperparameters, and what it is not good for."
-    ],
-    "docs": [
-     {
-      "name": "TRL — SFTTrainer",
-      "url": "https://huggingface.co/docs/trl/en/sft_trainer"
-     },
-     {
-      "name": "TRL — Dataset formats and types",
-      "url": "https://huggingface.co/docs/trl/en/dataset_formats"
-     },
-     {
-      "name": "TRL — PEFT integration",
-      "url": "https://huggingface.co/docs/trl/en/peft_integration"
-     },
-     {
-      "name": "TRL — Reducing memory usage",
-      "url": "https://huggingface.co/docs/trl/en/reducing_memory_usage"
-     },
-     {
-      "name": "TRL releases (check the version you pin — v1.9.0 changed RL defaults)",
-      "url": "https://github.com/huggingface/trl/releases"
-     }
-    ],
-    "courses": [
-     {
-      "name": "Hugging Face LLM Course — Chapter 11: Supervised Fine-Tuning",
-      "url": "https://huggingface.co/learn/llm-course/chapter11/1"
-     },
-     {
-      "name": "Post-training of LLMs (DeepLearning.AI short course)",
-      "url": "https://www.deeplearning.ai/short-courses/post-training-of-llms/"
-     }
-    ],
-    "papers": [
-     {
-      "name": "Training language models to follow instructions with human feedback (InstructGPT, arXiv 2203.02155)",
-      "url": "https://arxiv.org/abs/2203.02155"
-     }
-    ]
-   },
-   "Dataset card and leakage check": {
-    "desc": "Write the dataset card before you publish the adapter — provenance, licence, size, splits, known limitations. Then actually check for train/eval contamination with exact-match and near-duplicate search between your training set and whatever you plan to evaluate on. Report the overlap number even when it is zero.",
-    "steps": [
-     "Write the card from the Hub template first: source, collection method, licence, size, split definition, intended use, and known limitations. Doing it before the run changes what you collect.",
-     "Run exact-match contamination: normalise whitespace and case, hash every training example and every eval question, and report the intersection size.",
-     "Run near-duplicate contamination: n-gram overlap (13-gram is the common convention) or MinHash/LSH, with a stated threshold. Report the count and show the top ten matches by hand.",
-     "Check the base model too — you cannot fix pretraining contamination, but you can say which benchmarks are compromised for the model you chose and cite the leakage literature.",
-     "Publish the overlap number in the card as a first-class field, including when it is zero, plus the exact script that produced it.",
-     "Add the check to CI so the number is recomputed whenever the training set changes."
-    ],
-    "docs": [
-     {
-      "name": "Hugging Face Hub — Dataset cards",
-      "url": "https://huggingface.co/docs/hub/en/datasets-cards"
-     },
-     {
-      "name": "TRL — Dataset formats and types",
-      "url": "https://huggingface.co/docs/trl/en/dataset_formats"
-     }
-    ],
-    "papers": [
-     {
-      "name": "Investigating Data Contamination in Modern Benchmarks for Large Language Models (arXiv 2311.09783)",
-      "url": "https://arxiv.org/abs/2311.09783"
-     },
-     {
-      "name": "Benchmarking Benchmark Leakage in Large Language Models (arXiv 2404.18824)",
-      "url": "https://arxiv.org/abs/2404.18824"
-     },
-     {
-      "name": "Evaluating Large Language Models Trained on Code — the original decontamination discussion (arXiv 2107.03374)",
-      "url": "https://arxiv.org/abs/2107.03374"
-     }
-    ]
-   }
-  },
   "p2-rl-posttraining": {
    "Run a GRPO-family loop on a verifiable task": {
     "desc": "Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. TRL v1.9.0 flipped the default `loss_type` to \"dapo\" and marks plain `grpo` as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.",
@@ -1158,6 +859,139 @@
      {
       "name": "TRL — GRPO trainer",
       "url": "https://github.com/huggingface/trl"
+     }
+    ]
+   },
+   "LoRA from scratch — it is two matrices and a scale factor": {
+    "desc": "Implement a LoRA layer in PyTorch: A initialised Gaussian, B initialised to zero, output scaled by alpha over r. Inject it into your Phase 1 transformer, verify the trainable parameter count drops by the factor you predicted, confirm gradients flow only into A and B, and merge the adapter back into the base weights.",
+    "steps": [
+     "Write `LoRALinear(base: nn.Linear, r: int, alpha: float)` that freezes `base.weight`, adds `A` (r × in, Gaussian) and `B` (out × r, zeros), and returns `base(x) + (alpha/r) * (x @ A.T @ B.T)`.",
+     "Prove B=0 matters: assert the wrapped module's output equals the base module's output exactly at initialisation. If it does not, your merge will be wrong too.",
+     "Inject into q_proj and v_proj of your Phase 1 transformer, then compute `trainable/total` and check it against the number you predicted from r, alpha, and the injected shapes.",
+     "Run one backward pass and assert `base.weight.grad is None` while `A.grad` and `B.grad` are populated — that is the actual PEFT invariant.",
+     "Implement `merge()` that folds `(alpha/r) * B @ A` into `base.weight`, and assert merged-model outputs match unmerged within float tolerance.",
+     "Sweep r ∈ {1, 4, 16, 64} on a tiny task and plot quality against trainable parameters so you have your own version of the paper's rank ablation."
+    ],
+    "papers": [
+     {
+      "name": "LoRA: Low-Rank Adaptation of Large Language Models (arXiv 2106.09685)",
+      "url": "https://arxiv.org/abs/2106.09685"
+     },
+     {
+      "name": "QLoRA: Efficient Finetuning of Quantized LLMs (arXiv 2305.14314)",
+      "url": "https://arxiv.org/abs/2305.14314"
+     },
+     {
+      "name": "LoRA Learns Less and Forgets Less (arXiv 2405.09673)",
+      "url": "https://arxiv.org/abs/2405.09673"
+     }
+    ],
+    "docs": [
+     {
+      "name": "PEFT — LoRA conceptual guide",
+      "url": "https://huggingface.co/docs/peft/en/developer_guides/lora"
+     },
+     {
+      "name": "PEFT documentation",
+      "url": "https://huggingface.co/docs/peft/en/index"
+     }
+    ],
+    "videos": [
+     {
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models — Explained visually + PyTorch code from scratch (Umar Jamil)",
+      "url": "https://www.youtube.com/watch?v=PXWYUTMt-AU"
+     },
+     {
+      "title": "What is Low-Rank Adaptation (LoRA) | explained by the inventor (Edward Hu)",
+      "url": "https://www.youtube.com/watch?v=DhRoTONcyZE"
+     },
+     {
+      "title": "LoRA: Low-Rank Adaptation of LLMs Explained (Gabriel Mongaras)",
+      "url": "https://www.youtube.com/watch?v=_K3HgjnRHCY"
+     }
+    ]
+   },
+   "One real SFT run with peft and trl": {
+    "desc": "Fine-tune a small open-weights model on an instruction dataset with peft plus TRL's SFTTrainer. One run, logged properly: loss curve, hyperparameters, hardware, wall-clock, cost. The point is to have executed the standard pipeline once so you can reason about post-training — not to produce a good model.",
+    "steps": [
+     "Pick a model small enough to iterate on a single GPU and a dataset already in a TRL-supported format (prompt-completion or conversational) — read the dataset-formats page before you write a formatting function.",
+     "Configure `SFTTrainer` with a `LoraConfig` from peft, and check `print_trainable_parameters()` against the prediction you made in the from-scratch task.",
+     "Turn on completion-only loss (mask the prompt) and confirm it is actually applied — training on the prompt is the most common silent SFT bug.",
+     "Log to a tracker: loss curve, LR schedule, grad norm, tokens/sec, peak memory, wall-clock, and the dollar figure. Record the exact package versions.",
+     "Evaluate before/after on a held-out set with the paired machinery from Task 01 — not on the training loss.",
+     "Push the adapter to the Hub with a model card stating base model, data, hyperparameters, and what it is not good for."
+    ],
+    "docs": [
+     {
+      "name": "TRL — SFTTrainer",
+      "url": "https://huggingface.co/docs/trl/en/sft_trainer"
+     },
+     {
+      "name": "TRL — Dataset formats and types",
+      "url": "https://huggingface.co/docs/trl/en/dataset_formats"
+     },
+     {
+      "name": "TRL — PEFT integration",
+      "url": "https://huggingface.co/docs/trl/en/peft_integration"
+     },
+     {
+      "name": "TRL — Reducing memory usage",
+      "url": "https://huggingface.co/docs/trl/en/reducing_memory_usage"
+     },
+     {
+      "name": "TRL releases (check the version you pin — v1.9.0 changed RL defaults)",
+      "url": "https://github.com/huggingface/trl/releases"
+     }
+    ],
+    "courses": [
+     {
+      "name": "Hugging Face LLM Course — Chapter 11: Supervised Fine-Tuning",
+      "url": "https://huggingface.co/learn/llm-course/chapter11/1"
+     },
+     {
+      "name": "Post-training of LLMs (DeepLearning.AI short course)",
+      "url": "https://www.deeplearning.ai/short-courses/post-training-of-llms/"
+     }
+    ],
+    "papers": [
+     {
+      "name": "Training language models to follow instructions with human feedback (InstructGPT, arXiv 2203.02155)",
+      "url": "https://arxiv.org/abs/2203.02155"
+     }
+    ]
+   },
+   "Dataset card and leakage check": {
+    "desc": "Write the dataset card before you publish the adapter — provenance, licence, size, splits, known limitations. Then actually check for train/eval contamination with exact-match and near-duplicate search between your training set and whatever you plan to evaluate on. Report the overlap number even when it is zero.",
+    "steps": [
+     "Write the card from the Hub template first: source, collection method, licence, size, split definition, intended use, and known limitations. Doing it before the run changes what you collect.",
+     "Run exact-match contamination: normalise whitespace and case, hash every training example and every eval question, and report the intersection size.",
+     "Run near-duplicate contamination: n-gram overlap (13-gram is the common convention) or MinHash/LSH, with a stated threshold. Report the count and show the top ten matches by hand.",
+     "Check the base model too — you cannot fix pretraining contamination, but you can say which benchmarks are compromised for the model you chose and cite the leakage literature.",
+     "Publish the overlap number in the card as a first-class field, including when it is zero, plus the exact script that produced it.",
+     "Add the check to CI so the number is recomputed whenever the training set changes."
+    ],
+    "docs": [
+     {
+      "name": "Hugging Face Hub — Dataset cards",
+      "url": "https://huggingface.co/docs/hub/en/datasets-cards"
+     },
+     {
+      "name": "TRL — Dataset formats and types",
+      "url": "https://huggingface.co/docs/trl/en/dataset_formats"
+     }
+    ],
+    "papers": [
+     {
+      "name": "Investigating Data Contamination in Modern Benchmarks for Large Language Models (arXiv 2311.09783)",
+      "url": "https://arxiv.org/abs/2311.09783"
+     },
+     {
+      "name": "Benchmarking Benchmark Leakage in Large Language Models (arXiv 2404.18824)",
+      "url": "https://arxiv.org/abs/2404.18824"
+     },
+     {
+      "name": "Evaluating Large Language Models Trained on Code — the original decontamination discussion (arXiv 2107.03374)",
+      "url": "https://arxiv.org/abs/2107.03374"
      }
     ]
    }

@@ -637,6 +637,10 @@
       <strong>Week 13 is a buffer week.</strong> If you are on schedule, spend it re-deriving backprop and attention from a blank page rather than starting new material. If you are behind — and most people are by now — this is the week that lets you stay on the plan instead of abandoning it.
     </div>
 
+    <div class="callout callout-tip" style="margin-bottom:2rem">
+      <strong>Three public artifacts come out of this phase, not one at the end.</strong> Micrograd and makemore at week 11, the green CS336 tests at week 17, the nanochat writeup at week 20. Push each as you finish it. Nobody is watching yet, which is exactly why it costs nothing to build the habit now.
+    </div>
+
     <div class="day-section" id="sec-p1-karpathy-hero">
       <div class="day-header">
         <span class="day-num-badge">Task 01</span>
@@ -669,6 +673,11 @@
         <div class="task-item">
           <div class="task-item-title">Exit check: autograd from memory</div>
           <div class="task-item-desc">Close every tab and reimplement scalar autograd from scratch: add, multiply, tanh, and a backward pass that handles a node used twice. It passes when the gradients match a PyTorch reference on a small expression graph, including the reused-node case that catches people who accumulate instead of overwrite.</div>
+          <div class="task-item-time">Week 11</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Publish it, week 11</div>
+          <div class="task-item-desc">Push micrograd and makemore to the public repo you created in week 1, with a README that says what each one is and links the notebook where the gradients check out numerically. Write one short post about the bug that cost you the most time. This is your first technical artifact and its job is to exist, not to impress — but it is also the thing that makes weeks 9 to 11 visible to anyone who looks.</div>
           <div class="task-item-time">Week 11</div>
         </div>
       </div>
@@ -761,6 +770,11 @@
         <div class="task-item">
           <div class="task-item-title">Exit check with explicit partial credit</div>
           <div class="task-item-desc">You pass this task when the tokenizer tests and the transformer tests are green — those two are mandatory and non-negotiable. The optimizer and training-loop tests are optional: if they are still red at the end of week 17, write down exactly which assertions fail and what you think is wrong, commit that note, and move on. Do not let week 18 slip.</div>
+          <div class="task-item-time">Week 17</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Publish the green tests, week 17</div>
+          <div class="task-item-desc">Push the assignment work public with the test output in the README, including whatever you left as partial credit and a sentence on why. A passing course test suite is the only externally graded evidence in the entire 52 weeks — it is worth more than three self-assessed projects, and it is worth linking directly rather than burying in a repo tree.</div>
           <div class="task-item-time">Week 17</div>
         </div>
       </div>
@@ -926,10 +940,14 @@
       <strong>Week 26 is a buffer week.</strong> Your environment just went public and that is the moment to catch up rather than push on. If you are on schedule, spend 90 minutes re-deriving backprop, attention and cross-entropy from a blank page — Phase 0 is twenty weeks behind you and the statistics work starts next week.
     </div>
 
+    <div class="callout callout-warn" style="margin-bottom:2rem">
+      <strong>The application funnel opens during this phase, not after it.</strong> From week 20 you should be sending real applications — to structured programmes on their fixed windows, and to adjacent employers who hire at this level. You will be rejected while your environment is still v0, and that is the point: the rejections tell you what to fix while you still have eighteen weeks to fix it.
+    </div>
+
     <div class="day-section" id="sec-p2-serving">
       <div class="day-header">
         <span class="day-num-badge">Task 01</span>
-        <span class="day-title-text">Inference and serving</span>
+        <span class="day-title-text">Stand up a served endpoint</span>
         <span class="tag tag-exercise">Exercise</span>
         <label class="day-check">
           <input type="checkbox" data-id="p2-serving">
@@ -958,37 +976,13 @@
         <div class="task-item">
           <div class="task-item-title">Prefix caching</div>
           <div class="task-item-desc">Automatic prefix caching hashes KV blocks so requests sharing a prefix reuse them instead of recomputing. This is the single largest win available to eval and RL workloads, where hundreds of samples share one long system prompt and few-shot block. Measure it: run the same eval batch with prefix caching on and off and record time-to-first-token and total throughput. That measured delta is a number worth putting in a writeup.</div>
-          <div class="task-item-time">Week 21</div>
+          <div class="task-item-time">Week 22</div>
           <a class="resource" href="https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html" target="_blank">vLLM — automatic prefix caching ↗</a>
-        </div>
-        <div class="task-item">
-          <div class="task-item-title">Tensor-parallel and multi-GPU serving</div>
-          <div class="task-item-desc">Serving a model too large for one card means `--tensor-parallel-size`, and possibly pipeline parallel across nodes. Understand what this buys and what it costs: TP splits the weights and the KV cache so you get more cache headroom as well as more compute, but adds an all-reduce per layer, so latency improves sub-linearly. Run the same model at TP=1 and TP=2 and compare tokens/second per GPU, not just tokens/second.</div>
-          <div class="task-item-time">Week 21</div>
-          <a class="resource" href="https://docs.vllm.ai/en/latest/serving/parallelism_scaling.html" target="_blank">vLLM — parallelism and scaling ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Throughput versus latency, measured</div>
           <div class="task-item-desc">Build a small load generator and sweep concurrency, recording time-to-first-token, inter-token latency and total output tokens/second at each level. You will see the shape everyone talks about: throughput rises with concurrency until the KV cache saturates, while per-request latency degrades from the first request onward. Know where your endpoint's knee is, because Phase 3 eval runs will sit right on it.</div>
           <div class="task-item-time">Week 22</div>
-        </div>
-        <div class="task-item">
-          <div class="task-item-title">Quantization</div>
-          <div class="task-item-desc">Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you have. Learn the distinctions that matter in practice: weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and KV-cache quantization as a separate decision from weight quantization. Serve one model at bf16 and one quantized, and evaluate both on the same task — the accuracy cost is workload-dependent and you should measure yours rather than quote a blog post.</div>
-          <div class="task-item-time">Week 22</div>
-          <a class="resource" href="https://docs.vllm.ai/en/latest/features/quantization/index.html" target="_blank">vLLM — quantization ↗</a>
-        </div>
-        <div class="task-item">
-          <div class="task-item-title">Speculative decoding</div>
-          <div class="task-item-desc">A small draft model, or n-gram lookup, or a self-speculation head proposes several tokens; the target model verifies them in one forward pass and accepts the longest correct prefix. Output is distributionally identical to normal decoding, so it is a pure latency win — but only when the acceptance rate is high and the batch is small, which means it can hurt a throughput-bound eval run. Enable it, measure acceptance rate and end-to-end latency, and know when to turn it off.</div>
-          <div class="task-item-time">Week 22</div>
-          <a class="resource" href="https://docs.vllm.ai/en/latest/features/speculative_decoding/" target="_blank">vLLM — speculative decoding ↗</a>
-        </div>
-        <div class="task-item">
-          <div class="task-item-title">SGLang and structured generation</div>
-          <div class="task-item-desc">SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which matters for branching agent traces — and fast constrained decoding for JSON and grammar-constrained output. Serve the same model on SGLang, run your load generator against it, and be able to say which engine you would pick for an agentic eval and why.</div>
-          <div class="task-item-time">Week 22</div>
-          <a class="resource" href="https://docs.sglang.ai/" target="_blank">SGLang docs ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Wire the endpoint to an RL and eval harness</div>
@@ -1312,13 +1306,13 @@
       </div>
     </div>
 
-    <div class="day-section" id="sec-p2-finetuning">
+    <div class="day-section" id="sec-p2-rl-posttraining">
       <div class="day-header">
         <span class="day-num-badge">Task 08</span>
-        <span class="day-title-text">Fine-tuning: LoRA and one SFT run</span>
+        <span class="day-title-text">Post-training: LoRA, SFT and RL</span>
         <span class="tag tag-exercise">Exercise</span>
         <label class="day-check">
-          <input type="checkbox" data-id="p2-finetuning">
+          <input type="checkbox" data-id="p2-rl-posttraining">
           <span>Done</span>
         </label>
       </div>
@@ -1341,23 +1335,6 @@
           <div class="task-item-time">Week 34</div>
           <a class="resource" href="https://huggingface.co/docs/hub/en/datasets-cards" target="_blank">Dataset cards ↗</a>
         </div>
-      </div>
-      <div class="callout callout-warn">
-        <strong>One week, not four.</strong> Fine-tuning is a commodity skill and the old plan over-weighted it. Do not start anything new on torchtune, which has been wound down, or torchforge, which is paused — PyTorch is consolidating on torchtitan. TRL or Axolotl for this week; then move on.
-      </div>
-    </div>
-
-    <div class="day-section" id="sec-p2-rl-posttraining">
-      <div class="day-header">
-        <span class="day-num-badge">Task 09</span>
-        <span class="day-title-text">RL with verifiable rewards</span>
-        <span class="tag tag-exercise">Exercise</span>
-        <label class="day-check">
-          <input type="checkbox" data-id="p2-rl-posttraining">
-          <span>Done</span>
-        </label>
-      </div>
-      <div class="task-grid">
         <div class="task-item">
           <div class="task-item-title">Run a GRPO-family loop on a verifiable task</div>
           <div class="task-item-desc">Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. Note that TRL v1.9.0 flipped the default loss_type to "dapo" and marks plain grpo as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.</div>
@@ -1404,7 +1381,7 @@
 
     <div class="day-section" id="sec-p2-safety-evals">
       <div class="day-header">
-        <span class="day-num-badge">Task 10</span>
+        <span class="day-num-badge">Task 09</span>
         <span class="day-title-text">Safety &amp; dangerous-capability evals</span>
         <span class="tag tag-theory">Theory</span>
         <label class="day-check">
@@ -1450,7 +1427,7 @@
 
     <div class="day-section" id="sec-p2-environment">
       <div class="day-header">
-        <span class="day-num-badge">Task 11</span>
+        <span class="day-num-badge">Task 10</span>
         <span class="day-title-text">Environment v1 — make it defensible</span>
         <span class="tag tag-agent">Agent</span>
         <label class="day-check">
@@ -1550,6 +1527,10 @@
       <strong>Week 44 is a buffer week.</strong> Last slack in the plan before the final stretch. If your environment has not been installed by a stranger yet, spend this week on that rather than on kernels — it is the thing Phase 4 depends on and the thing a reviewer will actually open.
     </div>
 
+    <div class="callout callout-warn" style="margin-bottom:2rem">
+      <strong>Keep applying through this phase.</strong> You now have a published environment with reliability numbers and an audit with a real finding — that is a materially stronger application than the one you sent in week 20. Resend to anywhere that passed on you earlier; the second approach with a better artifact is normal and expected.
+    </div>
+
     <div class="day-section" id="sec-p3-jax-core">
       <div class="day-header">
         <span class="day-num-badge">Task 01</span>
@@ -1576,7 +1557,7 @@
         <div class="task-item">
           <div class="task-item-title">vmap</div>
           <div class="task-item-desc">vmap turns a single-example function into a batched one by rewriting the computation, not by looping. Build the canonical pattern — `vmap(grad(loss))` for per-example gradients — and one pairwise-distance function where broadcasting by hand would be error-prone. Learn what `in_axes` and `out_axes` do, because you will read them constantly.</div>
-          <div class="task-item-time">Week 40</div>
+          <div class="task-item-time">Week 39</div>
           <a class="resource" href="https://docs.jax.dev/en/latest/automatic-vectorization.html" target="_blank">docs.jax.dev — automatic vectorization ↗</a>
         </div>
         <div class="task-item">
@@ -1588,25 +1569,25 @@
         <div class="task-item">
           <div class="task-item-title">Explicit sharding and meshes</div>
           <div class="task-item-desc">Explicit sharding has been the default since JAX 0.9.0: `jax.make_mesh` builds meshes with `AxisType.Explicit`, shardings propagate through the type system, and ambiguous communication is an error rather than something the compiler silently inserts. Activate a mesh with `jax.set_mesh(mesh)` — bare `with mesh:` was deprecated in 0.10.1 — and annotate arrays with `jax.P`, the top-level PartitionSpec alias. Write one step that replicates parameters and shards the batch along the data axis.</div>
-          <div class="task-item-time">Week 41</div>
+          <div class="task-item-time">Week 40</div>
           <a class="resource" href="https://docs.jax.dev/en/latest/parallel.html" target="_blank">docs.jax.dev — distributed arrays ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Collectives and shard_map</div>
           <div class="task-item-desc">`lax.psum` and `lax.pmean` are AllReduce with a name on the mesh axis; every parallelism strategy in the scaling book reduces to placing these correctly. `jax.shard_map` is manual mode — you write the per-device program and place the collectives yourself. Use the top-level `jax.shard_map`, not the old `jax.experimental.shard_map` import. Since 0.9.1, under Explicit mode shard_map asserts your input spec matches `in_specs` instead of resharding for you, so call `jax.reshard` first when they differ.</div>
-          <div class="task-item-time">Week 41</div>
+          <div class="task-item-time">Week 40</div>
           <a class="resource" href="https://docs.jax.dev/en/latest/notebooks/shard_map.html" target="_blank">docs.jax.dev — shard_map ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Read pmap, never write it</div>
           <div class="task-item-desc">Almost every JAX tutorial, blog post and older scaling-book snippet you will find is built on `pmap`. JAX 0.10.0 removed the C++ pmap infrastructure; `jax.pmap` survives only as a thin wrapper over `jit(shard_map)`, and `PmapSharding`, `device_put_sharded` and `device_put_replicated` now raise AttributeError. Skim the changelog for the removals so you can date any snippet you find, then translate pmap code mentally into meshes and specs.</div>
-          <div class="task-item-time">Week 42</div>
+          <div class="task-item-time">Week 41</div>
           <a class="resource" href="https://docs.jax.dev/en/latest/changelog.html" target="_blank">JAX changelog ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Get devices without a budget</div>
           <div class="task-item-desc">Colab no longer hands out TPU slices. Kaggle still offers free TPU time and is where the scaling book now points readers; a small GCP slice is the paid fallback. For everything in this task you do not need real accelerators at all — `jax.config.update("jax_num_cpu_devices", 8)` before the first JAX call gives you eight fake devices, which is enough for every mesh, sharding and shard_map exercise here and costs nothing. Verify `jax.devices()` and record what you actually ran on.</div>
-          <div class="task-item-time">Week 42</div>
+          <div class="task-item-time">Week 41</div>
         </div>
       </div>
       <div class="callout callout-tip">
@@ -1631,37 +1612,37 @@
         <div class="task-item">
           <div class="task-item-title">Chapters 1–2: rooflines and the hardware</div>
           <div class="task-item-desc">Chapter 1 is the single highest-value thing in this phase: FLOPs versus bytes moved, arithmetic intensity, and the question "is this operation compute-bound or memory-bound?" answered with arithmetic instead of a profiler. Chapter 2 grounds it in real accelerator numbers. Do the exercises with pencil and paper before you look at the answers.</div>
-          <div class="task-item-time">Week 43</div>
+          <div class="task-item-time">Week 42</div>
           <a class="resource" href="https://jax-ml.github.io/scaling-book/roofline/" target="_blank">Scaling book — rooflines ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Chapters 3–4: sharding and transformer math</div>
           <div class="task-item-desc">Chapter 3 gives you the cost model for every sharding strategy — what each one communicates, when it is worth it, and where it stops scaling. Chapter 4 counts the parameters, FLOPs and activation memory of a transformer forward and backward pass. Be able to derive the 6ND training-FLOP estimate and say exactly which terms it ignores and when ignoring them becomes wrong.</div>
-          <div class="task-item-time">Week 43</div>
+          <div class="task-item-time">Week 42</div>
           <a class="resource" href="https://jax-ml.github.io/scaling-book/transformers/" target="_blank">Scaling book — transformer math ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Chapter 12: how to think about GPUs</div>
           <div class="task-item-desc">This chapter did not exist when the book was first written and it is the one covering hardware you can actually rent. NVIDIA memory hierarchy, NVLink versus InfiniBand, collectives cost on a GPU fabric, and a direct GPU-versus-TPU comparison. Read it immediately before Task 03 — it is the bridge between the arithmetic and FSDP2.</div>
-          <div class="task-item-time">Week 43</div>
+          <div class="task-item-time">Week 42</div>
           <a class="resource" href="https://jax-ml.github.io/scaling-book/gpus/" target="_blank">Scaling book — how to think about GPUs ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Chinchilla as the anchor</div>
           <div class="task-item-desc">Read the original compute-optimal paper and extract the actual claim: for a fixed training-compute budget, parameters and tokens should scale roughly in proportion, about 20 tokens per parameter. Then note the two things it does not say — it says nothing about inference cost, and it assumes unlimited unique data. Every later result in this item attacks one of those two assumptions.</div>
-          <div class="task-item-time">Week 44</div>
+          <div class="task-item-time">Week 43</div>
           <a class="resource" href="https://arxiv.org/abs/2203.15556" target="_blank">arXiv 2203.15556 — Chinchilla ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Inference-aware and data-constrained scaling</div>
           <div class="task-item-desc">Read arXiv 2401.00448, which redoes the optimisation with inference demand in the objective and finds that if you will serve a lot of tokens, you should train a smaller model on far more data than Chinchilla says. Then read arXiv 2305.16264 on the data-constrained regime: repeated epochs decay in value, and there is a point past which more compute on repeated data buys nothing. Together these explain why every 2025–2026 open model is trained well past 20 tokens per parameter.</div>
-          <div class="task-item-time">Week 44</div>
+          <div class="task-item-time">Week 43</div>
           <a class="resource" href="https://arxiv.org/abs/2401.00448" target="_blank">arXiv 2401.00448 — inference-aware scaling ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">The GPU counterpart</div>
           <div class="task-item-desc">Hugging Face's Ultra-Scale Playbook is the PyTorch-side twin of the scaling book: 5D parallelism, ZeRO stages, activation recomputation, kernel fusion, all grounded in thousands of experiments up to 512 GPUs. Read the parallelism and memory chapters now and keep the tab open through Task 03 — it names the exact failure modes you are about to hit.</div>
-          <div class="task-item-time">Week 44</div>
+          <div class="task-item-time">Week 43</div>
           <a class="resource" href="https://huggingface.co/spaces/nanotron/ultrascale-playbook" target="_blank">Ultra-Scale Playbook ↗</a>
         </div>
       </div>
@@ -1684,48 +1665,48 @@
         <div class="task-item">
           <div class="task-item-title">FSDP2</div>
           <div class="task-item-desc">FSDP2 (`fully_shard`) is the current API and it is not a rename of FSDP1 — it shards on dim-0 into DTensors instead of flattening parameters into a single per-rank buffer, which makes per-parameter state, mixed precision and checkpointing all behave sanely. Wrap a model from Phase 1, run it on two GPUs, and watch memory before and after. Understand what gets all-gathered in forward, what gets reduce-scattered in backward, and why wrapping granularity changes both.</div>
-          <div class="task-item-time">Week 45</div>
+          <div class="task-item-time">Week 44</div>
           <a class="resource" href="https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html" target="_blank">PyTorch — FSDP tutorial ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">DTensor and DeviceMesh</div>
           <div class="task-item-desc">DTensor is the substrate everything else in modern PyTorch distributed is built on: a tensor plus a DeviceMesh plus placements (Shard, Replicate, Partial). This is the direct analogue of the JAX mesh and PartitionSpec work you did in Task 01, so build the mapping explicitly. Construct a 2D mesh, place a tensor, redistribute it, and read the collectives that PyTorch inserts to make the redistribution happen.</div>
-          <div class="task-item-time">Week 45</div>
+          <div class="task-item-time">Week 44</div>
           <a class="resource" href="https://docs.pytorch.org/docs/stable/distributed.tensor.html" target="_blank">PyTorch — DTensor ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Tensor parallel and 2D parallelism</div>
           <div class="task-item-desc">Tensor parallel splits individual matmuls across devices — column-wise then row-wise through an MLP block so only one all-reduce is needed per block. Apply `parallelize_module` with a ColwiseParallel/RowwiseParallel plan to your transformer, then compose it with FSDP2 on a second mesh axis for 2D parallelism. Measure the step time at TP=2 versus data parallel at the same device count and explain the difference from the chapter 3 cost model.</div>
-          <div class="task-item-time">Week 45</div>
+          <div class="task-item-time">Week 44</div>
           <a class="resource" href="https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html" target="_blank">PyTorch — tensor parallel tutorial ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Read torchtitan</div>
           <div class="task-item-desc">torchtitan is where PyTorch consolidated its reference training stack — FSDP2, TP, pipeline parallel, float8, distributed checkpointing and compile, in a codebase small enough to read end to end. Read the parallelism configuration and the training loop closely. This is the repo to point at when someone asks how you would set up a real pretraining run, and torchtune's wind-down means it is now the only PyTorch-blessed answer.</div>
-          <div class="task-item-time">Week 45</div>
+          <div class="task-item-time">Week 44</div>
           <a class="resource" href="https://github.com/pytorch/torchtitan" target="_blank">github.com/pytorch/torchtitan ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Activation checkpointing and gradient accumulation</div>
           <div class="task-item-desc">These are the two levers that trade compute for memory, and you should know the arithmetic for both. Activation checkpointing drops stored activations and recomputes them in backward — roughly 30% more compute for a large memory cut; selective checkpointing keeps the expensive-to-recompute ops. Gradient accumulation buys a larger effective batch at zero memory cost but needs `no_sync` under FSDP or you pay for a reduce on every microbatch. Measure both, do not assume.</div>
-          <div class="task-item-time">Week 46</div>
+          <div class="task-item-time">Week 45</div>
         </div>
         <div class="task-item">
           <div class="task-item-title">bf16 and fp8</div>
           <div class="task-item-desc">bf16 is the default training dtype because it keeps fp32's exponent range and therefore does not need loss scaling; know why fp16 does. Then go one step further with torchao's float8 training — per-tensor scaling, which layers are safe to cast, and what the measured speedup actually is on your hardware versus the marketing number. Run one training job in each precision on identical data and compare loss curves, not just throughput.</div>
-          <div class="task-item-time">Week 46</div>
+          <div class="task-item-time">Week 45</div>
           <a class="resource" href="https://github.com/pytorch/ao" target="_blank">github.com/pytorch/ao ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">NCCL and OOM debugging</div>
           <div class="task-item-desc">Distributed jobs fail in two characteristic ways and you need both playbooks. For hangs: `NCCL_DEBUG=INFO`, `TORCH_NCCL_ASYNC_ERROR_HANDLING`, and the observation that a hang is almost always a collective that one rank did not reach. For OOM: read the CUDA memory snapshot, distinguish fragmentation from genuine exhaustion, and know that the peak is usually in backward, not forward. Deliberately cause a rank-divergence hang and a fragmentation OOM so you have seen both.</div>
-          <div class="task-item-time">Week 46</div>
+          <div class="task-item-time">Week 45</div>
           <a class="resource" href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html" target="_blank">NCCL environment variables ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Distributed checkpoint and resume</div>
           <div class="task-item-desc">A training run you cannot resume is a training run you cannot afford. Use `torch.distributed.checkpoint` to save sharded state, then prove it: kill the job mid-epoch, restart it on a different world size, and verify the loss curve continues rather than jumping. Resharding on resume is the part that breaks, which is exactly why you test it.</div>
-          <div class="task-item-time">Week 46</div>
+          <div class="task-item-time">Week 45</div>
           <a class="resource" href="https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html" target="_blank">PyTorch — distributed checkpoint ↗</a>
         </div>
       </div>
@@ -1748,35 +1729,76 @@
         <div class="task-item">
           <div class="task-item-title">Watch the systems lectures</div>
           <div class="task-item-desc">CS336's lecture material covers kernels, profiling, GPU architecture and distributed training in the order the assignment needs them. Watch the systems block before writing any code — the assignment assumes the lecture content and will otherwise cost you days. Slides and executable lecture code are in the course repo.</div>
-          <div class="task-item-time">Week 47</div>
+          <div class="task-item-time">Week 46</div>
           <a class="resource" href="https://github.com/stanford-cs336/spring2025-lectures" target="_blank">CS336 lectures repo ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Benchmark and profile before optimising</div>
           <div class="task-item-desc">Time the forward pass, the backward pass and a full optimizer step separately, with proper CUDA synchronisation and warmup iterations — an unsynchronised timing is measuring queue submission, not work. Then profile with the PyTorch profiler and read the trace: kernel time versus gaps, memory traffic, where the launch overhead lives. Write down a predicted number from your chapter 1 roofline before each measurement.</div>
-          <div class="task-item-time">Week 47</div>
+          <div class="task-item-time">Week 46</div>
           <a class="resource" href="https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html" target="_blank">PyTorch profiler recipe ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">Triton fundamentals</div>
           <div class="task-item-desc">Triton lets you write a fused kernel in Python with block-level rather than thread-level semantics. Work the official tutorials in order — vector add, fused softmax, matmul — before attempting attention, because the softmax one teaches the exact online-normalisation trick FlashAttention depends on. Understand block pointers, masking for ragged tails, and `tl.load`/`tl.store` with boundary checks.</div>
-          <div class="task-item-time">Week 47</div>
+          <div class="task-item-time">Week 46</div>
           <a class="resource" href="https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html" target="_blank">Triton — fused attention tutorial ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">FlashAttention-2 forward and backward in Triton</div>
           <div class="task-item-desc">This is the hard part of the assignment and the part worth doing. Write the tiled forward with online softmax so the full attention matrix never materialises, then the backward pass, then check both against a naive PyTorch reference to tight tolerance. Benchmark against the reference across sequence lengths and show the crossover point where tiling starts to win. You wrote the paper's summary in Phase 1; now you write the kernel.</div>
-          <div class="task-item-time">Week 48</div>
+          <div class="task-item-time">Week 47</div>
           <a class="resource" href="https://github.com/stanford-cs336/assignment2-systems" target="_blank">CS336 assignment 2 — systems ↗</a>
         </div>
         <div class="task-item">
           <div class="task-item-title">DDP from scratch, then optimizer state sharding</div>
           <div class="task-item-desc">Implement data-parallel training yourself on top of raw collectives: broadcast the initial parameters, all-reduce gradients after backward, and then improve it by bucketing gradients so communication overlaps with the backward pass instead of following it. Then shard the optimizer state (ZeRO stage 1) and measure the memory saved. Having built this by hand is what makes FSDP2's behaviour in Task 03 stop being magic.</div>
-          <div class="task-item-time">Week 48</div>
+          <div class="task-item-time">Week 47</div>
         </div>
       </div>
       <div class="callout callout-warn">
         <strong>Partial credit is the plan, not the fallback.</strong> Two weeks is tight for this assignment. Rank it: benchmarking and profiling first, then DDP with overlap, then the Triton forward, then the Triton backward. A green forward kernel with honest benchmarks and a written note on what defeated the backward pass is a better artifact than a silently abandoned repo. Commit the failure notes.
+      </div>
+    </div>
+
+    <div class="day-section" id="sec-p3-serving-performance">
+      <div class="day-header">
+        <span class="day-num-badge">Task 05</span>
+        <span class="day-title-text">Serving performance</span>
+        <span class="tag tag-exercise">Exercise</span>
+        <label class="day-check">
+          <input type="checkbox" data-id="p3-serving-performance">
+          <span>Done</span>
+        </label>
+      </div>
+      <div class="task-grid">
+        <div class="task-item">
+          <div class="task-item-title">Tensor-parallel and multi-GPU serving</div>
+          <div class="task-item-desc">Serving a model too large for one card means `--tensor-parallel-size`, and possibly pipeline parallel across nodes. Understand what this buys and what it costs: TP splits the weights and the KV cache so you get more cache headroom as well as more compute, but adds an all-reduce per layer, so latency improves sub-linearly. Run the same model at TP=1 and TP=2 and compare tokens/second per GPU, not just tokens/second.</div>
+          <div class="task-item-time">Week 48</div>
+          <a class="resource" href="https://docs.vllm.ai/en/latest/serving/parallelism_scaling.html" target="_blank">vLLM — parallelism and scaling ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Quantization</div>
+          <div class="task-item-desc">Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you have. Learn the distinctions that matter in practice: weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and KV-cache quantization as a separate decision from weight quantization. Serve one model at bf16 and one quantized, and evaluate both on the same task — the accuracy cost is workload-dependent and you should measure yours rather than quote a blog post.</div>
+          <div class="task-item-time">Week 48</div>
+          <a class="resource" href="https://docs.vllm.ai/en/latest/features/quantization/index.html" target="_blank">vLLM — quantization ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Speculative decoding</div>
+          <div class="task-item-desc">A small draft model, or n-gram lookup, or a self-speculation head proposes several tokens; the target model verifies them in one forward pass and accepts the longest correct prefix. Output is distributionally identical to normal decoding, so it is a pure latency win — but only when the acceptance rate is high and the batch is small, which means it can hurt a throughput-bound eval run. Enable it, measure acceptance rate and end-to-end latency, and know when to turn it off.</div>
+          <div class="task-item-time">Week 48</div>
+          <a class="resource" href="https://docs.vllm.ai/en/latest/features/speculative_decoding/" target="_blank">vLLM — speculative decoding ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">SGLang and structured generation</div>
+          <div class="task-item-desc">SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which matters for branching agent traces — and fast constrained decoding for JSON and grammar-constrained output. Serve the same model on SGLang, run your load generator against it, and be able to say which engine you would pick for an agentic eval and why.</div>
+          <div class="task-item-time">Week 48</div>
+          <a class="resource" href="https://docs.sglang.ai/" target="_blank">SGLang docs ↗</a>
+        </div>
+      </div>
+      <div class="callout callout-tip">
+        <strong>This is the half of serving you did not need in week 21.</strong> Standing an endpoint up is an eval dependency; making it fast is performance engineering. You have been running evals against your own endpoint for twenty-six weeks by now, so you have real measurements to improve against rather than a synthetic benchmark.
       </div>
     </div>
 
@@ -1819,7 +1841,7 @@
     <div class="page-hero">
       <div class="page-hero-eyebrow">Phase 04 · Weeks 49–52</div>
       <h1>Ship &amp;<br>apply</h1>
-      <p>Four weeks of finishing, not starting. The environment from Phase 2 gets hardened until a stranger can install it and reproduce your numbers; the work gets written up once, in three formats a reviewer will actually open; the code goes where the people who hire for this read code. Applications are not a Phase 4 activity — you started sending them in week 20 and this is the last checkpoint, not the first attempt.</p>
+      <p>Four weeks of finishing, not starting. The environment from Phase 2 stops being yours alone: it gets re-measured, de-flaked, installed by a stranger, and submitted for a bounty until a stranger can install it and reproduce your numbers; the work gets written up once, in three formats a reviewer will actually open; the code goes where the people who hire for this read code. Applications are not a Phase 4 activity — you started sending them in week 20 and this is the last checkpoint, not the first attempt.</p>
     </div>
 
     <div class="progress-header">
@@ -1840,7 +1862,7 @@
     <div class="day-section" id="sec-p4-environment-harden">
       <div class="day-header">
         <span class="day-num-badge">Task 01</span>
-        <span class="day-title-text">Harden and publish the environment</span>
+        <span class="day-title-text">Make it something other people use</span>
         <span class="tag tag-agent">Agent</span>
         <label class="day-check">
           <input type="checkbox" data-id="p4-environment-harden">
@@ -1849,8 +1871,8 @@
       </div>
       <div class="task-grid">
         <div class="task-item">
-          <div class="task-item-title">Measure run-to-run variance before you touch anything else</div>
-          <div class="task-item-desc">Run the full task suite at least five times against a fixed model and seed set, and record the spread per task, not just the mean. Decompose it: sampling noise from the model, nondeterminism in your verifier, flaky container startup, network timeouts. Report a number — "pass rate 0.62 ± 0.04 over 5 runs, n=120" — and name which source dominates. An environment whose numbers move and cannot say why is not usable by anyone.</div>
+          <div class="task-item-title">Re-measure it — eleven weeks have passed</div>
+          <div class="task-item-desc">You published variance numbers in week 38. Rerun the whole suite now against current model versions and a clean image, and diff against what you published. Provider models change under fixed names, dependencies drift, and a number that was true in week 38 may not be true today. Whatever moved is your first finding of this phase, and a regression check you can run on demand is itself part of the artifact.</div>
           <div class="task-item-time">Week 49</div>
         </div>
         <div class="task-item">

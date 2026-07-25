@@ -13,6 +13,10 @@
    {
     "type": "tip",
     "html": "<strong>Week 44 is a buffer week.</strong> Last slack in the plan before the final stretch. If your environment has not been installed by a stranger yet, spend this week on that rather than on kernels — it is the thing Phase 4 depends on and the thing a reviewer will actually open."
+   },
+   {
+    "type": "warn",
+    "html": "<strong>Keep applying through this phase.</strong> You now have a published environment with reliability numbers and an audit with a real finding — that is a materially stronger application than the one you sent in week 20. Resend to anywhere that passed on you earlier; the second approach with a better artifact is normal and expected."
    }
   ],
   "tasks": [
@@ -43,7 +47,7 @@
      {
       "title": "vmap",
       "desc": "vmap turns a single-example function into a batched one by rewriting the computation, not by looping. Build the canonical pattern — `vmap(grad(loss))` for per-example gradients — and one pairwise-distance function where broadcasting by hand would be error-prone. Learn what `in_axes` and `out_axes` do, because you will read them constantly.",
-      "time": "Week 40",
+      "time": "Week 39",
       "resource": {
        "label": "docs.jax.dev — automatic vectorization ↗",
        "url": "https://docs.jax.dev/en/latest/automatic-vectorization.html"
@@ -61,7 +65,7 @@
      {
       "title": "Explicit sharding and meshes",
       "desc": "Explicit sharding has been the default since JAX 0.9.0: `jax.make_mesh` builds meshes with `AxisType.Explicit`, shardings propagate through the type system, and ambiguous communication is an error rather than something the compiler silently inserts. Activate a mesh with `jax.set_mesh(mesh)` — bare `with mesh:` was deprecated in 0.10.1 — and annotate arrays with `jax.P`, the top-level PartitionSpec alias. Write one step that replicates parameters and shards the batch along the data axis.",
-      "time": "Week 41",
+      "time": "Week 40",
       "resource": {
        "label": "docs.jax.dev — distributed arrays ↗",
        "url": "https://docs.jax.dev/en/latest/parallel.html"
@@ -70,7 +74,7 @@
      {
       "title": "Collectives and shard_map",
       "desc": "`lax.psum` and `lax.pmean` are AllReduce with a name on the mesh axis; every parallelism strategy in the scaling book reduces to placing these correctly. `jax.shard_map` is manual mode — you write the per-device program and place the collectives yourself. Use the top-level `jax.shard_map`, not the old `jax.experimental.shard_map` import. Since 0.9.1, under Explicit mode shard_map asserts your input spec matches `in_specs` instead of resharding for you, so call `jax.reshard` first when they differ.",
-      "time": "Week 41",
+      "time": "Week 40",
       "resource": {
        "label": "docs.jax.dev — shard_map ↗",
        "url": "https://docs.jax.dev/en/latest/notebooks/shard_map.html"
@@ -79,7 +83,7 @@
      {
       "title": "Read pmap, never write it",
       "desc": "Almost every JAX tutorial, blog post and older scaling-book snippet you will find is built on `pmap`. JAX 0.10.0 removed the C++ pmap infrastructure; `jax.pmap` survives only as a thin wrapper over `jit(shard_map)`, and `PmapSharding`, `device_put_sharded` and `device_put_replicated` now raise AttributeError. Skim the changelog for the removals so you can date any snippet you find, then translate pmap code mentally into meshes and specs.",
-      "time": "Week 42",
+      "time": "Week 41",
       "resource": {
        "label": "JAX changelog ↗",
        "url": "https://docs.jax.dev/en/latest/changelog.html"
@@ -88,7 +92,7 @@
      {
       "title": "Get devices without a budget",
       "desc": "Colab no longer hands out TPU slices. Kaggle still offers free TPU time and is where the scaling book now points readers; a small GCP slice is the paid fallback. For everything in this task you do not need real accelerators at all — `jax.config.update(\"jax_num_cpu_devices\", 8)` before the first JAX call gives you eight fake devices, which is enough for every mesh, sharding and shard_map exercise here and costs nothing. Verify `jax.devices()` and record what you actually ran on.",
-      "time": "Week 42"
+      "time": "Week 41"
      }
     ],
     "callouts": [
@@ -111,7 +115,7 @@
      {
       "title": "Chapters 1–2: rooflines and the hardware",
       "desc": "Chapter 1 is the single highest-value thing in this phase: FLOPs versus bytes moved, arithmetic intensity, and the question \"is this operation compute-bound or memory-bound?\" answered with arithmetic instead of a profiler. Chapter 2 grounds it in real accelerator numbers. Do the exercises with pencil and paper before you look at the answers.",
-      "time": "Week 43",
+      "time": "Week 42",
       "resource": {
        "label": "Scaling book — rooflines ↗",
        "url": "https://jax-ml.github.io/scaling-book/roofline/"
@@ -120,7 +124,7 @@
      {
       "title": "Chapters 3–4: sharding and transformer math",
       "desc": "Chapter 3 gives you the cost model for every sharding strategy — what each one communicates, when it is worth it, and where it stops scaling. Chapter 4 counts the parameters, FLOPs and activation memory of a transformer forward and backward pass. Be able to derive the 6ND training-FLOP estimate and say exactly which terms it ignores and when ignoring them becomes wrong.",
-      "time": "Week 43",
+      "time": "Week 42",
       "resource": {
        "label": "Scaling book — transformer math ↗",
        "url": "https://jax-ml.github.io/scaling-book/transformers/"
@@ -129,7 +133,7 @@
      {
       "title": "Chapter 12: how to think about GPUs",
       "desc": "This chapter did not exist when the book was first written and it is the one covering hardware you can actually rent. NVIDIA memory hierarchy, NVLink versus InfiniBand, collectives cost on a GPU fabric, and a direct GPU-versus-TPU comparison. Read it immediately before Task 03 — it is the bridge between the arithmetic and FSDP2.",
-      "time": "Week 43",
+      "time": "Week 42",
       "resource": {
        "label": "Scaling book — how to think about GPUs ↗",
        "url": "https://jax-ml.github.io/scaling-book/gpus/"
@@ -138,7 +142,7 @@
      {
       "title": "Chinchilla as the anchor",
       "desc": "Read the original compute-optimal paper and extract the actual claim: for a fixed training-compute budget, parameters and tokens should scale roughly in proportion, about 20 tokens per parameter. Then note the two things it does not say — it says nothing about inference cost, and it assumes unlimited unique data. Every later result in this item attacks one of those two assumptions.",
-      "time": "Week 44",
+      "time": "Week 43",
       "resource": {
        "label": "arXiv 2203.15556 — Chinchilla ↗",
        "url": "https://arxiv.org/abs/2203.15556"
@@ -147,7 +151,7 @@
      {
       "title": "Inference-aware and data-constrained scaling",
       "desc": "Read arXiv 2401.00448, which redoes the optimisation with inference demand in the objective and finds that if you will serve a lot of tokens, you should train a smaller model on far more data than Chinchilla says. Then read arXiv 2305.16264 on the data-constrained regime: repeated epochs decay in value, and there is a point past which more compute on repeated data buys nothing. Together these explain why every 2025–2026 open model is trained well past 20 tokens per parameter.",
-      "time": "Week 44",
+      "time": "Week 43",
       "resource": {
        "label": "arXiv 2401.00448 — inference-aware scaling ↗",
        "url": "https://arxiv.org/abs/2401.00448"
@@ -156,7 +160,7 @@
      {
       "title": "The GPU counterpart",
       "desc": "Hugging Face's Ultra-Scale Playbook is the PyTorch-side twin of the scaling book: 5D parallelism, ZeRO stages, activation recomputation, kernel fusion, all grounded in thousands of experiments up to 512 GPUs. Read the parallelism and memory chapters now and keep the tab open through Task 03 — it names the exact failure modes you are about to hit.",
-      "time": "Week 44",
+      "time": "Week 43",
       "resource": {
        "label": "Ultra-Scale Playbook ↗",
        "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
@@ -179,7 +183,7 @@
      {
       "title": "FSDP2",
       "desc": "FSDP2 (`fully_shard`) is the current API and it is not a rename of FSDP1 — it shards on dim-0 into DTensors instead of flattening parameters into a single per-rank buffer, which makes per-parameter state, mixed precision and checkpointing all behave sanely. Wrap a model from Phase 1, run it on two GPUs, and watch memory before and after. Understand what gets all-gathered in forward, what gets reduce-scattered in backward, and why wrapping granularity changes both.",
-      "time": "Week 45",
+      "time": "Week 44",
       "resource": {
        "label": "PyTorch — FSDP tutorial ↗",
        "url": "https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html"
@@ -188,7 +192,7 @@
      {
       "title": "DTensor and DeviceMesh",
       "desc": "DTensor is the substrate everything else in modern PyTorch distributed is built on: a tensor plus a DeviceMesh plus placements (Shard, Replicate, Partial). This is the direct analogue of the JAX mesh and PartitionSpec work you did in Task 01, so build the mapping explicitly. Construct a 2D mesh, place a tensor, redistribute it, and read the collectives that PyTorch inserts to make the redistribution happen.",
-      "time": "Week 45",
+      "time": "Week 44",
       "resource": {
        "label": "PyTorch — DTensor ↗",
        "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
@@ -197,7 +201,7 @@
      {
       "title": "Tensor parallel and 2D parallelism",
       "desc": "Tensor parallel splits individual matmuls across devices — column-wise then row-wise through an MLP block so only one all-reduce is needed per block. Apply `parallelize_module` with a ColwiseParallel/RowwiseParallel plan to your transformer, then compose it with FSDP2 on a second mesh axis for 2D parallelism. Measure the step time at TP=2 versus data parallel at the same device count and explain the difference from the chapter 3 cost model.",
-      "time": "Week 45",
+      "time": "Week 44",
       "resource": {
        "label": "PyTorch — tensor parallel tutorial ↗",
        "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
@@ -206,7 +210,7 @@
      {
       "title": "Read torchtitan",
       "desc": "torchtitan is where PyTorch consolidated its reference training stack — FSDP2, TP, pipeline parallel, float8, distributed checkpointing and compile, in a codebase small enough to read end to end. Read the parallelism configuration and the training loop closely. This is the repo to point at when someone asks how you would set up a real pretraining run, and torchtune's wind-down means it is now the only PyTorch-blessed answer.",
-      "time": "Week 45",
+      "time": "Week 44",
       "resource": {
        "label": "github.com/pytorch/torchtitan ↗",
        "url": "https://github.com/pytorch/torchtitan"
@@ -215,12 +219,12 @@
      {
       "title": "Activation checkpointing and gradient accumulation",
       "desc": "These are the two levers that trade compute for memory, and you should know the arithmetic for both. Activation checkpointing drops stored activations and recomputes them in backward — roughly 30% more compute for a large memory cut; selective checkpointing keeps the expensive-to-recompute ops. Gradient accumulation buys a larger effective batch at zero memory cost but needs `no_sync` under FSDP or you pay for a reduce on every microbatch. Measure both, do not assume.",
-      "time": "Week 46"
+      "time": "Week 45"
      },
      {
       "title": "bf16 and fp8",
       "desc": "bf16 is the default training dtype because it keeps fp32's exponent range and therefore does not need loss scaling; know why fp16 does. Then go one step further with torchao's float8 training — per-tensor scaling, which layers are safe to cast, and what the measured speedup actually is on your hardware versus the marketing number. Run one training job in each precision on identical data and compare loss curves, not just throughput.",
-      "time": "Week 46",
+      "time": "Week 45",
       "resource": {
        "label": "github.com/pytorch/ao ↗",
        "url": "https://github.com/pytorch/ao"
@@ -229,7 +233,7 @@
      {
       "title": "NCCL and OOM debugging",
       "desc": "Distributed jobs fail in two characteristic ways and you need both playbooks. For hangs: `NCCL_DEBUG=INFO`, `TORCH_NCCL_ASYNC_ERROR_HANDLING`, and the observation that a hang is almost always a collective that one rank did not reach. For OOM: read the CUDA memory snapshot, distinguish fragmentation from genuine exhaustion, and know that the peak is usually in backward, not forward. Deliberately cause a rank-divergence hang and a fragmentation OOM so you have seen both.",
-      "time": "Week 46",
+      "time": "Week 45",
       "resource": {
        "label": "NCCL environment variables ↗",
        "url": "https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html"
@@ -238,7 +242,7 @@
      {
       "title": "Distributed checkpoint and resume",
       "desc": "A training run you cannot resume is a training run you cannot afford. Use `torch.distributed.checkpoint` to save sharded state, then prove it: kill the job mid-epoch, restart it on a different world size, and verify the loss curve continues rather than jumping. Resharding on resume is the part that breaks, which is exactly why you test it.",
-      "time": "Week 46",
+      "time": "Week 45",
       "resource": {
        "label": "PyTorch — distributed checkpoint ↗",
        "url": "https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html"
@@ -261,7 +265,7 @@
      {
       "title": "Watch the systems lectures",
       "desc": "CS336's lecture material covers kernels, profiling, GPU architecture and distributed training in the order the assignment needs them. Watch the systems block before writing any code — the assignment assumes the lecture content and will otherwise cost you days. Slides and executable lecture code are in the course repo.",
-      "time": "Week 47",
+      "time": "Week 46",
       "resource": {
        "label": "CS336 lectures repo ↗",
        "url": "https://github.com/stanford-cs336/spring2025-lectures"
@@ -270,7 +274,7 @@
      {
       "title": "Benchmark and profile before optimising",
       "desc": "Time the forward pass, the backward pass and a full optimizer step separately, with proper CUDA synchronisation and warmup iterations — an unsynchronised timing is measuring queue submission, not work. Then profile with the PyTorch profiler and read the trace: kernel time versus gaps, memory traffic, where the launch overhead lives. Write down a predicted number from your chapter 1 roofline before each measurement.",
-      "time": "Week 47",
+      "time": "Week 46",
       "resource": {
        "label": "PyTorch profiler recipe ↗",
        "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
@@ -279,7 +283,7 @@
      {
       "title": "Triton fundamentals",
       "desc": "Triton lets you write a fused kernel in Python with block-level rather than thread-level semantics. Work the official tutorials in order — vector add, fused softmax, matmul — before attempting attention, because the softmax one teaches the exact online-normalisation trick FlashAttention depends on. Understand block pointers, masking for ragged tails, and `tl.load`/`tl.store` with boundary checks.",
-      "time": "Week 47",
+      "time": "Week 46",
       "resource": {
        "label": "Triton — fused attention tutorial ↗",
        "url": "https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html"
@@ -288,7 +292,7 @@
      {
       "title": "FlashAttention-2 forward and backward in Triton",
       "desc": "This is the hard part of the assignment and the part worth doing. Write the tiled forward with online softmax so the full attention matrix never materialises, then the backward pass, then check both against a naive PyTorch reference to tight tolerance. Benchmark against the reference across sequence lengths and show the crossover point where tiling starts to win. You wrote the paper's summary in Phase 1; now you write the kernel.",
-      "time": "Week 48",
+      "time": "Week 47",
       "resource": {
        "label": "CS336 assignment 2 — systems ↗",
        "url": "https://github.com/stanford-cs336/assignment2-systems"
@@ -297,13 +301,63 @@
      {
       "title": "DDP from scratch, then optimizer state sharding",
       "desc": "Implement data-parallel training yourself on top of raw collectives: broadcast the initial parameters, all-reduce gradients after backward, and then improve it by bucketing gradients so communication overlaps with the backward pass instead of following it. Then shard the optimizer state (ZeRO stage 1) and measure the memory saved. Having built this by hand is what makes FSDP2's behaviour in Task 03 stop being magic.",
-      "time": "Week 48"
+      "time": "Week 47"
      }
     ],
     "callouts": [
      {
       "type": "warn",
       "html": "<strong>Partial credit is the plan, not the fallback.</strong> Two weeks is tight for this assignment. Rank it: benchmarking and profiling first, then DDP with overlap, then the Triton forward, then the Triton backward. A green forward kernel with honest benchmarks and a written note on what defeated the backward pass is a better artifact than a silently abandoned repo. Commit the failure notes."
+     }
+    ]
+   },
+   {
+    "id": "p3-serving-performance",
+    "badge": "Task 05",
+    "title": "Serving performance",
+    "tag": "exercise",
+    "items": [
+     {
+      "title": "Tensor-parallel and multi-GPU serving",
+      "desc": "Serving a model too large for one card means `--tensor-parallel-size`, and possibly pipeline parallel across nodes. Understand what this buys and what it costs: TP splits the weights and the KV cache so you get more cache headroom as well as more compute, but adds an all-reduce per layer, so latency improves sub-linearly. Run the same model at TP=1 and TP=2 and compare tokens/second per GPU, not just tokens/second.",
+      "time": "Week 48",
+      "resource": {
+       "label": "vLLM — parallelism and scaling ↗",
+       "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling.html"
+      }
+     },
+     {
+      "title": "Quantization",
+      "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you have. Learn the distinctions that matter in practice: weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and KV-cache quantization as a separate decision from weight quantization. Serve one model at bf16 and one quantized, and evaluate both on the same task — the accuracy cost is workload-dependent and you should measure yours rather than quote a blog post.",
+      "time": "Week 48",
+      "resource": {
+       "label": "vLLM — quantization ↗",
+       "url": "https://docs.vllm.ai/en/latest/features/quantization/index.html"
+      }
+     },
+     {
+      "title": "Speculative decoding",
+      "desc": "A small draft model, or n-gram lookup, or a self-speculation head proposes several tokens; the target model verifies them in one forward pass and accepts the longest correct prefix. Output is distributionally identical to normal decoding, so it is a pure latency win — but only when the acceptance rate is high and the batch is small, which means it can hurt a throughput-bound eval run. Enable it, measure acceptance rate and end-to-end latency, and know when to turn it off.",
+      "time": "Week 48",
+      "resource": {
+       "label": "vLLM — speculative decoding ↗",
+       "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
+      }
+     },
+     {
+      "title": "SGLang and structured generation",
+      "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which matters for branching agent traces — and fast constrained decoding for JSON and grammar-constrained output. Serve the same model on SGLang, run your load generator against it, and be able to say which engine you would pick for an agentic eval and why.",
+      "time": "Week 48",
+      "resource": {
+       "label": "SGLang docs ↗",
+       "url": "https://docs.sglang.ai/"
+      }
+     }
+    ],
+    "callouts": [
+     {
+      "type": "tip",
+      "html": "<strong>This is the half of serving you did not need in week 21.</strong> Standing an endpoint up is an eval dependency; making it fast is performance engineering. You have been running evals against your own endpoint for twenty-six weeks by now, so you have real measurements to improve against rather than a synthetic benchmark."
      }
     ]
    }

@@ -1091,6 +1091,22 @@ window.RESOURCES_DB = {
             "url": "https://github.com/karpathy/micrograd"
           }
         ]
+      },
+      "Publish it, week 11": {
+        "desc": "Your first technical artifact. Its job is to exist and to be readable, not to be impressive.",
+        "steps": [
+          "Push micrograd and makemore into the public repo from week 1, each in its own directory with a one-paragraph README.",
+          "Include the notebook where your gradients match a numerical check — that is the part a reader can verify in thirty seconds.",
+          "Write one short post about the bug that cost you the most time, and what the fix taught you.",
+          "Link the post from the repo README and post it in your community.",
+          "Do not polish further. Move on to week 12."
+        ],
+        "docs": [
+          {
+            "name": "GitHub: About READMEs",
+            "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes"
+          }
+        ]
       }
     },
     "p1-pytorch-engineering": {
@@ -1411,6 +1427,26 @@ window.RESOURCES_DB = {
           {
             "name": "pytest — how to write and read assertions",
             "url": "https://docs.pytest.org/en/stable/how-to/assert.html"
+          }
+        ]
+      },
+      "Publish the green tests, week 17": {
+        "desc": "The only externally graded evidence in the plan. Make it easy to find and easy to check.",
+        "steps": [
+          "Push the assignment repo public with the test output pasted into the README.",
+          "State explicitly which tests are green and which you left as partial credit, and why.",
+          "Link the specific commit where the tokenizer and transformer tests pass.",
+          "Add a short note on the part you found hardest — reviewers read that as calibration.",
+          "Put the link in your application materials now rather than at week 52."
+        ],
+        "docs": [
+          {
+            "name": "Stanford CS336",
+            "url": "https://cs336.stanford.edu/"
+          },
+          {
+            "name": "CS336 assignment 1 — basics",
+            "url": "https://github.com/stanford-cs336/assignment1-basics"
           }
         ]
       }
@@ -1874,43 +1910,6 @@ window.RESOURCES_DB = {
           }
         ]
       },
-      "Tensor-parallel and multi-GPU serving": {
-        "desc": "Serving a model too large for one card means `--tensor-parallel-size`. TP splits both the weights and the KV cache, so you get cache headroom as well as compute — but you also pay an all-reduce per layer, so latency improves sub-linearly and per-GPU throughput usually goes down. Measure per-GPU, not aggregate.",
-        "steps": [
-          "Serve the same model at TP=1 and at TP=2 and record the KV block count each reports at startup. The increase is the cache headroom TP buys you.",
-          "Run an identical load at both settings and record tokens/second, then divide by the GPU count. Compare tokens/second per GPU, which is the number that tells you whether TP paid for itself.",
-          "Measure inter-token latency at low concurrency in both configurations — this is where TP should genuinely win, because decode is memory-bandwidth-bound.",
-          "Read the parallelism doc on when to prefer pipeline parallel (across nodes, where the interconnect is slow) versus tensor parallel (within a node over NVLink), and relate it to the fabric numbers from scaling-book chapter 12.",
-          "Deliberately break it: request a TP size that does not divide the attention head count, and read the error so you recognise it later.",
-          "Read the distributed-troubleshooting page and note the two or three environment variables it tells you to set when a multi-GPU server hangs at startup."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Parallelism and Scaling",
-            "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
-          },
-          {
-            "name": "vLLM — Troubleshooting distributed deployments",
-            "url": "https://docs.vllm.ai/en/latest/serving/distributed_troubleshooting/"
-          },
-          {
-            "name": "Scaling book — How to Think About GPUs (interconnect costs)",
-            "url": "https://jax-ml.github.io/scaling-book/gpus/"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2211.05102 — Efficiently Scaling Transformer Inference",
-            "url": "https://arxiv.org/abs/2211.05102"
-          }
-        ],
-        "videos": [
-          {
-            "title": "vLLM Office Hours — Distributed Inference with vLLM (Neural Magic)",
-            "url": "https://www.youtube.com/watch?v=LH2QZehVJoc"
-          }
-        ]
-      },
       "Throughput versus latency, measured": {
         "desc": "There is one curve every serving engineer should be able to draw from memory: throughput rises with concurrency until the KV cache saturates and then flattens or collapses, while per-request latency degrades from the very first concurrent request. Find the knee on your own endpoint, because Phase 3's eval runs will sit right on it.",
         "steps": [
@@ -1941,133 +1940,6 @@ window.RESOURCES_DB = {
           {
             "name": "SGLang — Hyperparameter Tuning (throughput vs latency knobs)",
             "url": "https://docs.sglang.ai/docs/advanced_features/hyperparameter_tuning"
-          }
-        ]
-      },
-      "Quantization": {
-        "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you already rent. The distinctions that matter in practice are weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and — separately from all of that — whether you quantize the KV cache. The accuracy cost is workload-dependent, so measure yours.",
-        "steps": [
-          "Read the quantization index and write down which schemes your GPU actually supports in hardware; FP8 on pre-Hopper cards is emulated and will not give you the speedup you expect.",
-          "Serve one model at bf16 and the same model at FP8 W8A8, and record tokens/second, KV block count and peak memory for each.",
-          "Separately enable KV cache quantization (FP8 KV) at bf16 weights, and record the increase in KV blocks. Note that this is an independent decision from weight quantization and often the better one for long-context eval workloads.",
-          "Try one 4-bit weight-only scheme and note where it wins (memory-bound single-stream decode) and where it loses (compute-bound large-batch prefill).",
-          "Evaluate all the configurations you served on the same task with the same prompts, and record the accuracy delta alongside the throughput delta. A throughput number without an accuracy number is not a result.",
-          "Write a short recommendation for your own Phase 3 workload with the measured numbers attached, and say explicitly which configuration you rejected and why."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Quantization",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/"
-          },
-          {
-            "name": "vLLM — Quantized KV Cache",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/"
-          },
-          {
-            "name": "vLLM — FP8 W8A8 with llm-compressor",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/"
-          },
-          {
-            "name": "vLLM — INT8 W8A8 with llm-compressor",
-            "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/int8_w8a8/"
-          },
-          {
-            "name": "SGLang — Quantization",
-            "url": "https://docs.sglang.ai/docs/advanced_features/quantization"
-          }
-        ]
-      },
-      "Speculative decoding": {
-        "desc": "A draft model, an n-gram lookup or a self-speculation head proposes several tokens; the target model verifies them in a single forward pass and accepts the longest correct prefix. The output distribution is provably unchanged, so it is a pure latency win — but only at high acceptance and small batch. On a throughput-bound eval run it can make things worse.",
-        "steps": [
-          "Read one of the two original papers far enough to convince yourself of the correctness argument: modified rejection sampling makes the output distribution identical to plain sampling from the target.",
-          "Enable n-gram (prompt-lookup) speculation first, since it needs no second model, and measure inter-token latency at concurrency 1 against your baseline.",
-          "Enable a real draft model and measure both acceptance rate and end-to-end latency. Acceptance rate is the number that predicts whether it will help.",
-          "Now re-run the same configuration at high concurrency and show that the benefit shrinks or inverts, because verification FLOPs compete with the batch you are already running.",
-          "Vary the number of speculative tokens and find the optimum for your workload — more proposals help only until the acceptance probability of the last one gets small.",
-          "Write the decision rule you will apply in Phase 3: on for interactive single-stream work, off for throughput-bound batch eval, with your measured numbers as evidence."
-        ],
-        "docs": [
-          {
-            "name": "vLLM — Speculative Decoding",
-            "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
-          },
-          {
-            "name": "vLLM — Speculative Decoding with draft models",
-            "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/draft_model/"
-          },
-          {
-            "name": "SGLang — Speculative Decoding",
-            "url": "https://docs.sglang.ai/docs/advanced_features/speculative_decoding"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2211.17192 — Fast Inference from Transformers via Speculative Decoding",
-            "url": "https://arxiv.org/abs/2211.17192"
-          },
-          {
-            "name": "arXiv 2302.01318 — Accelerating Large Language Model Decoding with Speculative Sampling",
-            "url": "https://arxiv.org/abs/2302.01318"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 22: Hacker's Guide to Speculative Decoding in vLLM",
-            "url": "https://www.youtube.com/watch?v=9wNAgpX6z_4"
-          },
-          {
-            "title": "vLLM Office Hours — Speculative Decoding in vLLM (Neural Magic)",
-            "url": "https://www.youtube.com/watch?v=eVJBFajJRIU"
-          }
-        ]
-      },
-      "SGLang and structured generation": {
-        "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which is exactly what branching agent traces produce — and fast constrained decoding for JSON and grammar-bounded output.",
-        "steps": [
-          "Read the SGLang paper for RadixAttention and the LRU eviction policy over the radix tree, and articulate how it differs from vLLM's block-hash prefix caching for a branching workload.",
-          "Install SGLang and serve the same model you used on vLLM, then hit its OpenAI-compatible endpoint to confirm the client code is unchanged.",
-          "Run your own load generator against SGLang at the same concurrency sweep and compare the throughput and latency curves against your vLLM numbers directly.",
-          "Build a branching workload — one shared prompt, several divergent continuations, then further branches — and compare both engines on it. This is where RadixAttention should show its advantage.",
-          "Use SGLang's structured outputs to force a JSON schema and then a small grammar, and measure the latency cost of constrained decoding versus free generation.",
-          "Write the comparison: which engine you would pick for an agentic eval workload, the measured evidence, and the one thing that would change your mind. That writeup is a milestone deliverable."
-        ],
-        "docs": [
-          {
-            "name": "SGLang — documentation home",
-            "url": "https://docs.sglang.ai/"
-          },
-          {
-            "name": "SGLang — Server Arguments",
-            "url": "https://docs.sglang.ai/docs/advanced_features/server_arguments"
-          },
-          {
-            "name": "SGLang — Structured Outputs (JSON and grammar-constrained decoding)",
-            "url": "https://docs.sglang.ai/docs/advanced_features/structured_outputs"
-          },
-          {
-            "name": "SGLang — OpenAI-Compatible APIs",
-            "url": "https://docs.sglang.ai/docs/basic_usage/openai_api"
-          },
-          {
-            "name": "SGLang — Installation",
-            "url": "https://docs.sglang.ai/docs/get-started/install"
-          }
-        ],
-        "papers": [
-          {
-            "name": "arXiv 2312.07104 — SGLang: Efficient Execution of Structured Language Model Programs",
-            "url": "https://arxiv.org/abs/2312.07104"
-          }
-        ],
-        "videos": [
-          {
-            "title": "GPU MODE Lecture 35: SGLang",
-            "url": "https://www.youtube.com/watch?v=XQylGyG7yp8"
-          },
-          {
-            "title": "Lianmin Zheng on Efficient LLM Inference with SGLang (AMD Developer Central)",
-            "url": "https://www.youtube.com/watch?v=G4ZeVP7n0Ik"
           }
         ]
       },
@@ -3262,7 +3134,7 @@ window.RESOURCES_DB = {
         ]
       }
     },
-    "p2-finetuning": {
+    "p2-rl-posttraining": {
       "LoRA from scratch — it is two matrices and a scale factor": {
         "desc": "Implement a LoRA layer in PyTorch: A initialised Gaussian, B initialised to zero, output scaled by alpha over r. Inject it into your Phase 1 transformer, verify the trainable parameter count drops by the factor you predicted, confirm gradients flow only into A and B, and merge the adapter back into the base weights.",
         "steps": [
@@ -3395,9 +3267,7 @@ window.RESOURCES_DB = {
             "url": "https://arxiv.org/abs/2107.03374"
           }
         ]
-      }
-    },
-    "p2-rl-posttraining": {
+      },
       "Run a GRPO-family loop on a verifiable task": {
         "desc": "Use TRL's GRPO trainer on something with a programmatic checker — arithmetic with hidden state, or a format-plus-answer task. TRL v1.9.0 flipped the default `loss_type` to \"dapo\" and marks plain `grpo` as not recommended because of length bias. Read what that default is doing before you accept it, and log reward curves rather than only final accuracy.",
         "steps": [
@@ -4916,43 +4786,184 @@ window.RESOURCES_DB = {
           }
         ]
       }
+    },
+    "p3-serving-performance": {
+      "Tensor-parallel and multi-GPU serving": {
+        "desc": "Serving a model too large for one card means `--tensor-parallel-size`. TP splits both the weights and the KV cache, so you get cache headroom as well as compute — but you also pay an all-reduce per layer, so latency improves sub-linearly and per-GPU throughput usually goes down. Measure per-GPU, not aggregate.",
+        "steps": [
+          "Serve the same model at TP=1 and at TP=2 and record the KV block count each reports at startup. The increase is the cache headroom TP buys you.",
+          "Run an identical load at both settings and record tokens/second, then divide by the GPU count. Compare tokens/second per GPU, which is the number that tells you whether TP paid for itself.",
+          "Measure inter-token latency at low concurrency in both configurations — this is where TP should genuinely win, because decode is memory-bandwidth-bound.",
+          "Read the parallelism doc on when to prefer pipeline parallel (across nodes, where the interconnect is slow) versus tensor parallel (within a node over NVLink), and relate it to the fabric numbers from scaling-book chapter 12.",
+          "Deliberately break it: request a TP size that does not divide the attention head count, and read the error so you recognise it later.",
+          "Read the distributed-troubleshooting page and note the two or three environment variables it tells you to set when a multi-GPU server hangs at startup."
+        ],
+        "docs": [
+          {
+            "name": "vLLM — Parallelism and Scaling",
+            "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
+          },
+          {
+            "name": "vLLM — Troubleshooting distributed deployments",
+            "url": "https://docs.vllm.ai/en/latest/serving/distributed_troubleshooting/"
+          },
+          {
+            "name": "Scaling book — How to Think About GPUs (interconnect costs)",
+            "url": "https://jax-ml.github.io/scaling-book/gpus/"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2211.05102 — Efficiently Scaling Transformer Inference",
+            "url": "https://arxiv.org/abs/2211.05102"
+          }
+        ],
+        "videos": [
+          {
+            "title": "vLLM Office Hours — Distributed Inference with vLLM (Neural Magic)",
+            "url": "https://www.youtube.com/watch?v=LH2QZehVJoc"
+          }
+        ]
+      },
+      "Quantization": {
+        "desc": "Quantization is the cheapest way to fit a bigger model or a bigger KV cache on the hardware you already rent. The distinctions that matter in practice are weight-only versus weight-and-activation, FP8 versus INT8 versus 4-bit, and — separately from all of that — whether you quantize the KV cache. The accuracy cost is workload-dependent, so measure yours.",
+        "steps": [
+          "Read the quantization index and write down which schemes your GPU actually supports in hardware; FP8 on pre-Hopper cards is emulated and will not give you the speedup you expect.",
+          "Serve one model at bf16 and the same model at FP8 W8A8, and record tokens/second, KV block count and peak memory for each.",
+          "Separately enable KV cache quantization (FP8 KV) at bf16 weights, and record the increase in KV blocks. Note that this is an independent decision from weight quantization and often the better one for long-context eval workloads.",
+          "Try one 4-bit weight-only scheme and note where it wins (memory-bound single-stream decode) and where it loses (compute-bound large-batch prefill).",
+          "Evaluate all the configurations you served on the same task with the same prompts, and record the accuracy delta alongside the throughput delta. A throughput number without an accuracy number is not a result.",
+          "Write a short recommendation for your own Phase 3 workload with the measured numbers attached, and say explicitly which configuration you rejected and why."
+        ],
+        "docs": [
+          {
+            "name": "vLLM — Quantization",
+            "url": "https://docs.vllm.ai/en/latest/features/quantization/"
+          },
+          {
+            "name": "vLLM — Quantized KV Cache",
+            "url": "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/"
+          },
+          {
+            "name": "vLLM — FP8 W8A8 with llm-compressor",
+            "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/"
+          },
+          {
+            "name": "vLLM — INT8 W8A8 with llm-compressor",
+            "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/int8_w8a8/"
+          },
+          {
+            "name": "SGLang — Quantization",
+            "url": "https://docs.sglang.ai/docs/advanced_features/quantization"
+          }
+        ]
+      },
+      "Speculative decoding": {
+        "desc": "A draft model, an n-gram lookup or a self-speculation head proposes several tokens; the target model verifies them in a single forward pass and accepts the longest correct prefix. The output distribution is provably unchanged, so it is a pure latency win — but only at high acceptance and small batch. On a throughput-bound eval run it can make things worse.",
+        "steps": [
+          "Read one of the two original papers far enough to convince yourself of the correctness argument: modified rejection sampling makes the output distribution identical to plain sampling from the target.",
+          "Enable n-gram (prompt-lookup) speculation first, since it needs no second model, and measure inter-token latency at concurrency 1 against your baseline.",
+          "Enable a real draft model and measure both acceptance rate and end-to-end latency. Acceptance rate is the number that predicts whether it will help.",
+          "Now re-run the same configuration at high concurrency and show that the benefit shrinks or inverts, because verification FLOPs compete with the batch you are already running.",
+          "Vary the number of speculative tokens and find the optimum for your workload — more proposals help only until the acceptance probability of the last one gets small.",
+          "Write the decision rule you will apply in Phase 3: on for interactive single-stream work, off for throughput-bound batch eval, with your measured numbers as evidence."
+        ],
+        "docs": [
+          {
+            "name": "vLLM — Speculative Decoding",
+            "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
+          },
+          {
+            "name": "vLLM — Speculative Decoding with draft models",
+            "url": "https://docs.vllm.ai/en/latest/features/speculative_decoding/draft_model/"
+          },
+          {
+            "name": "SGLang — Speculative Decoding",
+            "url": "https://docs.sglang.ai/docs/advanced_features/speculative_decoding"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2211.17192 — Fast Inference from Transformers via Speculative Decoding",
+            "url": "https://arxiv.org/abs/2211.17192"
+          },
+          {
+            "name": "arXiv 2302.01318 — Accelerating Large Language Model Decoding with Speculative Sampling",
+            "url": "https://arxiv.org/abs/2302.01318"
+          }
+        ],
+        "videos": [
+          {
+            "title": "GPU MODE Lecture 22: Hacker's Guide to Speculative Decoding in vLLM",
+            "url": "https://www.youtube.com/watch?v=9wNAgpX6z_4"
+          },
+          {
+            "title": "vLLM Office Hours — Speculative Decoding in vLLM (Neural Magic)",
+            "url": "https://www.youtube.com/watch?v=eVJBFajJRIU"
+          }
+        ]
+      },
+      "SGLang and structured generation": {
+        "desc": "SGLang is the other serving engine you should be able to speak to. Its distinguishing pieces are RadixAttention — a prefix tree over the KV cache that generalises prefix caching to arbitrary shared prefixes, which is exactly what branching agent traces produce — and fast constrained decoding for JSON and grammar-bounded output.",
+        "steps": [
+          "Read the SGLang paper for RadixAttention and the LRU eviction policy over the radix tree, and articulate how it differs from vLLM's block-hash prefix caching for a branching workload.",
+          "Install SGLang and serve the same model you used on vLLM, then hit its OpenAI-compatible endpoint to confirm the client code is unchanged.",
+          "Run your own load generator against SGLang at the same concurrency sweep and compare the throughput and latency curves against your vLLM numbers directly.",
+          "Build a branching workload — one shared prompt, several divergent continuations, then further branches — and compare both engines on it. This is where RadixAttention should show its advantage.",
+          "Use SGLang's structured outputs to force a JSON schema and then a small grammar, and measure the latency cost of constrained decoding versus free generation.",
+          "Write the comparison: which engine you would pick for an agentic eval workload, the measured evidence, and the one thing that would change your mind. That writeup is a milestone deliverable."
+        ],
+        "docs": [
+          {
+            "name": "SGLang — documentation home",
+            "url": "https://docs.sglang.ai/"
+          },
+          {
+            "name": "SGLang — Server Arguments",
+            "url": "https://docs.sglang.ai/docs/advanced_features/server_arguments"
+          },
+          {
+            "name": "SGLang — Structured Outputs (JSON and grammar-constrained decoding)",
+            "url": "https://docs.sglang.ai/docs/advanced_features/structured_outputs"
+          },
+          {
+            "name": "SGLang — OpenAI-Compatible APIs",
+            "url": "https://docs.sglang.ai/docs/basic_usage/openai_api"
+          },
+          {
+            "name": "SGLang — Installation",
+            "url": "https://docs.sglang.ai/docs/get-started/install"
+          }
+        ],
+        "papers": [
+          {
+            "name": "arXiv 2312.07104 — SGLang: Efficient Execution of Structured Language Model Programs",
+            "url": "https://arxiv.org/abs/2312.07104"
+          }
+        ],
+        "videos": [
+          {
+            "title": "GPU MODE Lecture 35: SGLang",
+            "url": "https://www.youtube.com/watch?v=XQylGyG7yp8"
+          },
+          {
+            "title": "Lianmin Zheng on Efficient LLM Inference with SGLang (AMD Developer Central)",
+            "url": "https://www.youtube.com/watch?v=G4ZeVP7n0Ik"
+          }
+        ]
+      }
     }
   },
   "phase4.html": {
     "p4-environment-harden": {
-      "Measure run-to-run variance before you touch anything else": {
-        "desc": "Before you fix anything, get a number for how much your own environment moves. Five full runs against a fixed model and a fixed seed set, spread reported per task rather than per suite, and a named dominant noise source. That number — not the task design — is what evals teams actually interview for.",
+      "Re-measure it — eleven weeks have passed": {
+        "desc": "Your week-38 numbers were true in week 38. Rerun everything against current models and a clean image and find out what drifted.",
         "steps": [
-          "Run the full suite at least five times against one fixed model and one fixed seed set, and archive every per-sample log (`inspect eval --epochs 5`, or the `vf-eval` equivalent) so you can do the analysis after the fact instead of re-burning API budget.",
-          "Compute per-task pass rate with a standard error across runs, not just a suite-level mean. Report it in the form `0.62 ± 0.04 over 5 runs, n=120` and never drop the n.",
-          "Decompose the spread deliberately: rerun at temperature 0 to bound model sampling noise, re-score cached transcripts to expose verifier nondeterminism, and diff container start-up logs to catch flaky setup and network timeouts.",
-          "Separate flaked from failed. Count infra errors, timeouts and API 5xx in their own bucket — a flake silently scored as a model failure is the single most common way an eval number lies.",
-          "When you compare two models on the same samples, use the paired/clustered standard error rather than the naive independent-samples one; the naive interval is too wide and will hide differences that are real.",
-          "Write the headline number, the n, the number of runs and the dominant noise source into the README before you change one line of the environment — you need the before-number to prove the after-number."
-        ],
-        "papers": [
-          {
-            "name": "Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations (Miller, Anthropic, 2024)",
-            "url": "https://arxiv.org/abs/2411.00640"
-          }
-        ],
-        "docs": [
-          {
-            "name": "Inspect — Eval Sets (epochs, resumption, running a suite repeatedly)",
-            "url": "https://inspect.aisi.org.uk/eval-sets.html"
-          },
-          {
-            "name": "Inspect — Errors and Limits (retries, sample errors, `--fail-on-error`)",
-            "url": "https://inspect.aisi.org.uk/errors-and-limits.html"
-          },
-          {
-            "name": "Inspect — Eval Logs (per-sample records you need for post-hoc variance analysis)",
-            "url": "https://inspect.aisi.org.uk/eval-logs.html"
-          },
-          {
-            "name": "lm-evaluation-harness — footguns (the things that silently move your numbers)",
-            "url": "https://github.com/EleutherAI/lm-evaluation-harness/blob/main/docs/footguns.md"
-          }
+          "Rerun the full suite at five seeds against a clean container, pinned to today's model versions.",
+          "Diff every number against the table you published in week 38 and investigate anything that moved more than your stated variance.",
+          "Check whether a provider model changed under a fixed name — this is the most common silent cause.",
+          "Turn the comparison into a regression check you can run on demand, and commit it.",
+          "Publish the drift as an update rather than quietly replacing the old numbers."
         ]
       },
       "Kill the nondeterminism you control": {

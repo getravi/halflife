@@ -1085,6 +1085,22 @@
       "url": "https://github.com/karpathy/micrograd"
      }
     ]
+   },
+   "Publish it, week 11": {
+    "desc": "Your first technical artifact. Its job is to exist and to be readable, not to be impressive.",
+    "steps": [
+     "Push micrograd and makemore into the public repo from week 1, each in its own directory with a one-paragraph README.",
+     "Include the notebook where your gradients match a numerical check — that is the part a reader can verify in thirty seconds.",
+     "Write one short post about the bug that cost you the most time, and what the fix taught you.",
+     "Link the post from the repo README and post it in your community.",
+     "Do not polish further. Move on to week 12."
+    ],
+    "docs": [
+     {
+      "name": "GitHub: About READMEs",
+      "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes"
+     }
+    ]
    }
   },
   "p1-pytorch-engineering": {
@@ -1405,6 +1421,26 @@
      {
       "name": "pytest — how to write and read assertions",
       "url": "https://docs.pytest.org/en/stable/how-to/assert.html"
+     }
+    ]
+   },
+   "Publish the green tests, week 17": {
+    "desc": "The only externally graded evidence in the plan. Make it easy to find and easy to check.",
+    "steps": [
+     "Push the assignment repo public with the test output pasted into the README.",
+     "State explicitly which tests are green and which you left as partial credit, and why.",
+     "Link the specific commit where the tokenizer and transformer tests pass.",
+     "Add a short note on the part you found hardest — reviewers read that as calibration.",
+     "Put the link in your application materials now rather than at week 52."
+    ],
+    "docs": [
+     {
+      "name": "Stanford CS336",
+      "url": "https://cs336.stanford.edu/"
+     },
+     {
+      "name": "CS336 assignment 1 — basics",
+      "url": "https://github.com/stanford-cs336/assignment1-basics"
      }
     ]
    }
