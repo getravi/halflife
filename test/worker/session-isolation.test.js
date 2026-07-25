@@ -1,0 +1,99 @@
+import { env, SELF } from 'cloudflare:test';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { resetDb } from '../helpers.js';
+import * as db from '../../worker/db.js';
+import { sha256Hex } from '../../worker/crypto.js';
+
+const DAY = 86400000;
+
+async function signIn(userId) {
+  await env.DB.prepare('INSERT INTO users (id, login, created_at) VALUES (?, ?, 0)')
+    .bind(userId, userId).run();
+  await db.createSession(env, userId, await sha256Hex(`tok-${userId}`),
+    Date.now(), 30 * DAY, 'test');
+  return `flp_session=tok-${userId}`;
+}
+
+const as = (cookie, path, init = {}) => SELF.fetch(`https://x${path}`, {
+  ...init, headers: { ...(init.headers ?? {}), cookie, 'content-type': 'application/json' }
+});
+
+const makeCard = (cookie, prompt) => as(cookie, '/api/cards', {
+  method: 'POST',
+  body: JSON.stringify({
+    pathId: 'frontier-lab', subtaskId: 'p2-serving-s01', prompt, answer: 'a'
+  })
+});
+
+describe('isolation through real sessions', () => {
+  let A, B;
+
+  beforeEach(async () => {
+    await resetDb();
+    A = await signIn('alice');
+    B = await signIn('bob');
+  });
+
+  it("does not list one signed-in user another's cards", async () => {
+    await makeCard(A, 'alice-card');
+    await makeCard(B, 'bob-card');
+
+    const forA = await (await as(A, '/api/cards?pathId=frontier-lab')).json();
+    expect(forA.cards).toHaveLength(1);
+    expect(forA.cards[0].prompt).toBe('alice-card');
+  });
+
+  it("refuses to grade another user's card, answering exactly as for one that does not exist", async () => {
+    const bob = (await (await makeCard(B, 'bob-card')).json()).card;
+
+    const theirs = await as(A, '/api/reviews', {
+      method: 'POST',
+      body: JSON.stringify({ cardId: bob.id, grade: 'good', latencyMs: 1 })
+    });
+    const missing = await as(A, '/api/reviews', {
+      method: 'POST',
+      body: JSON.stringify({ cardId: 'no-such-card', grade: 'good', latencyMs: 1 })
+    });
+
+    expect(theirs.status).toBe(404);
+    expect(await theirs.json()).toEqual(await missing.json());
+
+    const row = await env.DB.prepare('SELECT reps FROM cards WHERE id = ?')
+      .bind(bob.id).first();
+    expect(row.reps).toBe(0);
+  });
+
+  it('keeps progress separate between two signed-in users', async () => {
+    await as(A, '/api/progress', {
+      method: 'PUT',
+      body: JSON.stringify({ pathId: 'frontier-lab', nodeId: 'n1', done: true })
+    });
+
+    const forB = await (await as(B, '/api/progress?pathId=frontier-lab')).json();
+    expect(forB.nodeIds).toEqual([]);
+  });
+
+  it('keeps enrolments separate', async () => {
+    await as(A, '/api/enrollments', {
+      method: 'POST',
+      body: JSON.stringify({ pathId: 'frontier-lab', startedOn: '2026-07-25' })
+    });
+
+    const meB = await (await as(B, '/api/me')).json();
+    expect(meB.enrollments).toEqual([]);
+  });
+
+  it("deleting one account leaves the other's data and session intact", async () => {
+    await makeCard(A, 'alice-card');
+    await makeCard(B, 'bob-card');
+
+    expect((await as(A, '/api/me', { method: 'DELETE' })).status).toBe(200);
+
+    // Alice's session died with her account.
+    expect((await as(A, '/api/cards?pathId=frontier-lab')).status).toBe(401);
+
+    const forB = await (await as(B, '/api/cards?pathId=frontier-lab')).json();
+    expect(forB.cards).toHaveLength(1);
+    expect(forB.cards[0].prompt).toBe('bob-card');
+  });
+});
