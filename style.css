@@ -921,3 +921,8 @@ weight-badge {
   background: rgba(255,255,255,0.06); color: inherit; cursor: pointer; }
 .runner-grades button:hover { background: rgba(255,255,255,0.12); }
 .today-review-btn:disabled { opacity: 0.45; cursor: default; }
+.today-metrics { display: flex; gap: 48px; }
+.today-metric { font-size: 30px; display: block; }
+.today-metric-label { font-size: 11px; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 0.06em; }
+.today-pressure { margin-top: 14px; font-size: 13px; color: var(--muted); }

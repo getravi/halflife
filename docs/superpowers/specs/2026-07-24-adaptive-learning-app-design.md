@@ -198,9 +198,15 @@ broken it.
 due — the retention target is not a second free parameter, it falls out of the
 stability update.
 
-**Retained** `= Σ(subtaskWeight × meanR of that subtask's cards) / Σ(all
-subtaskWeights)`, where a subtask with no cards contributes 0. This reuses
-`getStaticSubtaskWeight` unchanged.
+**Retained** is computed by the same hierarchical bubble-up as Covered —
+subtask → task → phase → overall, normalising at each level with the existing
+task and phase weights — substituting mean retrievability for completion at
+the leaves. A subtask with no cards contributes 0.
+
+The bubble-up matters. An earlier draft used a flat weighted mean over
+subtasks, `Σ(subtaskWeight × meanR) / Σ(subtaskWeights)`. That is a different
+denominator from Covered, and in practice it read *higher* than Covered — two
+numbers side by side on different scales are worse than one number.
 
 That last clause is a deliberate call: a subtask you ticked but never captured
 counts as Covered and not at all as Retained. Unverified is not the same as

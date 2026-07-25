@@ -134,6 +134,17 @@
     </div>
 
     <section class="today-block">
+      <div class="today-block-title">Progress</div>
+      <div class="today-metrics">
+        <div><span class="today-metric" id="today-covered">0%</span>
+          <span class="today-metric-label">Covered</span></div>
+        <div><span class="today-metric" id="today-retained">0%</span>
+          <span class="today-metric-label">Retained</span></div>
+      </div>
+      <div class="today-pressure" id="today-retention-pressure"></div>
+    </section>
+
+    <section class="today-block">
       <div class="today-block-title">Due now</div>
       <div class="today-due"><span id="today-due-count">0</span> <span id="today-due-noun">cards</span></div>
       <!-- disabled until the first render; cards arrive asynchronously and a

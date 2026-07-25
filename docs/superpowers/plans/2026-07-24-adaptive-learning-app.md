@@ -1841,7 +1841,9 @@ forgotten and not seeing it again that day is theatre."
 - Produces: `window.TODAY.retained() -> {overall, byPhase}` where both are percentages in `[0, 100]`.
 - DOM hooks created: `today-covered`, `today-retained`, `today-retention-pressure`.
 
-**The formula:** `Retained = Σ(subtaskWeight × meanR of that subtask's cards) / Σ(all subtaskWeights)`. A subtask with no cards contributes 0 to the numerator and its full weight to the denominator — unverified is not the same as known, and that gap is what creates the pressure to capture.
+**The formula:** Retained runs the same hierarchical bubble-up as Covered — subtask → task → phase → overall, normalising at each level with the existing task and phase weights — with mean retrievability standing in for completion at the leaves. A subtask with no cards contributes 0 — unverified is not the same as known, and that gap is what creates the pressure to capture.
+
+Do **not** use a flat weighted mean over subtasks. That is a different denominator from Covered and reads higher than it in practice; two numbers side by side on different scales are worse than one number.
 
 - [ ] **Step 1: Add the markup**
 

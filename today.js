@@ -94,6 +94,92 @@
         (debt.length > 8 ? `<div class="today-debt-more">…and ${debt.length - 8} more</div>` : '');
   }
 
+  /**
+   * Retained = weighted mean retrievability across every subtask in the plan.
+   * A subtask with no cards contributes zero: unverified is not the same as
+   * known, and that gap is the whole point of the second number.
+   */
+  function retained() {
+    const now = Date.now();
+    const db = window.RESOURCES_DB || {};
+    const byCard = {};
+    for (const c of window.CAPTURE_STATE.cards) {
+      const key = `${c.page}::${c.taskId}::${c.subtaskTitle}`;
+      (byCard[key] = byCard[key] || []).push(window.SCHEDULER.retrievability(c, now));
+    }
+
+    // This mirrors recalculateAllProgress exactly — same nesting, same weights,
+    // same normalisation at each level — substituting mean retrievability for
+    // completion at the leaves. A flat weighted mean over subtasks is a
+    // different denominator, and it can read HIGHER than Covered, which makes
+    // the pair meaningless. Two numbers shown side by side have to be on one
+    // scale or they are worse than one number.
+    let overallWeightedSum = 0, overallWeightTotal = 0;
+    const byPhase = {};
+
+    for (const [phaseId, phaseInfo] of Object.entries(ALL_PHASES)) {
+      const page = phaseInfo.page;
+      let phaseWeightedSum = 0, phaseWeightTotal = 0;
+
+      for (const taskId of phaseInfo.tasks) {
+        let taskWeightedSum = 0, taskWeightTotal = 0;
+        const titles = Object.keys(db[page]?.[taskId] || {});
+
+        if (titles.length > 0) {
+          for (const title of titles) {
+            const rs = byCard[`${page}::${taskId}::${title}`] || [];
+            const subtaskPct = rs.length ? (rs.reduce((a, b) => a + b, 0) / rs.length) * 100 : 0;
+            const w = getStaticSubtaskWeight(page, taskId, title);
+            taskWeightedSum += subtaskPct * w;
+            taskWeightTotal += w;
+          }
+        } else {
+          // A milestone has no subtasks and so nothing to hold in memory. It
+          // still occupies its weight, the same way it does in Covered.
+          taskWeightTotal += 1;
+        }
+
+        const taskPct = taskWeightTotal > 0 ? taskWeightedSum / taskWeightTotal : 0;
+        const taskW = getStaticTaskWeight(taskId);
+        phaseWeightedSum += taskPct * taskW;
+        phaseWeightTotal += taskW;
+      }
+
+      const phasePct = phaseWeightTotal > 0 ? phaseWeightedSum / phaseWeightTotal : 0;
+      byPhase[phaseId] = phasePct;
+      const phaseW = getStaticPhaseWeight(phaseId);
+      overallWeightedSum += phasePct * phaseW;
+      overallWeightTotal += phaseW;
+    }
+
+    return {
+      overall: overallWeightTotal > 0 ? overallWeightedSum / overallWeightTotal : 0,
+      byPhase
+    };
+  }
+
+  /**
+   * Decay becomes an actionable queue rather than a silent lie: name the phase
+   * that rotted most and the cards that recover the most of it.
+   */
+  function renderPressure(ret) {
+    const el = document.getElementById('today-retention-pressure');
+    const started = Object.keys(ALL_PHASES).filter(ph => ret.byPhase[ph] > 0);
+    if (started.length === 0) { el.textContent = ''; return; }
+
+    const worst = started.sort((a, b) => ret.byPhase[a] - ret.byPhase[b])[0];
+    const page = ALL_PHASES[worst].page;
+    const now = Date.now();
+    const stale = window.CAPTURE_STATE.cards
+      .filter(c => c.page === page && window.SCHEDULER.isDue(c, now))
+      .sort((a, b) => a.dueAt - b.dueAt);
+
+    el.innerHTML = stale.length === 0
+      ? `Phase ${worst.slice(1)} retention ${Math.round(ret.byPhase[worst])}% — nothing due yet.`
+      : `Phase ${worst.slice(1)} retention ${Math.round(ret.byPhase[worst])}% — ` +
+        `${stale.length} card${stale.length === 1 ? '' : 's'} would recover most of it.`;
+  }
+
   async function render() {
     window.CAPTURE_STATE.cards = await API.getCards();
     const state = await API.getState();
@@ -109,6 +195,12 @@
     const btn = document.getElementById('today-start-review');
     btn.disabled = due === 0;
     btn.textContent = due === 0 ? 'Nothing due' : 'Start review';
+
+    const calc = recalculateAllProgress(loadProgress());
+    const ret = retained();
+    document.getElementById('today-covered').textContent = Math.round(calc.overall) + '%';
+    document.getElementById('today-retained').textContent = Math.round(ret.overall) + '%';
+    renderPressure(ret);
     renderWeek(state);
     renderDebt();
   }
@@ -170,5 +262,5 @@
     });
   });
 
-  window.TODAY = { render, dueCards, startReview };
+  window.TODAY = { render, dueCards, startReview, retained };
 })();
