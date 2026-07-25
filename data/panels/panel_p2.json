@@ -642,13 +642,16 @@
    "title": "Phase 2 complete",
    "heading": "What you ship by the end of Phase 2",
    "items": [
-    "A published environment — task, programmatic verifier, reset, reward — public since week 26 and improved monthly since",
-    "Measured run-to-run variance and a stated reliability figure for it, not just a success rate",
+    "A published environment — task, programmatic verifier, reset, reward — public since week 26 and improved every month since",
+    "A visible v0-to-v1 diff: what the first version got wrong, what the statistics changed, what you now know about its reliability",
+    "Measured run-to-run variance and a stated reliability figure, plus the environment’s own failure rate — not just a success rate",
     "A benchmark protocol-compliance audit: one published result reproduced at several seeds, with the discrepancy written up",
-    "An eval harness that runs across checkpoints with retries, caching and per-sample cost accounting",
-    "An LLM judge validated against your own human labels, with position and length bias measured",
-    "A GRPO-family run on a verifiable task, with reward curves and the DAPO default explained rather than accepted",
-    "A scratch-built LoRA verified against your Phase 1 transformer",
+    "A served endpoint you stood up yourself, with throughput and latency you measured rather than quoted",
+    "Your own agent harness — tool schemas, multi-turn state, error recovery, context compaction — written before you reached for a framework",
+    "An eval harness that runs across checkpoints with retries, caching, dedupe and per-sample cost accounting",
+    "An LLM judge validated against your own human labels, with position and length bias measured — or a written justification for not needing one",
+    "A post-training block you have run end to end: LoRA from scratch, one SFT run with a dataset card, and a GRPO-family run with the DAPO default explained rather than accepted",
+    "A written answer to how a model could score well on your environment while doing something you would not endorse, including the parts you cannot currently detect",
     "You can name three agentic benchmarks that are effectively dead and say why they are still cited"
    ],
    "next": {

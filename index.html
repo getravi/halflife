@@ -1480,13 +1480,16 @@
       <div class="milestone-box">
         <h3>What you ship by the end of Phase 2</h3>
         <ul class="checklist">
-          <li>A published environment — task, programmatic verifier, reset, reward — public since week 26 and improved monthly since</li>
-          <li>Measured run-to-run variance and a stated reliability figure for it, not just a success rate</li>
+          <li>A published environment — task, programmatic verifier, reset, reward — public since week 26 and improved every month since</li>
+          <li>A visible v0-to-v1 diff: what the first version got wrong, what the statistics changed, what you now know about its reliability</li>
+          <li>Measured run-to-run variance and a stated reliability figure, plus the environment’s own failure rate — not just a success rate</li>
           <li>A benchmark protocol-compliance audit: one published result reproduced at several seeds, with the discrepancy written up</li>
-          <li>An eval harness that runs across checkpoints with retries, caching and per-sample cost accounting</li>
-          <li>An LLM judge validated against your own human labels, with position and length bias measured</li>
-          <li>A GRPO-family run on a verifiable task, with reward curves and the DAPO default explained rather than accepted</li>
-          <li>A scratch-built LoRA verified against your Phase 1 transformer</li>
+          <li>A served endpoint you stood up yourself, with throughput and latency you measured rather than quoted</li>
+          <li>Your own agent harness — tool schemas, multi-turn state, error recovery, context compaction — written before you reached for a framework</li>
+          <li>An eval harness that runs across checkpoints with retries, caching, dedupe and per-sample cost accounting</li>
+          <li>An LLM judge validated against your own human labels, with position and length bias measured — or a written justification for not needing one</li>
+          <li>A post-training block you have run end to end: LoRA from scratch, one SFT run with a dataset card, and a GRPO-family run with the DAPO default explained rather than accepted</li>
+          <li>A written answer to how a model could score well on your environment while doing something you would not endorse, including the parts you cannot currently detect</li>
           <li>You can name three agentic benchmarks that are effectively dead and say why they are still cited</li>
         </ul>
         <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); font-size:12px; color:var(--muted2)">

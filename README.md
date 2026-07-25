@@ -4,6 +4,31 @@ A static, single-page tracker for a 52-week self-study plan aimed at evals and
 environments roles. Open `index.html` through a local server — `make serve` —
 because `app.js` fetches `resources_db.js` and `file://` blocks it.
 
+## The plan
+
+| Phase | Weeks | | Source |
+|---|---|---|---|
+| 0 · Programming foundations | 1–8 | Python from zero, arrays, the maths, the operating rhythm | `data/panels/panel_p01.json` |
+| 1 · Deep learning & transformers | 9–20 | micrograd → makemore → CS336 a1 → nanochat | `data/panels/panel_p01.json` |
+| 2 · Evals & environments | 21–38 | endpoint, harness, **environment v0 at wk 26**, then statistics, judges, infra, audit, post-training, safety, **v1 at wk 38** | `data/panels/panel_p2.json` |
+| 3 · Systems & scaling | 39–48 | JAX, scaling book, FSDP2/DTensor, CS336 a2, serving performance | `data/panels/panel_p3.json` |
+| 4 · Ship & apply | 49–52 | adoption, write-up, upstream contribution, close the funnel | `data/panels/panel_p4.json` |
+
+Two things about the shape, because they were deliberate and are easy to undo
+by accident:
+
+**The environment ships in week 26, badly, and improves for twelve weeks.**
+Everything between weeks 27 and 38 applies that week's material to it —
+statistics corrects its published numbers, judge validation decides its
+grading, the audit turns the lens on its own undeclared parameters. Ordering
+those topics before the artifact would restore the problem they were moved to
+fix: nothing public until the year is nearly over.
+
+**Systems & scaling is deliberately last and deliberately optional.** It keeps
+a pretraining or performance track open and sharpens cost reasoning, but
+nothing in it blocks the work that gets someone hired. It is the phase to
+compress if you fall behind — not the environment.
+
 ## The one thing to know before editing
 
 Three files have to agree exactly:
