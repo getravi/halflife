@@ -1130,6 +1130,11 @@
           <div class="task-item-time">Week 28</div>
           <a class="resource" href="https://www.anthropic.com/research/statistical-approach-to-model-evals" target="_blank">A statistical approach to model evals ↗</a>
         </div>
+        <div class="task-item">
+          <div class="task-item-title">Apply it to your own numbers</div>
+          <div class="task-item-desc">Take the baseline table you published in week 26 and redo it properly: compute the sample size you actually needed, add bootstrap intervals, and use paired comparison where models saw the same tasks. Commit the corrected table with a note saying what changed. Finding that one of your own headline numbers was noise is the most useful thing that can happen this week.</div>
+          <div class="task-item-time">Week 28</div>
+        </div>
       </div>
       <div class="callout callout-warn">
         <strong>Resampling seeds is not resampling questions.</strong> Running the same 50 questions ten times tells you about decoding variance and nothing about whether your benchmark generalises. Both matter, they are different error bars, and conflating them is the single most common mistake in public eval reports.
@@ -1171,6 +1176,11 @@
         <div class="task-item">
           <div class="task-item-title">Calibration drift and version pinning</div>
           <div class="task-item-desc">A judge is a model and it changes under you. Pin the exact judge model version in your results, keep the gold set in the repo, and re-run it whenever the judge model, its prompt, or its decode parameters change. Record the agreement number per version so you can tell a real score move from a judge move.</div>
+          <div class="task-item-time">Week 29</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Decide what your environment needs</div>
+          <div class="task-item-desc">Look at your own tasks and decide honestly whether any of them need subjective grading. If they do, hand-label a hundred samples and measure your judge against them. If they genuinely do not, write the paragraph in your README explaining why programmatic verification is sufficient here — an unexplained absence of judges reads as avoidance.</div>
           <div class="task-item-time">Week 29</div>
         </div>
       </div>
@@ -1220,6 +1230,11 @@
           <div class="task-item-desc">Ship a view that shows score per task per checkpoint with confidence intervals from Task 01, run status and failure counts, cost to date, and a link from any number to the raw sample logs behind it. Test it by handing it to someone who did not build it and watching where they get confused.</div>
           <div class="task-item-time">Week 31</div>
           <a class="resource" href="https://inspect.aisi.org.uk/eval-logs.html" target="_blank">Inspect eval logs ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Put your environment behind the queue</div>
+          <div class="task-item-desc">Move your week-26 runner onto the infrastructure you just built: retries, caching, dedupe, per-sample cost accounting, and a results store you can query later. Re-run the baselines through it and confirm the numbers match the ones you got by hand. If they do not, you have just found a bug worth writing about.</div>
+          <div class="task-item-time">Week 31</div>
         </div>
       </div>
       <div class="callout callout-warn">
@@ -1279,6 +1294,11 @@
           <div class="task-item-desc">Part of the writeup is a short survey of what not to trust. WebArena sits within a few points of its human baseline. WebVoyager never had a leaderboard at all. AssistantBench and WebGames are still cited long past usefulness, and the original τ-bench repo is deprecated with README numbers roughly eighteen months stale. Being able to name three dead benchmarks and why they persist is an interview answer. In the computer-use cluster specifically: WindowsAgentArena has had no real commit since Nov 2024 and never had a leaderboard, OSUniverse was abandoned in May 2025, and Computer Agent Arena's leaderboard is returning 522s. GAIA is effectively saturated and unauditable — 93.4% against a 92% human baseline, with 3,532 submissions including top-ten entries carrying blank model names and no code or trajectories.</div>
           <div class="task-item-time">Week 33</div>
           <a class="resource" href="https://arxiv.org/abs/2307.13854" target="_blank">arXiv 2307.13854 ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Audit your own environment the same way</div>
+          <div class="task-item-desc">Turn the audit lens on yourself. What is your undeclared step budget? Could someone inflate a score by varying something you never documented? Is your human baseline, if you have one, a single undocumented number? Publish the answers as a limitations section — pre-empting the criticism is worth more than surviving it.</div>
+          <div class="task-item-time">Week 33</div>
         </div>
       </div>
       <div class="callout callout-tip">
@@ -1368,6 +1388,11 @@
           <div class="task-item-time">Week 36</div>
           <a class="resource" href="https://rlhfbook.com" target="_blank">The RLHF Book ↗</a>
         </div>
+        <div class="task-item">
+          <div class="task-item-title">Train against your own environment</div>
+          <div class="task-item-desc">Point a short GRPO run at the environment you published in week 26. It will probably learn something trivial or nothing at all, and that is fine — you are testing whether the interface survives contact with a trainer: reset cleanliness, reward density, hidden state between episodes. Every problem you find here is one the week-38 version fixes.</div>
+          <div class="task-item-time">Week 36</div>
+        </div>
       </div>
       <div class="callout callout-tip">
         <strong>On-policy distillation is the 2026 shape.</strong> The accepted pipeline is SFT-distill for a cold start, then RLVR, then on-policy distillation as a compaction step — reported at roughly a tenth of the GPU-hours of RL alone for comparable reasoning scores. Know the shape even if you only run the first two stages.
@@ -1412,6 +1437,11 @@
           <div class="task-item-time">Week 37</div>
           <a class="resource" href="https://github.com/UKGovernmentBEIS/inspect_evals" target="_blank">inspect_evals ↗</a>
         </div>
+        <div class="task-item">
+          <div class="task-item-title">Ask what your environment would miss</div>
+          <div class="task-item-desc">Work out how a model could score well on your tasks while doing something you would not endorse, and whether your verifier would notice. Consider sandbagging — would you detect a model deliberately underperforming? — and whether your task descriptions leak that this is an evaluation. Write the answer down even where the answer is that you cannot currently tell.</div>
+          <div class="task-item-time">Week 37</div>
+        </div>
       </div>
       <div class="callout callout-tip">
         <strong>You get asked this in the first twenty minutes.</strong> Any evals interview at a lab, at UK AISI, METR, or Apollo will probe whether you understand that measured capability is a function of elicitation effort. One week of reading plus one real run is enough to answer well.
@@ -1421,7 +1451,7 @@
     <div class="day-section" id="sec-p2-environment">
       <div class="day-header">
         <span class="day-num-badge">Task 11</span>
-        <span class="day-title-text">Build the environment (begins)</span>
+        <span class="day-title-text">Environment v1 — make it defensible</span>
         <span class="tag tag-agent">Agent</span>
         <label class="day-check">
           <input type="checkbox" data-id="p2-environment">
@@ -1430,33 +1460,33 @@
       </div>
       <div class="task-grid">
         <div class="task-item">
-          <div class="task-item-title">Choose the task, and write the verifier first</div>
-          <div class="task-item-desc">Task selection is the hardest judgement call in the plan. You want programmatic verification, meaningful spread across models (not saturated, not impossible), and narrow enough scope to diagnose specific failure types. Write the verifier before the task content — if you cannot state the pass condition as code, the task is not ready.</div>
+          <div class="task-item-title">Re-baseline it with real statistics</div>
+          <div class="task-item-desc">Rerun your week-26 baselines with everything week 27 taught you: enough samples to detect the effect size you care about, paired comparison where the tasks are shared, bootstrap intervals on every headline number, and a correction if you are making many comparisons at once. Most of your original numbers will move. Some will stop being significant at all — write that down rather than quietly dropping it.</div>
           <div class="task-item-time">Week 38</div>
         </div>
         <div class="task-item">
-          <div class="task-item-title">Implement the four interfaces</div>
-          <div class="task-item-desc">An environment is a task, a reset, a step-and-reward, and a verifier. Build it against Prime Intellect's verifiers, whose v1 restructured around taskset, harness, and runtime — matching that structure now saves a rewrite in Phase 4. Reset is the part people get wrong: state must not leak between episodes.</div>
-          <div class="task-item-time">Week 38</div>
-          <a class="resource" href="https://github.com/PrimeIntellect-ai/verifiers" target="_blank">verifiers ↗</a>
-        </div>
-        <div class="task-item">
-          <div class="task-item-title">Measure run-to-run variance and reliability</div>
-          <div class="task-item-desc">Run the same model on the same tasks n times and report the spread, not the best number. Separately, quantify how often the environment itself fails — timeouts, container errors, verifier crashes — because a task that flakes 8% of the time cannot detect a 3% capability difference. An environment nobody can trust the numbers from is not an environment.</div>
+          <div class="task-item-title">Add a validated judge, or justify not having one</div>
+          <div class="task-item-desc">If any part of your task needs subjective grading, build the rubric judge and report its agreement with your own human labels, plus position and length bias, as you learned in week 29. If your tasks are fully programmatic, say so explicitly in the README and explain why that was the right call — reviewers assume you avoided judges because they are hard, unless you tell them otherwise.</div>
           <div class="task-item-time">Week 38</div>
         </div>
         <div class="task-item">
-          <div class="task-item-title">Make it callable from someone else's harness</div>
-          <div class="task-item-desc">Write the README, the install path, and one runnable example that a stranger can execute in under ten minutes. Check what publishing to the Environments Hub requires now, and look at how Inspect structures tasks and scorers so your environment can be wrapped either way. Phase 4 hardens and publishes it; this week ends with something that runs.</div>
+          <div class="task-item-title">Report reliability, not just accuracy</div>
+          <div class="task-item-desc">Run the same model on the same tasks several times and publish the spread. Separately, quantify how often the environment itself fails — flaky setup, timeouts, verifier false negatives — because that number bounds every result anyone will ever get from it. This is what the week 32 audit taught you to look for in other people's work; apply it to your own.</div>
           <div class="task-item-time">Week 38</div>
-          <a class="resource" href="https://app.primeintellect.ai/dashboard/environments" target="_blank">Environments Hub ↗</a>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Make it consumable by a training loop</div>
+          <div class="task-item-desc">Expose it so an RL run can call it: clean reset, dense enough reward, no hidden global state, and a documented step budget. You have just spent weeks 35–36 on the other side of that interface, so you know what a trainer needs. This is the difference between an eval and an environment, and it is the word the job postings use.</div>
+          <div class="task-item-time">Week 38</div>
+        </div>
+        <div class="task-item">
+          <div class="task-item-title">Publish v1 with a changelog against v0</div>
+          <div class="task-item-desc">Tag it, write the changelog against your week-26 version, and make the diff legible: what you got wrong first time, what the statistics changed, what you now know about its reliability. The visible delta between v0 and v1 is a stronger signal than either version alone — it shows twelve weeks of judgement, not a weekend of effort.</div>
+          <div class="task-item-time">Week 38</div>
         </div>
       </div>
       <div class="callout callout-tip">
-        <strong>Flagship deliverable 1, and it does not finish this week.</strong> Week 48 is the start: task, verifier, reset, reward, and a first variance measurement. Weeks 49–50 harden it, get a stranger to install it, and publish. Plan the scope accordingly — small and reliable beats ambitious and flaky.
-      </div>
-      <div class="callout callout-warn">
-        <strong>Reliability is the contribution.</strong> Anyone can write a task. The reason environments are scarce is that most of them silently leak state between episodes, depend on a network resource that changes, or score inconsistently. Your variance and failure-rate numbers are what make yours worth using.
+        <strong>This is the artifact you lead with.</strong> Not because it is impressive on its own, but because a public v0 from week 26 and a defensible v1 from week 38, with the reasoning in between, is evidence of the thing evals hiring actually screens for: that you know when your own numbers cannot be trusted.
       </div>
     </div>
 

@@ -563,6 +563,22 @@
       "url": "https://arxiv.org/abs/2411.12990"
      }
     ]
+   },
+   "Apply it to your own numbers": {
+    "desc": "Redo your published baselines with the statistics you just learned. The goal is not a prettier table — it is finding out which of your own claims were noise.",
+    "steps": [
+     "Compute the sample size your week-26 comparison actually needed for the effect size you care about.",
+     "Rerun at that size and use paired comparison wherever models saw identical tasks.",
+     "Add bootstrap confidence intervals to every headline number in the README.",
+     "Commit the corrected table with a note on each number that moved, and say plainly if a claim no longer holds.",
+     "Keep the original table in the repo history — the correction is part of the evidence."
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2411.00640 — Adding Error Bars to Evals",
+      "url": "https://arxiv.org/abs/2411.00640"
+     }
+    ]
    }
   },
   "p2-agent-harness": {
@@ -1128,6 +1144,22 @@
       "url": "https://www.youtube.com/watch?v=McaI5kkQySU"
      }
     ]
+   },
+   "Train against your own environment": {
+    "desc": "Point a trainer at your environment to find out whether the interface actually holds. A bad learning curve is a fine outcome; a broken reset is the finding.",
+    "steps": [
+     "Run a short GRPO job against your environment using the setup from earlier this week.",
+     "Watch for state leaking between episodes — the most common defect in a first environment.",
+     "Check whether the reward is dense enough to learn from, and note what it fails to credit.",
+     "Record wall-clock and cost per rollout; RL amplifies both far beyond eval usage.",
+     "Write the defects into the week-38 backlog rather than fixing them now."
+    ],
+    "docs": [
+     {
+      "name": "TRL — GRPO trainer",
+      "url": "https://github.com/huggingface/trl"
+     }
+    ]
    }
   },
   "p2-eval-infra": {
@@ -1305,6 +1337,16 @@
       "url": "https://www.youtube.com/watch?v=jqgLRoR_kgs"
      }
     ]
+   },
+   "Put your environment behind the queue": {
+    "desc": "Move the hand-rolled week-26 runner onto real infrastructure, then prove the numbers did not change.",
+    "steps": [
+     "Run your environment through the queue with retries, caching and dedupe enabled.",
+     "Add per-sample cost and token accounting to the results store.",
+     "Re-run the baselines and diff against the hand-run numbers; investigate any disagreement rather than accepting it.",
+     "Make results queryable after the fact — you will want week-26 runs when you write the changelog in week 38.",
+     "Confirm a cached run and a cold run produce identical results."
+    ]
    }
   },
   "p2-judge-validation": {
@@ -1471,6 +1513,22 @@
      {
       "name": "Evaluating AI Agents (DeepLearning.AI short course)",
       "url": "https://www.deeplearning.ai/short-courses/evaluating-ai-agents/"
+     }
+    ]
+   },
+   "Decide what your environment needs": {
+    "desc": "Choose deliberately between programmatic and judged grading for your own tasks, and document the choice either way.",
+    "steps": [
+     "List every task in your environment and mark which parts are objectively checkable.",
+     "For any subjective part, write the rubric and hand-label 100 samples as ground truth.",
+     "Measure judge-human agreement, plus position and length bias.",
+     "If everything is programmatic, write the README paragraph explaining why that is correct for this domain.",
+     "Record the judge model and version, so a future upgrade does not silently rewrite your history."
+    ],
+    "docs": [
+     {
+      "name": "Inspect — model-graded scorers",
+      "url": "https://inspect.aisi.org.uk/scorers.html"
      }
     ]
    }
@@ -1783,6 +1841,16 @@
       "url": "https://hal.cs.princeton.edu/gaia"
      }
     ]
+   },
+   "Audit your own environment the same way": {
+    "desc": "Apply the audit lens to yourself and publish what it finds. Pre-empting the criticism is worth more than surviving it.",
+    "steps": [
+     "Write down every parameter someone could vary without lying: step budget, retries, temperature, harness version, rollout count.",
+     "Ask whether a submitter could inflate a score by changing something you never documented, then document it.",
+     "If you quote a human baseline, state how it was constructed, by how many people, under what time limit.",
+     "Check your verifier for false negatives on correct-but-unusual answers.",
+     "Publish all of it as a limitations section rather than a footnote."
+    ]
    }
   },
   "p2-safety-evals": {
@@ -1969,190 +2037,116 @@
       "url": "https://axrp.net/episode/2024/07/28/episode-34-ai-evaluations-beth-barnes.html"
      }
     ]
+   },
+   "Ask what your environment would miss": {
+    "desc": "Work out what a model could get away with while scoring well on your tasks, and whether you would ever know.",
+    "steps": [
+     "Describe a concrete way to score highly on your environment while doing something you would not endorse.",
+     "Check whether your verifier would catch it, and say so honestly if it would not.",
+     "Consider sandbagging: could a model deliberately underperform here, and would you detect it?",
+     "Check whether your task text signals that this is an evaluation — eval-aware behaviour is a measurement problem, not a curiosity.",
+     "Add the answers to the limitations section, including the ones you cannot currently answer."
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2406.07358 — AI Sandbagging: Language Models can Strategically Underperform on Evaluations",
+      "url": "https://arxiv.org/abs/2406.07358"
+     }
+    ]
    }
   },
   "p2-environment": {
-   "Choose the task, and write the verifier first": {
-    "desc": "Task selection is the hardest judgement call in the plan. You want programmatic verification, meaningful spread across models (not saturated, not impossible), and narrow enough scope to diagnose specific failure types. Write the verifier before the task content — if you cannot state the pass condition as code, the task is not ready.",
+   "Re-baseline it with real statistics": {
+    "desc": "Apply the week-27 statistics to the numbers you published in week 26. Expect several of them to move, and at least one to stop being significant.",
     "steps": [
-     "Write the verifier first, as a pure function with its own unit tests, before a single task instance exists. If the pass condition resists being code, pick a different task.",
-     "Pilot for spread: run 3–5 models of clearly different strength on 10 draft instances. If everything passes or everything fails, the task cannot measure anything — iterate before you scale.",
-     "Design against reward hacking explicitly: try to pass your verifier without solving the task (hardcode, read the test, exploit a loose regex) and fix what works. Read the agentic-benchmark best-practices paper for the standard exploits.",
-     "Keep the scope narrow enough that a failure is diagnosable — you want to be able to say *which* capability failed, not just that the score is 0.4.",
-     "Make instances procedurally generated where possible, with a seed, so contamination is bounded and you can grow n later.",
-     "Write the task spec document now: what it measures, what it does not, expected human baseline, and the known ways to cheat it."
+     "Compute the sample size needed for the effect size you actually care about, then run that many rather than the number that felt sufficient.",
+     "Use paired comparison where models see identical tasks — it removes most of the variance you were previously calling noise.",
+     "Put bootstrap confidence intervals on every headline number in the README.",
+     "Apply a multiple-comparison correction if you are reporting many model-versus-model claims at once.",
+     "Diff the new table against your v0 table and write a sentence on every number that moved."
     ],
     "papers": [
      {
-      "name": "Establishing Best Practices for Building Rigorous Agentic Benchmarks (arXiv 2507.02825)",
-      "url": "https://arxiv.org/abs/2507.02825"
-     },
-     {
-      "name": "BetterBench: Assessing AI Benchmarks, Uncovering Issues, and Establishing Best Practices (arXiv 2411.12990)",
-      "url": "https://arxiv.org/abs/2411.12990"
-     },
-     {
-      "name": "Cheating Automatic LLM Benchmarks: Null Models Achieve High Win Rates (arXiv 2410.07137)",
-      "url": "https://arxiv.org/abs/2410.07137"
-     }
-    ],
-    "docs": [
-     {
-      "name": "verifiers — Tasksets (what a task and its rubric look like in v1)",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/tasksets"
-     },
-     {
-      "name": "Inspect — Custom Scorers (the verifier, in Inspect's vocabulary)",
-      "url": "https://inspect.aisi.org.uk/custom-scorers.html"
-     },
-     {
-      "name": "Inspect — Tasks",
-      "url": "https://inspect.aisi.org.uk/tasks.html"
-     },
-     {
-      "name": "METR Task Standard",
-      "url": "https://github.com/METR/task-standard"
+      "name": "arXiv 2411.00640 — Adding Error Bars to Evals (Miller, Anthropic)",
+      "url": "https://arxiv.org/abs/2411.00640"
      }
     ]
    },
-   "Implement the four interfaces": {
-    "desc": "An environment is a task, a reset, a step-and-reward, and a verifier. Build it against Prime Intellect's verifiers, whose v1 restructured around taskset, harness, and runtime — matching that structure now saves a rewrite in Phase 4. Reset is the part people get wrong: state must not leak between episodes.",
+   "Add a validated judge, or justify not having one": {
+    "desc": "Subjective grading needs a judge you have measured. Fully programmatic grading needs an explicit statement that you chose it, not that you avoided the harder thing.",
     "steps": [
-     "Read the v1 architecture page and internalise the split: taskset (data + tools + scoring), harness (how the agent solves it), runtime (where it executes). Your code belongs almost entirely in the taskset.",
-     "Stand up an OpenAI-compatible endpoint backed by vLLM first — verifiers assumes one, and getting inference working before environment logic saves a day of confused debugging.",
-     "Implement the taskset with the load-dataset / rollout / rubric shape from the docs, then run it under the built-in ReAct harness before you write a custom one.",
-     "Make reset genuinely hermetic: fresh container or fresh temp dir per episode, no module-level mutable state, no shared RNG, no reused ports. Assert it by running episode B first and checking the score is identical.",
-     "Write the leak test as a real test: run the same instance twice in one process, once after a *successful* episode and once after a *failed* one, and assert identical scores.",
-     "Run the same taskset under a second harness (or under Harbor) to prove the decoupling actually holds."
+     "If anything in your task is subjective, write the rubric and grade 50-100 samples by hand to create ground truth.",
+     "Report judge-human agreement, and measure position bias and length bias explicitly.",
+     "Re-check calibration against a held-out slice — judges drift as prompts and models change.",
+     "If your tasks are fully programmatic, state that in the README and say why that is right for this domain.",
+     "Record the judge model and version alongside the results; a judge upgrade silently changes every historical number."
     ],
     "docs": [
      {
-      "name": "PrimeIntellect-ai/verifiers",
+      "name": "Inspect — model-graded scorers",
+      "url": "https://inspect.aisi.org.uk/scorers.html"
+     }
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2306.05685 — Judging LLM-as-a-Judge (MT-Bench, position and verbosity bias)",
+      "url": "https://arxiv.org/abs/2306.05685"
+     },
+     {
+      "name": "arXiv 2507.17746 — Rubrics as Rewards",
+      "url": "https://arxiv.org/abs/2507.17746"
+     }
+    ]
+   },
+   "Report reliability, not just accuracy": {
+    "desc": "The environment's own failure rate bounds every result anyone will ever get from it. Publish it as a first-class number.",
+    "steps": [
+     "Run the same model on the same tasks at three to five seeds and publish per-task variance, not just the mean.",
+     "Separately count environment-side failures: setup flakes, timeouts, and verifier false negatives.",
+     "State the step budget and harness version with every number, since those are the parameters other people vary silently.",
+     "Add a reliability section to the README that a stranger can read before trusting anything else in it.",
+     "Re-run the whole thing on a clean machine to catch the state you did not know you depended on."
+    ],
+    "papers": [
+     {
+      "name": "arXiv 2604.17849 — On the Reliability of Computer Use Agents",
+      "url": "https://arxiv.org/abs/2604.17849"
+     }
+    ]
+   },
+   "Make it consumable by a training loop": {
+    "desc": "An eval scores a model; an environment can be trained against. The interface difference is what the job postings are asking for.",
+    "steps": [
+     "Expose a clean reset with no hidden global state between episodes.",
+     "Make the reward dense enough to be learnable, and document what it does and does not credit.",
+     "Document the step budget and enforce it in code rather than by convention.",
+     "Run a short GRPO job against it using what you built in weeks 35-36, even if the result is bad — the point is that the interface holds.",
+     "Align the structure with the verifiers taskset/harness/runtime split so someone else's trainer can pick it up."
+    ],
+    "docs": [
+     {
+      "name": "Prime Intellect — verifiers",
       "url": "https://github.com/PrimeIntellect-ai/verifiers"
      },
      {
-      "name": "verifiers v1 — Overview",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/overview"
-     },
-     {
-      "name": "verifiers v1 — Getting Started",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/getting_started"
-     },
-     {
-      "name": "verifiers v1 — Architecture (taskset / harness / runtime)",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/architecture"
-     },
-     {
-      "name": "verifiers v1 — Harnesses",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/harnesses"
-     },
-     {
-      "name": "vLLM (the OpenAI-compatible endpoint verifiers expects)",
-      "url": "https://github.com/vllm-project/vllm"
-     }
-    ],
-    "papers": [
-     {
-      "name": "Establishing Best Practices for Building Rigorous Agentic Benchmarks (arXiv 2507.02825)",
-      "url": "https://arxiv.org/abs/2507.02825"
-     }
-    ],
-    "podcasts": [
-     {
-      "title": "Building the GitHub for RL Environments: Prime Intellect's Will Brown & Johannes Hagemann (Sequoia Training Data)",
-      "url": "https://sequoiacap.com/podcast/building-the-github-for-rl-environments-prime-intellects-will-brown-johannes-hagemann/"
-     }
-    ]
-   },
-   "Measure run-to-run variance and reliability": {
-    "desc": "Run the same model on the same tasks n times and report the spread, not the best number. Separately, quantify how often the environment itself fails — timeouts, container errors, verifier crashes — because a task that flakes 8% of the time cannot detect a 3% capability difference. An environment nobody can trust the numbers from is not an environment.",
-    "steps": [
-     "Run one model on the full task set at least 5 times with different seeds and report mean, standard deviation, and min–max — never the best run.",
-     "Separate the two variance sources you learned in Task 01: decoding variance (same task, resampled) and task variance (different task subsets). Report both.",
-     "Instrument environment failure as a first-class outcome distinct from task failure: container start error, timeout, verifier exception, tool crash, network flake. Report the rate per category.",
-     "Compute the resolution of your environment: given your measured variance and n, what is the smallest capability difference it could detect? Put that number in the README.",
-     "Chase the flakes until the environment failure rate is low enough that the resolution number is not embarrassing — usually this means removing a network dependency or pinning a container image by digest.",
-     "Publish the variance table alongside the scores. That table is the actual contribution."
-    ],
-    "docs": [
-     {
-      "name": "verifiers v1 — Evaluation",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/evaluation"
-     },
-     {
-      "name": "Inspect — Scoring Metrics (stderr, epochs, reducers)",
-      "url": "https://inspect.aisi.org.uk/metrics.html"
-     },
-     {
-      "name": "Inspect — Handling Errors (separating sample errors from harness errors)",
-      "url": "https://inspect.aisi.org.uk/handling-errors.html"
-     },
-     {
-      "name": "scipy.stats.bootstrap",
-      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
-     }
-    ],
-    "papers": [
-     {
-      "name": "Adding Error Bars to Evals (arXiv 2411.00640)",
-      "url": "https://arxiv.org/abs/2411.00640"
-     },
-     {
-      "name": "Establishing Best Practices for Building Rigorous Agentic Benchmarks (arXiv 2507.02825)",
-      "url": "https://arxiv.org/abs/2507.02825"
-     }
-    ]
-   },
-   "Make it callable from someone else's harness": {
-    "desc": "Write the README, the install path, and one runnable example a stranger can execute in under ten minutes. Check what publishing to the Environments Hub requires now, and look at how Inspect structures tasks and scorers so your environment can be wrapped either way. Phase 4 hardens and publishes it; this week ends with something that runs.",
-    "steps": [
-     "Write the ten-minute path first: install command, one env var, one command that runs three tasks against a named model and prints a score. Then delete everything that is not needed to make that work.",
-     "Test it on a clean machine or a fresh container. Every undeclared dependency shows up in the first thirty seconds.",
-     "Package it the way the Hub expects — a verifiers environment installable as a wheel — and read the Environments Hub docs for the current metadata requirements before you assume.",
-     "Add an Inspect-compatible wrapper: a `@task` returning your dataset, your solver/agent, and your verifier as a scorer, so people already on Inspect can run it without adopting your stack.",
-     "Write the README a stranger can act on: what it measures, what it does not, install, run, expected scores for two named models, known failure modes, and the variance and environment-failure numbers from the previous step.",
-     "Have someone who did not build it install and run it, and fix whatever they hit before Phase 4."
-    ],
-    "docs": [
-     {
-      "name": "Environments Hub",
+      "name": "Prime Intellect — Environments Hub",
       "url": "https://app.primeintellect.ai/dashboard/environments"
-     },
-     {
-      "name": "Prime Intellect — Environments overview and publishing",
-      "url": "https://docs.primeintellect.ai/tutorials-environments/environments"
-     },
-     {
-      "name": "verifiers v1 — Env",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/env"
-     },
-     {
-      "name": "verifiers v1 — Harbor integration",
-      "url": "https://docs.primeintellect.ai/verifiers/v1/harbor"
-     },
-     {
-      "name": "Inspect — Tasks",
-      "url": "https://inspect.aisi.org.uk/tasks.html"
-     },
-     {
-      "name": "Inspect — Scorers",
-      "url": "https://inspect.aisi.org.uk/scorers.html"
-     },
-     {
-      "name": "PrimeIntellect-ai/community-environments — read real published environments",
-      "url": "https://github.com/PrimeIntellect-ai/prime-environments"
      }
+    ]
+   },
+   "Publish v1 with a changelog against v0": {
+    "desc": "The visible delta between the week-26 version and this one is stronger evidence than either version alone.",
+    "steps": [
+     "Tag v1 and write a changelog that names what v0 got wrong, not just what v1 adds.",
+     "Keep the v0 tag and its original README reachable — the naive version is part of the evidence.",
+     "Publish to the Environments Hub and check whether it qualifies for a bounty.",
+     "Write one short post walking through a number that changed and why, aimed at someone who does evals for a living.",
+     "Ask one person from your community to install it cold and tell you where they got stuck."
     ],
-    "papers": [
+    "docs": [
      {
-      "name": "BetterBench: Assessing AI Benchmarks, Uncovering Issues, and Establishing Best Practices (arXiv 2411.12990)",
-      "url": "https://arxiv.org/abs/2411.12990"
-     }
-    ],
-    "podcasts": [
-     {
-      "title": "Building the GitHub for RL Environments: Prime Intellect's Will Brown & Johannes Hagemann (Sequoia Training Data)",
-      "url": "https://sequoiacap.com/podcast/building-the-github-for-rl-environments-prime-intellects-will-brown-johannes-hagemann/"
+      "name": "Prime Intellect — Environments Hub",
+      "url": "https://app.primeintellect.ai/dashboard/environments"
      }
     ]
    }

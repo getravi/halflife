@@ -267,6 +267,11 @@
        "label": "A statistical approach to model evals ↗",
        "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals"
       }
+     },
+     {
+      "title": "Apply it to your own numbers",
+      "desc": "Take the baseline table you published in week 26 and redo it properly: compute the sample size you actually needed, add bootstrap intervals, and use paired comparison where models saw the same tasks. Commit the corrected table with a note saying what changed. Finding that one of your own headline numbers was noise is the most useful thing that can happen this week.",
+      "time": "Week 28"
      }
     ],
     "callouts": [
@@ -316,6 +321,11 @@
      {
       "title": "Calibration drift and version pinning",
       "desc": "A judge is a model and it changes under you. Pin the exact judge model version in your results, keep the gold set in the repo, and re-run it whenever the judge model, its prompt, or its decode parameters change. Record the agreement number per version so you can tell a real score move from a judge move.",
+      "time": "Week 29"
+     },
+     {
+      "title": "Decide what your environment needs",
+      "desc": "Look at your own tasks and decide honestly whether any of them need subjective grading. If they do, hand-label a hundred samples and measure your judge against them. If they genuinely do not, write the paragraph in your README explaining why programmatic verification is sufficient here — an unexplained absence of judges reads as avoidance.",
       "time": "Week 29"
      }
     ],
@@ -372,6 +382,11 @@
        "label": "Inspect eval logs ↗",
        "url": "https://inspect.aisi.org.uk/eval-logs.html"
       }
+     },
+     {
+      "title": "Put your environment behind the queue",
+      "desc": "Move your week-26 runner onto the infrastructure you just built: retries, caching, dedupe, per-sample cost accounting, and a results store you can query later. Re-run the baselines through it and confirm the numbers match the ones you got by hand. If they do not, you have just found a bug worth writing about.",
+      "time": "Week 31"
      }
     ],
     "callouts": [
@@ -441,6 +456,11 @@
        "label": "arXiv 2307.13854 ↗",
        "url": "https://arxiv.org/abs/2307.13854"
       }
+     },
+     {
+      "title": "Audit your own environment the same way",
+      "desc": "Turn the audit lens on yourself. What is your undeclared step budget? Could someone inflate a score by varying something you never documented? Is your human baseline, if you have one, a single undocumented number? Publish the answers as a limitations section — pre-empting the criticism is worth more than surviving it.",
+      "time": "Week 33"
      }
     ],
     "callouts": [
@@ -549,6 +569,11 @@
        "label": "The RLHF Book ↗",
        "url": "https://rlhfbook.com"
       }
+     },
+     {
+      "title": "Train against your own environment",
+      "desc": "Point a short GRPO run at the environment you published in week 26. It will probably learn something trivial or nothing at all, and that is fine — you are testing whether the interface survives contact with a trainer: reset cleanliness, reward density, hidden state between episodes. Every problem you find here is one the week-38 version fixes.",
+      "time": "Week 36"
      }
     ],
     "callouts": [
@@ -603,6 +628,11 @@
        "label": "inspect_evals ↗",
        "url": "https://github.com/UKGovernmentBEIS/inspect_evals"
       }
+     },
+     {
+      "title": "Ask what your environment would miss",
+      "desc": "Work out how a model could score well on your tasks while doing something you would not endorse, and whether your verifier would notice. Consider sandbagging — would you detect a model deliberately underperforming? — and whether your task descriptions leak that this is an evaluation. Write the answer down even where the answer is that you cannot currently tell.",
+      "time": "Week 37"
      }
     ],
     "callouts": [
@@ -615,46 +645,39 @@
    {
     "id": "p2-environment",
     "badge": "Task 11",
-    "title": "Build the environment (begins)",
+    "title": "Environment v1 — make it defensible",
     "tag": "agent",
     "items": [
      {
-      "title": "Choose the task, and write the verifier first",
-      "desc": "Task selection is the hardest judgement call in the plan. You want programmatic verification, meaningful spread across models (not saturated, not impossible), and narrow enough scope to diagnose specific failure types. Write the verifier before the task content — if you cannot state the pass condition as code, the task is not ready.",
+      "title": "Re-baseline it with real statistics",
+      "desc": "Rerun your week-26 baselines with everything week 27 taught you: enough samples to detect the effect size you care about, paired comparison where the tasks are shared, bootstrap intervals on every headline number, and a correction if you are making many comparisons at once. Most of your original numbers will move. Some will stop being significant at all — write that down rather than quietly dropping it.",
       "time": "Week 38"
      },
      {
-      "title": "Implement the four interfaces",
-      "desc": "An environment is a task, a reset, a step-and-reward, and a verifier. Build it against Prime Intellect's verifiers, whose v1 restructured around taskset, harness, and runtime — matching that structure now saves a rewrite in Phase 4. Reset is the part people get wrong: state must not leak between episodes.",
-      "time": "Week 38",
-      "resource": {
-       "label": "verifiers ↗",
-       "url": "https://github.com/PrimeIntellect-ai/verifiers"
-      }
-     },
-     {
-      "title": "Measure run-to-run variance and reliability",
-      "desc": "Run the same model on the same tasks n times and report the spread, not the best number. Separately, quantify how often the environment itself fails — timeouts, container errors, verifier crashes — because a task that flakes 8% of the time cannot detect a 3% capability difference. An environment nobody can trust the numbers from is not an environment.",
+      "title": "Add a validated judge, or justify not having one",
+      "desc": "If any part of your task needs subjective grading, build the rubric judge and report its agreement with your own human labels, plus position and length bias, as you learned in week 29. If your tasks are fully programmatic, say so explicitly in the README and explain why that was the right call — reviewers assume you avoided judges because they are hard, unless you tell them otherwise.",
       "time": "Week 38"
      },
      {
-      "title": "Make it callable from someone else's harness",
-      "desc": "Write the README, the install path, and one runnable example that a stranger can execute in under ten minutes. Check what publishing to the Environments Hub requires now, and look at how Inspect structures tasks and scorers so your environment can be wrapped either way. Phase 4 hardens and publishes it; this week ends with something that runs.",
-      "time": "Week 38",
-      "resource": {
-       "label": "Environments Hub ↗",
-       "url": "https://app.primeintellect.ai/dashboard/environments"
-      }
+      "title": "Report reliability, not just accuracy",
+      "desc": "Run the same model on the same tasks several times and publish the spread. Separately, quantify how often the environment itself fails — flaky setup, timeouts, verifier false negatives — because that number bounds every result anyone will ever get from it. This is what the week 32 audit taught you to look for in other people's work; apply it to your own.",
+      "time": "Week 38"
+     },
+     {
+      "title": "Make it consumable by a training loop",
+      "desc": "Expose it so an RL run can call it: clean reset, dense enough reward, no hidden global state, and a documented step budget. You have just spent weeks 35–36 on the other side of that interface, so you know what a trainer needs. This is the difference between an eval and an environment, and it is the word the job postings use.",
+      "time": "Week 38"
+     },
+     {
+      "title": "Publish v1 with a changelog against v0",
+      "desc": "Tag it, write the changelog against your week-26 version, and make the diff legible: what you got wrong first time, what the statistics changed, what you now know about its reliability. The visible delta between v0 and v1 is a stronger signal than either version alone — it shows twelve weeks of judgement, not a weekend of effort.",
+      "time": "Week 38"
      }
     ],
     "callouts": [
      {
       "type": "tip",
-      "html": "<strong>Flagship deliverable 1, and it does not finish this week.</strong> Week 48 is the start: task, verifier, reset, reward, and a first variance measurement. Weeks 49–50 harden it, get a stranger to install it, and publish. Plan the scope accordingly — small and reliable beats ambitious and flaky."
-     },
-     {
-      "type": "warn",
-      "html": "<strong>Reliability is the contribution.</strong> Anyone can write a task. The reason environments are scarce is that most of them silently leak state between episodes, depend on a network resource that changes, or score inconsistently. Your variance and failure-rate numbers are what make yours worth using."
+      "html": "<strong>This is the artifact you lead with.</strong> Not because it is impressive on its own, but because a public v0 from week 26 and a defensible v1 from week 38, with the reasoning in between, is evidence of the thing evals hiring actually screens for: that you know when your own numbers cannot be trusted."
      }
     ]
    }
