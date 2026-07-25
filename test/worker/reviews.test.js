@@ -3,10 +3,32 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { resetDb, seedUsers } from '../helpers.js';
 import { newCard, review as applyGrade } from '../../worker/scheduler.js';
 
+import * as db from '../../worker/db.js';
+import { sha256Hex } from '../../worker/crypto.js';
+
+const AUTH_DAY = 86400000;
+let COOKIE;
+
+async function signInAs(userId = 'u1') {
+  await env.DB.prepare('INSERT INTO users (id, login, created_at) VALUES (?, ?, 0)')
+    .bind(userId, userId).run();
+  await db.createSession(env, userId, await sha256Hex(`tok-${userId}`),
+    Date.now(), 30 * AUTH_DAY, 'test');
+  return `flp_session=tok-${userId}`;
+}
+
+// Every request in this file goes through a real session now. Before auth
+// landed these tests passed because the app authenticated nobody.
+const api = (path, init = {}) => SELF.fetch(`https://x${path}`, {
+  ...init,
+  headers: { ...(init.headers ?? {}), cookie: COOKIE }
+});
+
+
 const DAY = 86400000;
 
 async function makeCard() {
-  const res = await SELF.fetch('https://x/api/cards', {
+  const res = await api('/api/cards', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -17,14 +39,17 @@ async function makeCard() {
   return (await res.json()).card;
 }
 
-const grade = (cardId, g) => SELF.fetch('https://x/api/reviews', {
+const grade = (cardId, g) => api('/api/reviews', {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
   body: JSON.stringify({ cardId, grade: g, latencyMs: 3300 })
 });
 
 describe('reviews route', () => {
-  beforeEach(resetDb);
+  beforeEach(async () => {
+    await resetDb();
+    COOKIE = await signInAs();
+  });
 
   it('grading good schedules four days out on the first review', async () => {
     const created = await makeCard();

@@ -9,14 +9,19 @@ import * as progress from './routes/progress.js';
 import * as cards from './routes/cards.js';
 import * as reviews from './routes/reviews.js';
 import * as meRoutes from './routes/me.js';
+import * as auth from './routes/auth.js';
 
+// [method, path, handler, isPublic]
 const ROUTES = [
+  ['GET', '/api/auth/github', auth.start, true],
+  ['GET', '/api/auth/callback', auth.callback, true],
+  ['POST', '/api/auth/signout', auth.signout, true],
+  ['GET', '/api/me', meRoutes.me, true],
   ['GET', '/api/progress', progress.list],
   ['PUT', '/api/progress', progress.set],
   ['GET', '/api/cards', cards.list],
   ['POST', '/api/cards', cards.create],
   ['POST', '/api/reviews', reviews.create],
-  ['GET', '/api/me', meRoutes.me],
   ['DELETE', '/api/me', meRoutes.destroy],
   ['POST', '/api/enrollments', meRoutes.enrol]
 ];
@@ -35,7 +40,7 @@ export default {
     if (!match) return error('no such route', 404);
 
     const user = await getUser(request, env);
-    if (!user) return error('not signed in', 401);
+    if (!user && !match[3]) return error('not signed in', 401);
 
     try {
       return await match[2](request, env, user, url);

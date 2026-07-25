@@ -6,7 +6,12 @@ import { getEnrollments, upsertEnrollment, deleteUser } from '../db.js';
 // for anyone west of UTC.
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+// The one handler that can receive a null user, because it is public. Every
+// other route stays behind the 401 in index.js and may assume a user exists —
+// the exemption is exactly one handler wide, deliberately.
 export async function me(request, env, user) {
+  if (!user) return json({ user: null, enrollments: [] });
+
   const rows = await getEnrollments(env, user.id);
   return json({
     user: { id: user.id, login: user.login, avatarUrl: user.avatar_url },

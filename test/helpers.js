@@ -11,9 +11,6 @@ import { env } from 'cloudflare:test';
  */
 export async function resetDb() {
   await env.DB.prepare('DELETE FROM users').run();
-  await env.DB.prepare(
-    'INSERT INTO users (id, github_id, login, avatar_url, created_at) VALUES (?, NULL, ?, NULL, 0)'
-  ).bind(env.DEV_USER_ID, 'dev').run();
 }
 
 /** Adds extra users on top of the seeded one, for isolation checks. */
