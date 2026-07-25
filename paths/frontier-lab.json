@@ -1764,10 +1764,7 @@
           "title": "Phase 0 complete",
           "badge": "Milestone",
           "tag": "milestone",
-          "weeks": [
-            1,
-            8
-          ],
+          "weeks": null,
           "weight": 4,
           "subtasks": [],
           "milestone": {
@@ -3362,10 +3359,7 @@
           "title": "Phase 1 complete",
           "badge": "Milestone",
           "tag": "milestone",
-          "weeks": [
-            9,
-            20
-          ],
+          "weeks": null,
           "weight": 4,
           "subtasks": [],
           "milestone": {
@@ -7034,10 +7028,7 @@
           "title": "Phase 2 complete",
           "badge": "Milestone",
           "tag": "milestone",
-          "weeks": [
-            21,
-            38
-          ],
+          "weeks": null,
           "weight": 4,
           "subtasks": [],
           "milestone": {
@@ -9111,10 +9102,7 @@
           "title": "Phase 3 complete",
           "badge": "Milestone",
           "tag": "milestone",
-          "weeks": [
-            39,
-            48
-          ],
+          "weeks": null,
           "weight": 4,
           "subtasks": [],
           "milestone": {
@@ -10044,10 +10032,7 @@
           "title": "The portfolio",
           "badge": "Milestone",
           "tag": "milestone",
-          "weeks": [
-            49,
-            52
-          ],
+          "weeks": null,
           "weight": 4,
           "subtasks": [],
           "milestone": {

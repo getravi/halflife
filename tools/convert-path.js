@@ -97,7 +97,10 @@ const phases = panels.sort((a, b) => a.id.localeCompare(b.id)).map(ph => {
       title: decode(m.title),
       badge: decode(m.badge),
       tag: 'milestone',
-      weeks: weeksOf(ph.weeks),
+      // Deliberately no weeks. A milestone is the phase's closing summary
+      // rather than work scheduled at a point in time, and giving it the whole
+      // phase range makes it read as starting before the tasks it follows.
+      weeks: null,
       weight: weights.tasks[m.id] ?? 1,
       subtasks: [],
       milestone: {
