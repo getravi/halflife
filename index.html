@@ -115,6 +115,7 @@
 <header class="site-header">
   <span class="logo">FLP</span>
   <nav class="nav">
+    <a href="#today">Today</a>
     <a href="#overview">Overview</a>
     <a href="#phase0">Phase 0</a>
     <a href="#phase1">Phase 1</a>
@@ -123,6 +124,32 @@
     <a href="#phase4">Phase 4</a>
   </nav>
 </header>
+
+<!-- TODAY VIEW PANEL — hand-written; lives above the render.py boundary marker
+     so that `make render` preserves it. Do not move it below that marker. -->
+<div id="view-today" class="view-panel">
+  <div class="container">
+    <div class="today-banner" id="today-offline" hidden>
+      Server not running — read-only. Start it with <code>make serve</code>.
+    </div>
+
+    <section class="today-block">
+      <div class="today-block-title">Due now</div>
+      <div class="today-due"><span id="today-due-count">0</span> <span id="today-due-noun">cards</span></div>
+      <button class="today-review-btn" id="today-start-review">Start review</button>
+    </section>
+
+    <section class="today-block">
+      <div class="today-block-title">This week</div>
+      <div id="today-week">—</div>
+    </section>
+
+    <section class="today-block">
+      <div class="today-block-title">Capture debt</div>
+      <div id="today-debt">—</div>
+    </section>
+  </div>
+</div>
 
 <!-- OVERVIEW VIEW PANEL -->
 <div id="view-overview" class="view-panel">
@@ -2039,7 +2066,9 @@
 </div>
 
 <script src="resources_db.js"></script>
+<script src="server/scheduler.js"></script>
 <script src="api.js"></script>
 <script src="app.js"></script>
+<script src="today.js"></script>
 </body>
 </html>

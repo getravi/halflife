@@ -1496,7 +1496,10 @@ to:
     if (!state.planStartDate) {
       el.innerHTML = `<button class="today-review-btn" id="today-set-start">Set plan start date to today</button>`;
       document.getElementById('today-set-start').addEventListener('click', async () => {
-        await API.patchState({ planStartDate: new Date().toISOString().slice(0, 10) });
+        // localDate, not toISOString: the latter returns the UTC day, so
+        // clicking this on a July evening in the Americas records tomorrow
+        // and every week number is off by one from then on.
+        await API.patchState({ planStartDate: localDate(new Date()) });
         window.TODAY.render();
       });
       return;

@@ -1470,7 +1470,7 @@ function initTabs() {
 
 // ── SPA Routing ──────────────────────────────────────────────
 function handleRouting() {
-  const hash = window.location.hash || '#overview';
+  const hash = window.location.hash || '#today';
   const activeViewId = 'view-' + hash.replace('#', '');
   
   // Toggle view panels
@@ -1929,7 +1929,10 @@ function initApp() {
 
   API.flushOutbox()
     .then(() => API.getCards())
-    .then(cards => { window.CAPTURE_STATE.cards = cards; });
+    .then(cards => {
+      window.CAPTURE_STATE.cards = cards;
+      if (window.TODAY) window.TODAY.render();
+    });
 
   // ── 1. Phase Weight Badges on Overview Phase Cards ──
   const phaseCards = document.querySelectorAll('.phase-card');
