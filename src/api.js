@@ -117,4 +117,9 @@ export const API = {
     }
   };
 
-window.addEventListener('online', () => { API.flushOutbox(); });
+// Guarded because this module is imported by pure code the tests run outside
+// a browser. A module that reaches for a global the moment it is imported
+// cannot be depended on by anything that does not have one.
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => { API.flushOutbox(); });
+}
