@@ -15,6 +15,7 @@
  *   4. week labels sit inside their phase range and never run backwards
  *   5. every id/attribute app.js binds to exists in the HTML
  *   6. no double-escaped entities in rendered text
+ *   7. every card points at a subtask that still exists
  *
  * Exits non-zero on any failure.
  */
@@ -110,6 +111,30 @@ for (const s of ['p0', 'p1', 'p2', 'p3', 'p4'])
 // ---- 6. escaping ----
 if (htmlSrc.includes('&amp;amp;')) fail.push('double-escaped entity (&amp;amp;) in index.html');
 
+// ---- 7. cards resolve to real subtasks ----
+// Cards are keyed by subtask title, the same load-bearing string as everything
+// else. A renamed title would otherwise orphan a hand-written card silently.
+let cardCount = 0;
+const cardsPath = path.join(ROOT, 'data', 'cards.json');
+if (fs.existsSync(cardsPath)) {
+  let cards;
+  try {
+    cards = JSON.parse(fs.readFileSync(cardsPath, 'utf8'));
+  } catch (e) {
+    fail.push(`data/cards.json is not valid JSON: ${e.message}`);
+    cards = [];
+  }
+  for (const c of cards) {
+    cardCount++;
+    const phaseId = Object.keys(ALL_PHASES).find(ph => ALL_PHASES[ph].page === c.page);
+    if (!phaseId || !ALL_PHASES[phaseId].tasks.includes(c.taskId)) {
+      fail.push(`card ${c.id} points at unknown task ${c.page}::${c.taskId}`);
+    } else if (!(tree[c.taskId] || []).includes(c.subtaskTitle)) {
+      fail.push(`card ${c.id} points at unknown subtask "${c.subtaskTitle}" in ${c.taskId}`);
+    }
+  }
+}
+
 // ---- report ----
 if (fail.length) {
   console.error(`FAIL — ${fail.length} problem(s):`);
@@ -117,4 +142,4 @@ if (fail.length) {
   if (fail.length > 40) console.error(`  ...and ${fail.length - 40} more`);
   process.exit(1);
 }
-console.log(`OK — ${appTasks.length} tasks, ${subtaskCount} subtasks, ${stepCount} step weights; index.html == app.js == resources_db.js`);
+console.log(`OK — ${appTasks.length} tasks, ${subtaskCount} subtasks, ${stepCount} step weights, ${cardCount} cards; index.html == app.js == resources_db.js`);
