@@ -13,14 +13,25 @@ Node 24 and pnpm. Everything else is Cloudflare Wrangler.
 
 ```sh
 pnpm install
-pnpm db:migrate:local     # create the local D1 schema and seed the dev user
-pnpm validate             # check paths/*.json and emit public/paths/
-pnpm build                # bundle the frontend into dist/
-pnpm dev:worker           # http://localhost:8787 — the Worker, D1 and the page
+cp .dev.vars.example .dev.vars   # then fill in your dev OAuth app credentials
+pnpm db:migrate:local            # create the local D1 schema
+pnpm validate                    # check paths/*.json and emit public/paths/
+pnpm build                       # bundle the frontend into dist/
+pnpm dev:worker                  # http://localhost:8787
 ```
 
-Open <http://localhost:8787>. **Today** is the landing view; press
-**Set plan start date** first, since the plan-week reading depends on it.
+Open <http://localhost:8787>. The curriculum reads without signing in; tracking
+progress and writing cards needs a GitHub account.
+
+Sign-in needs a GitHub OAuth app whose callback is
+`http://localhost:8787/api/auth/callback`. Production needs a second app
+pointing at the deployed URL — GitHub allows only one callback per app. Set
+`GITHUB_CLIENT_ID` and `APP_URL` in `wrangler.jsonc`, and the secret with
+`pnpm wrangler secret put GITHUB_CLIENT_SECRET`.
+
+**`APP_URL` must match the port you actually serve on.** It builds the
+`redirect_uri` handed to GitHub, and a mismatch fails at the callback rather
+than at startup.
 
 While working on the UI, run Vite instead for hot reload — it serves the page
 on 5173 and proxies `/api` back to the Worker:
@@ -90,6 +101,11 @@ version and fails if an id has changed or vanished. Hosted, a bad rename would
 orphan every user's cards at once rather than just one person's.
 
 Titles are display-only. **Rename them freely.**
+
+Sessions live in D1 and the table stores a SHA-256 of the cookie token, never
+the token. Signing out deletes the row, so a cookie stops working immediately
+rather than at expiry, and deleting an account signs out every device it ever
+used.
 
 ## Editing
 
