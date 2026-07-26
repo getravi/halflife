@@ -176,3 +176,30 @@ export async function deleteCard(env, userId, cardId) {
     .bind(cardId, userId).run();
   return meta.changes > 0;
 }
+
+/**
+ * Export queries. Deliberately not path-scoped, unlike listCards and
+ * listProgress: an export that inherited that scoping would omit every path
+ * the user had enrolled in and left, and a silently partial backup is worse
+ * than none because you find out when you need it.
+ */
+export async function listAllCards(env, userId) {
+  const { results } = await env.DB
+    .prepare('SELECT * FROM cards WHERE user_id = ? ORDER BY path_id, subtask_id, created_at')
+    .bind(userId).all();
+  return results;
+}
+
+export async function listAllProgress(env, userId) {
+  const { results } = await env.DB
+    .prepare('SELECT path_id, node_id, updated_at FROM progress WHERE user_id = ? ORDER BY path_id, node_id')
+    .bind(userId).all();
+  return results;
+}
+
+export async function listUserReviews(env, userId) {
+  const { results } = await env.DB
+    .prepare('SELECT * FROM reviews WHERE user_id = ? ORDER BY ts')
+    .bind(userId).all();
+  return results;
+}
