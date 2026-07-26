@@ -966,3 +966,11 @@ weight-badge {
 .card-edit { margin-top: 10px; }
 .runner-hint { margin-top: 14px; font-family: var(--mono); font-size: 10px;
   color: var(--muted2); letter-spacing: 0.04em; text-align: center; }
+
+/* ── Settings ──────────────────────────────────────────────── */
+.settings-note { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.settings-actions { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+.settings-danger { font: inherit; font-size: 13px; padding: 7px 16px;
+  border: 1px solid var(--red); border-radius: 2px;
+  background: rgba(248,113,113,0.08); color: var(--red); cursor: pointer; }
+.settings-danger:disabled { opacity: 0.4; cursor: not-allowed; }

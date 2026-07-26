@@ -116,6 +116,7 @@
   <nav class="nav">
     <a href="#today">Today</a>
     <a href="#cards">Cards</a>
+    <a href="#settings">Settings</a>
   </nav>
   <div class="auth-slot" id="auth-slot"></div>
 </header>
@@ -175,6 +176,32 @@
       <button data-grade="easy">Easy</button>
     </div>
     <div class="runner-hint">space reveal · 1–4 grade · esc close</div>
+  </div>
+</div>
+
+<div id="view-settings" class="view-panel">
+  <div class="container">
+    <section class="today-block">
+      <div class="today-block-title">Export your data</div>
+      <p class="settings-note">JSON restores everything. Markdown is your cards
+        as a readable document.</p>
+      <div class="settings-actions">
+        <button class="today-review-btn" id="export-json">Download JSON</button>
+        <button class="today-review-btn" id="export-md">Download Markdown</button>
+      </div>
+      <span class="capture-status" id="export-status"></span>
+    </section>
+
+    <section class="today-block">
+      <div class="today-block-title">Delete account</div>
+      <p class="settings-note">This removes every card, every review, all
+        progress and every signed-in session. It cannot be undone.</p>
+      <label class="capture-label">Type your GitHub login to confirm</label>
+      <input class="capture-input" id="delete-confirm" autocomplete="off">
+      <div class="settings-actions">
+        <button class="settings-danger" id="delete-account" disabled>Delete my account</button>
+      </div>
+    </section>
   </div>
 </div>
 

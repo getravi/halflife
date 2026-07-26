@@ -98,6 +98,21 @@ export const API = {
       }
     },
 
+    // A read, so it is not an outbox mutation: a failure must surface rather
+    // than silently exporting the cache, which would produce a file that looks
+    // like a backup and is not one.
+    async getExport() {
+      return API.request('GET', '/api/export');
+    },
+
+    async deleteAccount() {
+      return API.mutate('DELETE', '/api/me');
+    },
+
+    clearOutbox() {
+      write(OUTBOX, []);
+    },
+
     async createCard(fields) {
       const res = await API.mutate('POST', '/api/cards', fields);
       return res ? res.card : null;

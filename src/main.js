@@ -13,6 +13,7 @@ import { initSidebar, CAPTURE_STATE } from './sidebar.js';
 import { initToday } from './today.js';
 import { renderPaths } from './paths-view.js';
 import { renderCards } from './cards-view.js';
+import { renderSettings } from './settings-view.js';
 import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { API } from './api.js';
 
@@ -73,6 +74,13 @@ async function boot() {
         const card = CAPTURE_STATE.cards.find(c => c.id === cardId);
         if (card) { card.prompt = prompt; card.answer = answer; }
         paintCards();
+
+  if (isSignedIn()) {
+    renderSettings(ctx, me);
+  } else {
+    document.querySelector('#view-settings .container').innerHTML =
+      `<section class="today-block"><span class="signed-out-note">Sign in with GitHub to export or delete your data.</span></section>`;
+  }
         await window.TODAY.render();
       },
       async onDelete(cardId) {
