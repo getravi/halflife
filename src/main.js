@@ -1,23 +1,41 @@
 /**
- * Vite entry point. Boot order is explicit here rather than spread across
- * competing DOMContentLoaded handlers: the path has to exist before anything
- * can render, and progress and cards have to be loaded before Today can
- * describe them.
+ * Vite entry point. Boot resolves one of three states — signed out, signed in
+ * without an enrolment, signed in and enrolled — and each lands somewhere
+ * different. The curriculum renders in every case; only writing is gated.
  */
 import '../style.css';
-import { loadPath } from './content.js';
+import { loadPath, loadCatalogue } from './content.js';
 import { indexPath, computeWeights } from './weights.js';
 import { setProgressState } from './progress.js';
 import { renderPath, renderNav } from './render-path.js';
 import { initNav } from './nav.js';
 import { initSidebar, CAPTURE_STATE } from './sidebar.js';
 import { initToday } from './today.js';
+import { renderPaths } from './paths-view.js';
+import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { API } from './api.js';
 
 const PATH_ID = 'frontier-lab';
 
+// The local calendar day. toISOString returns the UTC day and would shift the
+// plan start for anyone west of UTC.
+function localDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 async function boot() {
+  // A 401 anywhere flips the header back to signed out rather than leaving a
+  // dead session that silently drops every write.
+  API.onUnauthorized = () => {
+    setMe({ user: null, enrollments: [] });
+    renderHeader();
+  };
+
   await API.flushOutbox();
+
+  const me = await API.getMe();
+  setMe(me);
+  renderHeader();
 
   const path = await loadPath(PATH_ID);
   const ctx = {
@@ -30,12 +48,29 @@ async function boot() {
   renderPath(path, document.getElementById('phase-views'));
   renderNav(path, document.querySelector('.nav'));
   initSidebar(ctx);
-  initNav();
 
-  setProgressState(await API.getProgress(PATH_ID));
-  CAPTURE_STATE.cards = await API.getCards(PATH_ID);
+  if (isSignedIn()) {
+    setProgressState(await API.getProgress(PATH_ID));
+    CAPTURE_STATE.cards = await API.getCards(PATH_ID);
+  }
+
+  const enrolled = new Set((me.enrollments ?? []).map(e => e.pathId));
+  const catalogue = await loadCatalogue();
+  renderPaths(catalogue, enrolled, async pathId => {
+    await API.enrol(pathId, localDate(new Date()));
+    window.location.hash = '#today';
+    window.location.reload();
+  });
 
   initToday(ctx);
+
+  if (isSignedIn() && !enrolled.has(PATH_ID)) {
+    window.location.hash = '#paths';
+  } else if (!window.location.hash) {
+    window.location.hash = '#today';
+  }
+
+  initNav();
   await window.TODAY.render();
 }
 

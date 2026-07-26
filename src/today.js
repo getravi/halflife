@@ -6,6 +6,7 @@
 import { API } from './api.js';
 import { CAPTURE_STATE, hasCardFor, refreshTaskBadges } from './sidebar.js';
 import { rollup, allDone } from './progress.js';
+import { isSignedIn } from './auth.js';
 import * as SCHEDULER from '../worker/scheduler.js';
 
 const DAY_MS = 86400000;
@@ -178,6 +179,25 @@ export function initToday(ctx) {
   }
 
   async function render() {
+    // Signed out is a state, not an error: the curriculum is readable and
+    // nothing is tracked, so Today says so rather than showing zeroes that
+    // look like a plan you have not started.
+    if (!isSignedIn()) {
+      el('today-covered').textContent = '—';
+      el('today-retained').textContent = '—';
+      el('today-due-count').textContent = '0';
+      el('today-due-noun').textContent = 'cards';
+      el('today-start-review').disabled = true;
+      el('today-start-review').textContent = 'Sign in to review';
+      el('today-week').innerHTML =
+        `<span class="signed-out-note">Sign in with GitHub to track progress and write cards.</span>`;
+      el('today-debt').innerHTML =
+        `<span class="signed-out-note">Nothing tracked yet.</span>`;
+      el('today-retention-pressure').textContent = '';
+      el('today-offline').hidden = true;
+      return;
+    }
+
     const me = await API.getMe();
     const calc = rollup(ctx.path, ctx.weights, allDone());
 
