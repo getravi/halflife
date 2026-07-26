@@ -128,7 +128,7 @@ one fails validation, because somebody's cards point at it.
 
 ```
 pnpm validate     validate paths/*.json and emit public/paths/
-pnpm test         vitest — scheduler, worker routes, isolation, validator, rollup
+pnpm test         vitest — worker routes against real D1, plus DOM tests under happy-dom
 pnpm build        validate, then bundle into dist/
 pnpm dev          vite on :5173 with hot reload, proxying /api to :8787
 pnpm dev:worker   the Worker, D1 and the built page on :8787
@@ -136,6 +136,25 @@ pnpm deploy       build and push the Worker
 pnpm db:migrate   apply migrations to the remote D1
 pnpm links        sweep every URL in paths/ for liveness (slow, network)
 ```
+
+## Tests
+
+Two Vitest projects:
+
+```
+pnpm vitest run --project worker    routes and D1, in the Workers runtime
+pnpm vitest run --project dom       pure modules and the DOM wiring
+```
+
+The DOM tests boot the real app against a stubbed network, using the real
+`index.html`. They catch broken wiring — a handler that never fires, an id that
+does not exist, a row shape that does not match what reads it. They cannot
+catch layout, CSS or focus behaviour, so they shrink the need for a browser
+rather than removing it.
+
+They were added late, after six sub-projects had accumulated event handlers
+nothing executed. They found three real bugs on the first run, two of which
+would have been invisible until someone opened the page.
 
 ## Link hygiene
 
