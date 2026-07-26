@@ -10,6 +10,7 @@ import * as cards from './routes/cards.js';
 import * as reviews from './routes/reviews.js';
 import * as meRoutes from './routes/me.js';
 import * as auth from './routes/auth.js';
+import * as exportRoute from './routes/export.js';
 
 // [method, path, handler, isPublic]
 const ROUTES = [
@@ -25,7 +26,8 @@ const ROUTES = [
   ['DELETE', '/api/cards', cards.destroy],
   ['POST', '/api/reviews', reviews.create],
   ['DELETE', '/api/me', meRoutes.destroy],
-  ['POST', '/api/enrollments', meRoutes.enrol]
+  ['POST', '/api/enrollments', meRoutes.enrol],
+  ['GET', '/api/export', exportRoute.dump]
 ];
 
 export default {
