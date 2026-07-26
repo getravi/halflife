@@ -152,3 +152,27 @@ export async function upsertGithubUser(env, { githubId, login, avatarUrl }, now)
 
   return { id, github_id: githubId, login, avatar_url: avatarUrl ?? null, created_at: now };
 }
+
+/**
+ * Only prompt and answer appear in the SET clause. The scheduling columns are
+ * not preserved by care — they are unreachable from here, so fixing a typo
+ * cannot silently reschedule a card reviewed for six months.
+ *
+ * Returns null rather than throwing when the card is absent or owned by
+ * somebody else, so the route can answer 404 identically in both cases.
+ */
+export async function updateCardText(env, userId, cardId, prompt, answer) {
+  const { meta } = await env.DB.prepare(
+    'UPDATE cards SET prompt = ?, answer = ? WHERE id = ? AND user_id = ?'
+  ).bind(prompt, answer, cardId, userId).run();
+
+  if (!meta.changes) return null;
+  return env.DB.prepare('SELECT * FROM cards WHERE id = ?').bind(cardId).first();
+}
+
+export async function deleteCard(env, userId, cardId) {
+  const { meta } = await env.DB
+    .prepare('DELETE FROM cards WHERE id = ? AND user_id = ?')
+    .bind(cardId, userId).run();
+  return meta.changes > 0;
+}
