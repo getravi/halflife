@@ -103,6 +103,15 @@ export const API = {
       return res ? res.card : null;
     },
 
+    async updateCard(cardId, prompt, answer) {
+      const res = await API.mutate('PATCH', '/api/cards', { cardId, prompt, answer });
+      return res ? res.card : null;
+    },
+
+    async deleteCard(cardId) {
+      return API.mutate('DELETE', `/api/cards?cardId=${encodeURIComponent(cardId)}`);
+    },
+
     async review(cardId, grade, latencyMs) {
       const res = await API.mutate('POST', '/api/reviews', { cardId, grade, latencyMs });
       return res ? res.card : null;

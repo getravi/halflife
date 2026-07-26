@@ -12,6 +12,7 @@ import { initNav } from './nav.js';
 import { initSidebar, CAPTURE_STATE } from './sidebar.js';
 import { initToday } from './today.js';
 import { renderPaths } from './paths-view.js';
+import { renderCards } from './cards-view.js';
 import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { API } from './api.js';
 
@@ -61,6 +62,35 @@ async function boot() {
     window.location.hash = '#today';
     window.location.reload();
   });
+
+  // Cards are edited in place rather than refetched: the outbox guarantees
+  // delivery, and a refetch while offline would serve the cached list and make
+  // the edit appear to vanish.
+  function paintCards() {
+    renderCards(ctx, CAPTURE_STATE.cards, {
+      async onSave(cardId, prompt, answer) {
+        await API.updateCard(cardId, prompt, answer);
+        const card = CAPTURE_STATE.cards.find(c => c.id === cardId);
+        if (card) { card.prompt = prompt; card.answer = answer; }
+        paintCards();
+        await window.TODAY.render();
+      },
+      async onDelete(cardId) {
+        await API.deleteCard(cardId);
+        CAPTURE_STATE.cards = CAPTURE_STATE.cards.filter(c => c.id !== cardId);
+        paintCards();
+        await window.TODAY.render();
+      }
+    });
+  }
+  paintCards();
+
+  // Signed out we know nothing about anyone's cards, so say that rather than
+  // showing an empty list that reads as "you have none".
+  if (!isSignedIn()) {
+    document.getElementById('cards-list').innerHTML =
+      `<span class="signed-out-note">Sign in with GitHub to see your cards.</span>`;
+  }
 
   initToday(ctx);
 
