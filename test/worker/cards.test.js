@@ -83,3 +83,81 @@ describe('cards routes', () => {
     expect(cards).toEqual([]);
   });
 });
+
+describe('editing and deleting cards', () => {
+  beforeEach(async () => {
+    await resetDb();
+    COOKIE = await signInAs();
+  });
+
+  const patch = (body) => api('/api/cards', {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  async function created() {
+    return (await (await post(BODY)).json()).card;
+  }
+
+  it('rewrites a card', async () => {
+    const card = await created();
+    const res = await patch({ cardId: card.id, prompt: 'sharper', answer: 'clearer' });
+    expect(res.status).toBe(200);
+
+    const { cards } = await (await api('/api/cards?pathId=frontier-lab')).json();
+    expect(cards[0].prompt).toBe('sharper');
+    expect(cards[0].answer).toBe('clearer');
+  });
+
+  it('does not reschedule the card it just rewrote', async () => {
+    const card = await created();
+    await api('/api/reviews', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ cardId: card.id, grade: 'good', latencyMs: 1 })
+    });
+
+    const before = (await (await api('/api/cards?pathId=frontier-lab')).json()).cards[0];
+    await patch({ cardId: card.id, prompt: 'sharper', answer: 'clearer' });
+    const after = (await (await api('/api/cards?pathId=frontier-lab')).json()).cards[0];
+
+    expect(after.due_at).toBe(before.due_at);
+    expect(after.stability).toBe(before.stability);
+    expect(after.reps).toBe(before.reps);
+    expect(after.lapses).toBe(before.lapses);
+  });
+
+  it('rejects a blank prompt, because a blank card is unreviewable', async () => {
+    const card = await created();
+    expect((await patch({ cardId: card.id, prompt: '  ', answer: 'a' })).status).toBe(400);
+  });
+
+  it('rejects a blank answer', async () => {
+    const card = await created();
+    expect((await patch({ cardId: card.id, prompt: 'p', answer: '' })).status).toBe(400);
+  });
+
+  it('404s an unknown card', async () => {
+    expect((await patch({ cardId: 'nope', prompt: 'p', answer: 'a' })).status).toBe(404);
+  });
+
+  it('deletes a card', async () => {
+    const card = await created();
+    const res = await api(`/api/cards?cardId=${card.id}`, { method: 'DELETE' });
+    expect(res.status).toBe(200);
+
+    const { cards } = await (await api('/api/cards?pathId=frontier-lab')).json();
+    expect(cards).toEqual([]);
+  });
+
+  it('404s deleting a card that is already gone', async () => {
+    const card = await created();
+    await api(`/api/cards?cardId=${card.id}`, { method: 'DELETE' });
+    expect((await api(`/api/cards?cardId=${card.id}`, { method: 'DELETE' })).status).toBe(404);
+  });
+
+  it('400s a delete with no cardId, rather than deleting nothing and reporting success', async () => {
+    expect((await api('/api/cards', { method: 'DELETE' })).status).toBe(400);
+  });
+});

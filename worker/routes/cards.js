@@ -1,5 +1,5 @@
 import { json, error } from '../http.js';
-import { listCards, insertCard, newId } from '../db.js';
+import { listCards, insertCard, newId, updateCardText, deleteCard } from '../db.js';
 import { newCard, retrievability, isDue } from '../scheduler.js';
 
 const str = v => (typeof v === 'string' && v.trim() ? v.trim() : null);
@@ -72,4 +72,37 @@ export async function create(request, env, user) {
   await insertCard(env, row);
 
   return json({ card: row }, 201);
+}
+
+export async function update(request, env, user) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return error('body is not valid JSON', 400);
+  }
+
+  const cardId = str(body.cardId);
+  const prompt = str(body.prompt);
+  const answer = str(body.answer);
+  if (!cardId) return error('cardId is required', 400);
+  if (!prompt || !answer) return error('prompt and answer are both required', 400);
+
+  // Absent and not-yours are the same answer, so this endpoint cannot be used
+  // to discover which card ids exist.
+  const card = await updateCardText(env, user.id, cardId, prompt, answer);
+  if (!card) return error('no such card', 404);
+
+  return json({ card });
+}
+
+export async function destroy(request, env, user, url) {
+  const cardId = str(url.searchParams.get('cardId'));
+  // A missing id must not read as "delete nothing, report success".
+  if (!cardId) return error('cardId is required', 400);
+
+  const removed = await deleteCard(env, user.id, cardId);
+  if (!removed) return error('no such card', 404);
+
+  return json({ ok: true });
 }

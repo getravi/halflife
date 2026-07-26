@@ -96,4 +96,29 @@ describe('isolation through real sessions', () => {
     expect(forB.cards).toHaveLength(1);
     expect(forB.cards[0].prompt).toBe('bob-card');
   });
+
+  it("refuses to rewrite another user's card, and leaves its text alone", async () => {
+    const bob = (await (await makeCard(B, 'bob-card')).json()).card;
+
+    const res = await as(A, '/api/cards', {
+      method: 'PATCH',
+      body: JSON.stringify({ cardId: bob.id, prompt: 'hijacked', answer: 'hijacked' })
+    });
+    expect(res.status).toBe(404);
+
+    const row = await env.DB.prepare('SELECT prompt FROM cards WHERE id = ?')
+      .bind(bob.id).first();
+    expect(row.prompt).toBe('bob-card');
+  });
+
+  it("refuses to delete another user's card, and leaves it in place", async () => {
+    const bob = (await (await makeCard(B, 'bob-card')).json()).card;
+
+    const res = await as(A, `/api/cards?cardId=${bob.id}`, { method: 'DELETE' });
+    expect(res.status).toBe(404);
+
+    const row = await env.DB.prepare('SELECT id FROM cards WHERE id = ?')
+      .bind(bob.id).first();
+    expect(row).toBeTruthy();
+  });
 });

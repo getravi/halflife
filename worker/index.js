@@ -21,6 +21,8 @@ const ROUTES = [
   ['PUT', '/api/progress', progress.set],
   ['GET', '/api/cards', cards.list],
   ['POST', '/api/cards', cards.create],
+  ['PATCH', '/api/cards', cards.update],
+  ['DELETE', '/api/cards', cards.destroy],
   ['POST', '/api/reviews', reviews.create],
   ['DELETE', '/api/me', meRoutes.destroy],
   ['POST', '/api/enrollments', meRoutes.enrol]
