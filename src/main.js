@@ -74,13 +74,6 @@ async function boot() {
         const card = CAPTURE_STATE.cards.find(c => c.id === cardId);
         if (card) { card.prompt = prompt; card.answer = answer; }
         paintCards();
-
-  if (isSignedIn()) {
-    renderSettings(ctx, me);
-  } else {
-    document.querySelector('#view-settings .container').innerHTML =
-      `<section class="today-block"><span class="signed-out-note">Sign in with GitHub to export or delete your data.</span></section>`;
-  }
         await window.TODAY.render();
       },
       async onDelete(cardId) {
@@ -93,11 +86,15 @@ async function boot() {
   }
   paintCards();
 
-  // Signed out we know nothing about anyone's cards, so say that rather than
-  // showing an empty list that reads as "you have none".
-  if (!isSignedIn()) {
+  if (isSignedIn()) {
+    renderSettings(ctx, me);
+  } else {
+    // Signed out we know nothing about anyone's cards or account, so say that
+    // rather than showing empty panels that read as "you have none".
     document.getElementById('cards-list').innerHTML =
       `<span class="signed-out-note">Sign in with GitHub to see your cards.</span>`;
+    document.querySelector('#view-settings .container').innerHTML =
+      `<section class="today-block"><span class="signed-out-note">Sign in with GitHub to export or delete your data.</span></section>`;
   }
 
   initToday(ctx);
