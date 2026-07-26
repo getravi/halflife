@@ -8,7 +8,6 @@ import { CAPTURE_STATE, hasCardFor, refreshTaskBadges } from './sidebar.js';
 import { rollup, allDone } from './progress.js';
 import { isSignedIn } from './auth.js';
 import { keyAction } from './keys.js';
-import * as SCHEDULER from '../worker/scheduler.js';
 
 const DAY_MS = 86400000;
 const DAILY_CAP = 30;
@@ -33,9 +32,16 @@ export function initToday(ctx) {
 
   const weightOf = card => ctx.weights.subtasks[card.subtask_id] ?? 1;
 
+  // Due-ness and retrievability come from the server, which computes them with
+  // the scheduler on every read. The browser must not recompute them: the rows
+  // it holds are snake_case database records, and the scheduler works in
+  // camelCase, so calling it here silently yields undefined and no card is
+  // ever due.
   function dueCards() {
-    const now = Date.now();
-    return SCHEDULER.orderQueue(CAPTURE_STATE.cards, weightOf, now).slice(0, DAILY_CAP);
+    return CAPTURE_STATE.cards
+      .filter(c => c.due)
+      .sort((a, b) => (a.due_at - b.due_at) || (weightOf(b) - weightOf(a)))
+      .slice(0, DAILY_CAP);
   }
 
   // The furthest-along task with any incomplete work, read off the week range
@@ -106,11 +112,9 @@ export function initToday(ctx) {
    * have to be on one scale or they are worse than one number.
    */
   function retained() {
-    const now = Date.now();
     const byCard = {};
     for (const c of CAPTURE_STATE.cards) {
-      (byCard[c.subtask_id] = byCard[c.subtask_id] || [])
-        .push(SCHEDULER.retrievability(c, now));
+      (byCard[c.subtask_id] = byCard[c.subtask_id] || []).push(c.r ?? 0);
     }
 
     let overallSum = 0, overallTotal = 0;
@@ -163,14 +167,13 @@ export function initToday(ctx) {
     if (started.length === 0) { target.textContent = ''; return; }
 
     const worst = started.sort((a, b) => ret.byPhase[a] - ret.byPhase[b])[0];
-    const now = Date.now();
     const subtaskIds = new Set();
     for (const ph of ctx.path.phases ?? []) {
       if (ph.id !== worst) continue;
       for (const t of ph.tasks ?? []) for (const s of t.subtasks ?? []) subtaskIds.add(s.id);
     }
     const stale = CAPTURE_STATE.cards
-      .filter(c => subtaskIds.has(c.subtask_id) && SCHEDULER.isDue(c, now));
+      .filter(c => subtaskIds.has(c.subtask_id) && c.due);
 
     const pct = Math.round(ret.byPhase[worst]);
     target.innerHTML = stale.length === 0
@@ -263,7 +266,11 @@ export function initToday(ctx) {
           due_at: updated.dueAt,
           stability: updated.stability,
           reps: updated.reps,
-          lapses: updated.lapses
+          lapses: updated.lapses,
+          // Just reviewed: not due, and fully retrievable. The server would
+          // say the same on the next read.
+          due: false,
+          r: 1
         };
       }
     }
