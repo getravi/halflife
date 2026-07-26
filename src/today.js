@@ -7,6 +7,7 @@ import { API } from './api.js';
 import { CAPTURE_STATE, hasCardFor, refreshTaskBadges } from './sidebar.js';
 import { rollup, allDone } from './progress.js';
 import { isSignedIn } from './auth.js';
+import { keyAction } from './keys.js';
 import * as SCHEDULER from '../worker/scheduler.js';
 
 const DAY_MS = 86400000;
@@ -283,6 +284,29 @@ export function initToday(ctx) {
   });
   el('runner-grades').querySelectorAll('button').forEach(b => {
     b.addEventListener('click', () => grade(b.dataset.grade));
+  });
+
+  // One listener for the life of the page. It returns immediately when the
+  // runner is hidden, so nothing fires while the plan is being read.
+  document.addEventListener('keydown', (event) => {
+    if (el('runner').hidden) return;
+
+    const target = event.target;
+    const typing = target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT');
+    const revealed = !el('runner-answer').hidden;
+
+    const action = keyAction(event, { revealed, typing });
+    if (!action) return;
+
+    // Only once we are certain we are acting — otherwise space would scroll
+    // the page underneath the runner even when the key was ignored.
+    event.preventDefault();
+
+    if (action === 'blur') { target.blur(); return; }
+    if (action === 'close') { el('runner').hidden = true; render(); return; }
+    if (action === 'reveal') { el('runner-reveal').click(); return; }
+
+    grade(action);
   });
 
   window.TODAY = { render, dueCards, startReview, retained };
