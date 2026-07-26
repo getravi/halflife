@@ -22,12 +22,20 @@ export async function loadPath(pathId) {
 
   // The filename carries a content hash, so a cache hit is always the right
   // content and a stale copy is impossible rather than merely unlikely.
-  const cache = await caches.open(CACHE);
-  const hit = await cache.match(entry.url);
-  if (hit) return hit.json();
+  //
+  // Guarded because the Cache API is not universal: Safari in private browsing
+  // has historically exposed no `caches`, and an unguarded call would throw
+  // during boot and render nothing at all. Losing the cache is a slower load;
+  // losing the page is the whole app.
+  const cache = typeof caches !== 'undefined' ? await caches.open(CACHE) : null;
+
+  if (cache) {
+    const hit = await cache.match(entry.url);
+    if (hit) return hit.json();
+  }
 
   const res = await fetch(entry.url);
   if (!res.ok) throw new Error(`${entry.url} — ${res.status}`);
-  await cache.put(entry.url, res.clone());
+  if (cache) await cache.put(entry.url, res.clone());
   return res.json();
 }

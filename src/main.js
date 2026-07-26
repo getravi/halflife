@@ -112,4 +112,10 @@ async function boot() {
   await window.TODAY.render();
 }
 
+// Exported so tests can drive it directly: by the time a test module imports
+// this file, DOMContentLoaded has already fired and the listener would never
+// run. Separating the function from its registration is how a boot sequence
+// should be written regardless.
+export { boot };
+
 document.addEventListener('DOMContentLoaded', boot);
