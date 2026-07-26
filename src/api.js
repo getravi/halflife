@@ -27,6 +27,7 @@ const nextId = () => `${Date.now()}-${++seq}`;
 
 export const API = {
     online: true,
+    onUnauthorized: null,
 
     pendingCount() {
       return read(OUTBOX, []).length;
@@ -38,8 +39,17 @@ export const API = {
         headers: body ? { 'content-type': 'application/json' } : {},
         body: body ? JSON.stringify(body) : undefined
       });
+      if (res.status === 401) {
+        const err = new Error(`${method} ${path} — 401`);
+        err.unauthorized = true;
+        throw err;
+      }
       if (!res.ok) throw new Error(`${method} ${path} — ${res.status}`);
       return res.json();
+    },
+
+    async signout() {
+      try { await API.request('POST', '/api/auth/signout'); } catch {}
     },
 
     async getMe() {
@@ -110,7 +120,15 @@ export const API = {
         API.online = true;
         API.dequeue(entry);
         return result;
-      } catch {
+      } catch (e) {
+        // A 401 is not a retryable failure. Queueing it would mean every tick
+        // piles up a write that can never succeed, behind an offline banner
+        // that never clears. Drop it and let the caller re-authenticate.
+        if (e.unauthorized) {
+          API.dequeue(entry);
+          API.onUnauthorized?.();
+          return null;
+        }
         API.online = false;
         return null;
       }
@@ -128,7 +146,12 @@ export const API = {
           await API.request(entry.method, entry.path, entry.body);
           API.dequeue(entry);
           flushed++;
-        } catch {
+        } catch (e) {
+          if (e.unauthorized) {
+            API.dequeue(entry);
+            API.onUnauthorized?.();
+            continue;
+          }
           API.online = false;
           break; // preserve order; try again next time
         }

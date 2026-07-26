@@ -7,6 +7,7 @@
  */
 import { API } from './api.js';
 import { isDone, toggle, rollup, allDone } from './progress.js';
+import { isSignedIn } from './auth.js';
 
 let ctx = null;                       // { path, index, weights, pathId }
 export const CAPTURE_STATE = { cards: [] };
@@ -48,6 +49,7 @@ export function initSidebar(context) {
   document.addEventListener('change', async e => {
     const cb = e.target.closest('.milestone-checkbox');
     if (!cb) return;
+    if (!isSignedIn()) { cb.checked = false; return; }
     await toggle(ctx.pathId, cb.dataset.nodeId, cb.checked);
     refreshTaskBadges();
     window.TODAY?.render();
@@ -107,7 +109,8 @@ export function openSidebar(subtaskId) {
       html += `<li class="sidebar-step-item">
         <label class="step-check-label">
           <input type="checkbox" class="step-checkbox" data-node-id="${st.id}"
-                 data-subtask-id="${s.id}" ${isDone(st.id) ? 'checked' : ''}>
+                 data-subtask-id="${s.id}" ${isDone(st.id) ? 'checked' : ''}
+                 ${isSignedIn() ? '' : 'disabled'}>
           <span class="step-text">${st.text}</span>
         </label>
         <div class="weight-input-container"><span>w: ${ctx.weights.steps[st.id]}</span></div>
@@ -117,7 +120,8 @@ export function openSidebar(subtaskId) {
     html += `<li class="sidebar-step-item">
       <label class="step-check-label">
         <input type="checkbox" class="step-checkbox" data-node-id="${s.id}"
-               data-subtask-id="${s.id}" ${isDone(s.id) ? 'checked' : ''}>
+               data-subtask-id="${s.id}" ${isDone(s.id) ? 'checked' : ''}
+               ${isSignedIn() ? '' : 'disabled'}>
         <span class="step-text">Mark this subtask as completed</span>
       </label></li>`;
   }
