@@ -32,5 +32,8 @@
       "esbuild",
       "workerd"
     ]
+  },
+  "dependencies": {
+    "better-auth": "^1.6.25"
   }
 }
