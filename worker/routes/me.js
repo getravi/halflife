@@ -1,5 +1,6 @@
 import { json, error } from '../http.js';
 import { getEnrollments, upsertEnrollment, deleteUser } from '../db.js';
+import { githubConfigured } from '../auth.js';
 
 // A calendar day, not an instant. The plan-week calculation counts local days,
 // so accepting an ISO timestamp here would silently shift the start by one day
@@ -10,12 +11,23 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 // other route stays behind the 401 in index.js and may assume a user exists —
 // the exemption is exactly one handler wide, deliberately.
 export async function me(request, env, user) {
-  if (!user) return json({ user: null, enrollments: [] });
+  // providers tells the frontend which buttons can actually work, so a fresh
+  // clone shows email and password alone rather than a GitHub button that 500s.
+  const providers = { github: githubConfigured(env) };
+
+  if (!user) return json({ user: null, enrollments: [], providers });
 
   const rows = await getEnrollments(env, user.id);
   return json({
-    user: { id: user.id, login: user.login, avatarUrl: user.avatar_url },
-    enrollments: rows.map(r => ({ pathId: r.path_id, startedOn: r.started_on }))
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      emailVerified: Boolean(user.emailVerified),
+      image: user.image ?? null
+    },
+    enrollments: rows.map(r => ({ pathId: r.path_id, startedOn: r.started_on })),
+    providers
   });
 }
 

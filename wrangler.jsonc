@@ -8,7 +8,6 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "GITHUB_CLIENT_ID": "replace-with-the-dev-app-client-id",
     "APP_URL": "http://localhost:8787"
   },
   "d1_databases": [

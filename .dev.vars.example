@@ -1,2 +1,8 @@
+# Required. Signs and encrypts sessions; Better Auth refuses to start without it.
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+BETTER_AUTH_SECRET=
+
+# Optional. Both or neither — a half-configured provider advertises a route
+# that fails at the redirect. Without these the GitHub button is not rendered.
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
