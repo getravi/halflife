@@ -13,7 +13,8 @@ Node 24 and pnpm. Everything else is Cloudflare Wrangler.
 
 ```sh
 pnpm install
-cp .dev.vars.example .dev.vars   # then fill in your dev OAuth app credentials
+cp .dev.vars.example .dev.vars
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"   # paste into BETTER_AUTH_SECRET
 pnpm db:migrate:local            # create the local D1 schema
 pnpm validate                    # check paths/*.json and emit public/paths/
 pnpm build                       # bundle the frontend into dist/
@@ -21,25 +22,27 @@ pnpm dev:worker                  # http://localhost:8787
 ```
 
 Open <http://localhost:8787>. The curriculum reads without signing in; tracking
-progress and writing cards needs a GitHub account.
+progress and writing cards needs an account.
 
-Sign-in needs a GitHub OAuth app whose callback is
-`http://localhost:8787/api/auth/callback`. Production needs a second app
-pointing at the deployed URL — GitHub allows only one callback per app. Set
-`GITHUB_CLIENT_ID` and `APP_URL` in `wrangler.jsonc`, and the secret with
-`pnpm wrangler secret put GITHUB_CLIENT_SECRET`.
+Sign-in is email and password, handled by [Better Auth](https://better-auth.com)
+against D1. `BETTER_AUTH_SECRET` is required — Better Auth refuses to start
+without it, which is correct: a session secret that falls back to a constant is
+worse than one that is missing.
 
-**`APP_URL` must match the port you actually serve on.** It builds the
-`redirect_uri` handed to GitHub, and a mismatch fails at the callback rather
-than at startup.
+**Email is not wired to a provider yet.** `worker/email.js` records and logs
+instead of sending, so verification links appear in `wrangler tail` rather than
+in an inbox. Until a provider is chosen, nobody but you can complete a signup.
+Choosing one is a one-file change to that seam — Cloudflare Email Service needs
+the Workers Paid plan and an onboarded sending domain; Resend's free tier needs
+neither.
 
-While working on the UI, run Vite instead for hot reload — it serves the page
-on 5173 and proxies `/api` back to the Worker:
+GitHub sign-in is optional and off by default. Set `GITHUB_CLIENT_ID` and
+`GITHUB_CLIENT_SECRET` (both, or neither) and the button appears; without them
+`/api/me` reports the provider as unavailable and nothing is rendered, so a
+fresh clone shows no button rather than a broken one.
 
-```sh
-pnpm dev:worker           # terminal 1
-pnpm dev                  # terminal 2 — http://localhost:5173
-```
+**`APP_URL` must match the port you actually serve on.** It is the baseURL and
+the only trusted origin, and a mismatch fails at sign-in rather than at startup.
 
 Deploy with `pnpm deploy`, and apply migrations to the real database with
 `pnpm db:migrate`.
@@ -102,10 +105,14 @@ orphan every user's cards at once rather than just one person's.
 
 Titles are display-only. **Rename them freely.**
 
-Sessions live in D1 and the table stores a SHA-256 of the cookie token, never
-the token. Signing out deletes the row, so a cookie stops working immediately
-rather than at expiry, and deleting an account signs out every device it ever
-used.
+Sessions and accounts belong to Better Auth, in its own `user`, `session`,
+`account` and `verification` tables. Every domain table references `user(id)`
+with `ON DELETE CASCADE`, so deleting an account still removes every card and
+review with it.
+
+An unverified account can read the whole plan and write nothing: protected
+routes answer 403 rather than 401, because *I know who you are and you may not*
+is a different thing from *who are you*.
 
 ## Editing
 
