@@ -25,10 +25,11 @@ maintained library takes over the parts of auth most likely to be got wrong.
 
 ## Scope
 
-Replace hand-rolled GitHub OAuth with Better Auth, email and password only.
+Replace hand-rolled GitHub OAuth with Better Auth: email and password as the
+primary method, with GitHub kept as an optional second one.
 
-**Out of scope:** social providers of any kind, two-factor, organisations and
-teams, passkeys, magic links, rate limiting beyond whatever Better Auth
+**Out of scope:** social providers other than GitHub, two-factor, organisations
+and teams, passkeys, magic links, rate limiting beyond whatever Better Auth
 provides by default, and choosing an email provider.
 
 ### Decisions taken before this spec
@@ -38,9 +39,11 @@ provides by default, and choosing an email provider.
 - **Email and password with verification required**, and a reset flow.
 - **Domain tables repoint at Better Auth's `user` table.** The existing `users`
   and `sessions` tables are dropped.
-- **GitHub sign-in is removed entirely**, not kept as a second method. Keeping
-  it would still require creating the OAuth app, which is the thing being
-  avoided.
+- **GitHub sign-in survives as a second method** — amended after the spike, at
+  the author's request. The hand-rolled `worker/github.js` and
+  `worker/routes/auth.js` are still deleted; Better Auth's own social provider
+  replaces them, which is roughly sixty lines of OAuth we no longer maintain.
+  It stays optional: without credentials the button is not rendered at all.
 - **Email sending is a seam**, with a recording stub. Cloudflare Email Service
   can reach arbitrary recipients, but only on the Workers Paid plan and after
   onboarding a sending domain; Resend's free tier can without a paid plan. That
@@ -67,7 +70,7 @@ Doing it now is worth doing deliberately rather than by luck.
 ## Schema
 
 Better Auth's four tables — `user`, `session`, `account`, `verification` — are
-generated once with its CLI and committed as `migrations/0004_better_auth.sql`.
+captured from its own DDL and committed as `migrations/0004_better_auth.sql`.
 
 They are committed rather than applied at runtime because migrations in this
 repo are files that `wrangler d1 migrations apply` runs. A library reaching
@@ -153,10 +156,24 @@ state directly rather than inferring it from a status code.
 |---|---|---|
 | `BETTER_AUTH_SECRET` | `wrangler secret put`, and `.dev.vars` locally | signs and encrypts sessions; a random 32-byte value |
 | `APP_URL` | `wrangler.jsonc` vars | already present; becomes `baseURL` and the only trusted origin |
+| `GITHUB_CLIENT_ID` | `.dev.vars` / `wrangler secret put` | optional; absent means no GitHub button |
+| `GITHUB_CLIENT_SECRET` | `.dev.vars` / `wrangler secret put` | optional, and required only alongside the id |
 
-`GITHUB_CLIENT_ID` is removed from `wrangler.jsonc`, and
-`.dev.vars.example` is rewritten to carry `BETTER_AUTH_SECRET` instead of the
-GitHub pair.
+### GitHub as a second method
+
+`socialProviders.github` is configured **only when both variables are present**.
+A half-configured provider is worse than none: Better Auth would advertise a
+route that fails at the redirect.
+
+`/api/me` reports `providers: { github: boolean }`, so the frontend renders the
+button only when it can work. A fresh clone shows email and password alone,
+with nothing visibly broken — a button that 500s reads as a bug in the app
+rather than as missing configuration.
+
+**Accounts are linked when the email matches**, with GitHub trusted. GitHub
+verifies its addresses, so this is safe, and it is what people expect. Without
+it, signing up with a password and later using GitHub produces a second empty
+account, and the person concludes the app lost a year of their cards.
 
 The secret is not optional and has no safe default. Better Auth will refuse to
 start without it, which is the correct behaviour — a session secret that falls

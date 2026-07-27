@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace GitHub OAuth with Better Auth email-and-password, so anyone can sign up without a GitHub account.
+**Goal:** Replace hand-rolled GitHub OAuth with Better Auth — email and password as the primary method, GitHub kept as an optional second one — so anyone can sign up without a GitHub account.
 
 **Architecture:** Better Auth owns `/api/auth/*` and four tables of its own, using native D1. The four domain tables repoint their foreign key at its `user` table. `getUser` is rewritten a third time and nothing above it moves.
 
@@ -19,6 +19,9 @@
 - **Neither 401 nor 403 is retryable.** Both drop the outbox entry.
 - **`BETTER_AUTH_SECRET` has no default.** Better Auth refusing to start without it is correct.
 - **Migration 0005 is destructive** and acceptable only because nothing is deployed and no real rows exist.
+- **GitHub is configured only when both credentials are present.** A half-configured provider advertises a route that fails at the redirect.
+- **`/api/me` reports `providers.github`** so the button is hidden rather than broken on a fresh clone.
+- **Accounts link on matching email, with GitHub trusted.** Otherwise a password signup and a later GitHub sign-in produce two accounts and the person concludes their cards were lost.
 - Package manager is pnpm. Node >= 24.
 
 ---
