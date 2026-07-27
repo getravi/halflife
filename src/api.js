@@ -28,6 +28,7 @@ const nextId = () => `${Date.now()}-${++seq}`;
 export const API = {
     online: true,
     onUnauthorized: null,
+    onUnverified: null,
 
     pendingCount() {
       return read(OUTBOX, []).length;
@@ -44,12 +45,38 @@ export const API = {
         err.unauthorized = true;
         throw err;
       }
+      // 403 here means signed in but not verified. Distinct from 401 so the
+      // frontend can say "check your inbox" rather than showing a sign-in form.
+      if (res.status === 403) {
+        const err = new Error(`${method} ${path} — 403`);
+        err.unverified = true;
+        throw err;
+      }
       if (!res.ok) throw new Error(`${method} ${path} — ${res.status}`);
       return res.json();
     },
 
     async signout() {
-      try { await API.request('POST', '/api/auth/signout'); } catch {}
+      try { await API.request('POST', '/api/auth/sign-out', {}); } catch {}
+    },
+
+    async signUp(email, password) {
+      return API.request('POST', '/api/auth/sign-up/email',
+        { email, password, name: email });
+    },
+
+    async signIn(email, password) {
+      return API.request('POST', '/api/auth/sign-in/email', { email, password });
+    },
+
+    async signInWithGithub() {
+      return API.request('POST', '/api/auth/sign-in/social',
+        { provider: 'github', callbackURL: '/' });
+    },
+
+    async forgotPassword(email) {
+      return API.request('POST', '/api/auth/forget-password',
+        { email, redirectTo: `${window.location.origin}/#account` });
     },
 
     async getMe() {
@@ -148,6 +175,13 @@ export const API = {
         // A 401 is not a retryable failure. Queueing it would mean every tick
         // piles up a write that can never succeed, behind an offline banner
         // that never clears. Drop it and let the caller re-authenticate.
+        // Neither 401 nor 403 is retryable. Queueing a write that can never
+        // land leaves an offline banner that never clears.
+        if (e.unverified) {
+          API.dequeue(entry);
+          API.onUnverified?.();
+          return null;
+        }
         if (e.unauthorized) {
           API.dequeue(entry);
           API.onUnauthorized?.();
@@ -171,6 +205,11 @@ export const API = {
           API.dequeue(entry);
           flushed++;
         } catch (e) {
+          if (e.unverified) {
+            API.dequeue(entry);
+            API.onUnverified?.();
+            continue;
+          }
           if (e.unauthorized) {
             API.dequeue(entry);
             API.onUnauthorized?.();

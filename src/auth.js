@@ -14,8 +14,12 @@ export function me() {
   return current;
 }
 
+/**
+ * Signed in AND verified. Everything that gates writing calls this, and an
+ * unverified account must not be able to tick a step or capture a card.
+ */
 export function isSignedIn() {
-  return Boolean(current.user);
+  return Boolean(current.user?.emailVerified);
 }
 
 export function renderHeader() {
@@ -23,15 +27,14 @@ export function renderHeader() {
   if (!slot) return;
 
   if (!current.user) {
-    slot.innerHTML =
-      `<a class="auth-signin" href="/api/auth/github">Sign in with GitHub</a>`;
+    slot.innerHTML = `<a class="auth-signin" href="#account">Sign in</a>`;
     return;
   }
 
-  const { login, avatarUrl } = current.user;
+  const { email, emailVerified } = current.user;
   slot.innerHTML = `
-    ${avatarUrl ? `<img class="auth-avatar" src="${avatarUrl}" alt="">` : ''}
-    <span class="auth-login">${login ?? ''}</span>
+    <span class="auth-login">${email ?? ''}</span>
+    ${emailVerified ? '' : '<a class="auth-signin" href="#account">verify</a>'}
     <button class="auth-signout" id="auth-signout">Sign out</button>`;
 
   document.getElementById('auth-signout').addEventListener('click', async () => {

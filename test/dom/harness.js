@@ -16,9 +16,11 @@ const PATH_URL = '/paths/frontier-lab-test.json';
 export async function mountApp(state = {}) {
   const {
     signedIn = false,
+    verified = true,
     enrolled = false,
     cards = [],
-    progress = []
+    progress = [],
+    providers = { github: false }
   } = state;
 
   const html = fs.readFileSync('index.html', 'utf8');
@@ -35,12 +37,13 @@ export async function mountApp(state = {}) {
 
   const me = signedIn
     ? {
-        user: { id: 'u1', login: 'ravi', avatarUrl: null },
+        user: { id: 'u1', email: 'ravi@example.com', name: 'ravi', emailVerified: verified },
         enrollments: enrolled
           ? [{ pathId: 'frontier-lab', startedOn: '2026-07-01' }]
-          : []
+          : [],
+        providers
       }
-    : { user: null, enrollments: [] };
+    : { user: null, enrollments: [], providers };
 
   const requests = [];
 

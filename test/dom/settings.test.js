@@ -21,23 +21,23 @@ describe('deleting an account', () => {
 
   it('stays disabled for a near miss, because this cascades through four tables', async () => {
     await mountApp({ signedIn: true, enrolled: true });
-    type($('#delete-confirm'), 'rav');
+    type($('#delete-confirm'), 'ravi@exampl');
     expect($('#delete-account').disabled).toBe(true);
 
-    type($('#delete-confirm'), 'Ravi');
+    type($('#delete-confirm'), 'Ravi@example.com');
     expect($('#delete-account').disabled).toBe(true);
   });
 
-  it('enables only on an exact match of the login', async () => {
+  it('enables only on an exact match of the email', async () => {
     await mountApp({ signedIn: true, enrolled: true });
-    type($('#delete-confirm'), 'ravi');
+    type($('#delete-confirm'), 'ravi@example.com');
     expect($('#delete-account').disabled).toBe(false);
   });
 
   it('disables again if the text is changed back', async () => {
     await mountApp({ signedIn: true, enrolled: true });
-    type($('#delete-confirm'), 'ravi');
-    type($('#delete-confirm'), 'ravix');
+    type($('#delete-confirm'), 'ravi@example.com');
+    type($('#delete-confirm'), 'ravi@example.comx');
     expect($('#delete-account').disabled).toBe(true);
   });
 });

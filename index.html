@@ -117,6 +117,7 @@
     <a href="#today">Today</a>
     <a href="#cards">Cards</a>
     <a href="#settings">Settings</a>
+    <a href="#account">Account</a>
   </nav>
   <div class="auth-slot" id="auth-slot"></div>
 </header>
@@ -179,6 +180,12 @@
   </div>
 </div>
 
+<div id="view-account" class="view-panel">
+  <div class="container">
+    <section class="today-block" id="auth-panel"></section>
+  </div>
+</div>
+
 <div id="view-settings" class="view-panel">
   <div class="container">
     <section class="today-block">
@@ -196,7 +203,7 @@
       <div class="today-block-title">Delete account</div>
       <p class="settings-note">This removes every card, every review, all
         progress and every signed-in session. It cannot be undone.</p>
-      <label class="capture-label">Type your GitHub login to confirm</label>
+      <label class="capture-label">Type your email address to confirm</label>
       <input class="capture-input" id="delete-confirm" autocomplete="off">
       <div class="settings-actions">
         <button class="settings-danger" id="delete-account" disabled>Delete my account</button>

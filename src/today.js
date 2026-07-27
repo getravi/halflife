@@ -194,7 +194,7 @@ export function initToday(ctx) {
       el('today-start-review').disabled = true;
       el('today-start-review').textContent = 'Sign in to review';
       el('today-week').innerHTML =
-        `<span class="signed-out-note">Sign in with GitHub to track progress and write cards.</span>`;
+        `<span class="signed-out-note">Sign in to track progress and write cards.</span>`;
       el('today-debt').innerHTML =
         `<span class="signed-out-note">Nothing tracked yet.</span>`;
       el('today-retention-pressure').textContent = '';

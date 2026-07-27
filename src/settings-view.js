@@ -53,15 +53,15 @@ export function renderSettings(ctx, me) {
       buildMarkdown(data, ctx.path), 'text/markdown');
   });
 
-  // Typing the login rather than a second click. A two-step confirm is
+  // Typing the email rather than a second click. A two-step confirm is
   // proportionate for one card; for an action that destroys a year of
   // hand-written cards and cascades through four tables it is too cheap.
   const input = document.getElementById('delete-confirm');
   const button = document.getElementById('delete-account');
-  const login = me.user?.login ?? '';
+  const identifier = me.user?.email ?? '';
 
   input.addEventListener('input', () => {
-    button.disabled = input.value !== login;
+    button.disabled = input.value !== identifier;
   });
 
   button.addEventListener('click', async () => {
