@@ -2,6 +2,12 @@
 #   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 BETTER_AUTH_SECRET=
 
+# Optional. Without it, verification links are logged rather than sent —
+# visible in `wrangler tail`. Free tier: 3,000/month, 100/day.
+RESEND_API_KEY=
+# Must be on a domain verified with Resend to reach anyone but yourself.
+EMAIL_FROM=
+
 # Optional. Both or neither — a half-configured provider advertises a route
 # that fails at the redirect. Without these the GitHub button is not rendered.
 GITHUB_CLIENT_ID=

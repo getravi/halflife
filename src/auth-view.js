@@ -44,7 +44,11 @@ const unverified = (email) => `
   <div class="today-block-title">Check your inbox</div>
   <p class="settings-note">A verification link is on its way to
     <strong>${esc(email)}</strong>. You can read the whole plan now; tracking
-    progress and writing cards start once the address is confirmed.</p>`;
+    progress and writing cards start once the address is confirmed.</p>
+  <div class="settings-actions">
+    <button class="capture-skip" id="auth-resend">Send it again</button>
+    <span class="capture-status" id="auth-resend-status"></span>
+  </div>`;
 
 export function renderAuthView(onChanged) {
   const panel = document.getElementById('auth-panel');
@@ -54,6 +58,15 @@ export function renderAuthView(onChanged) {
 
   if (current.user && !current.user.emailVerified) {
     panel.innerHTML = unverified(current.user.email);
+
+    // Without this a failed send is unrecoverable: the account exists, the
+    // address is taken, and no link ever arrived.
+    document.getElementById('auth-resend').addEventListener('click', async () => {
+      const status = document.getElementById('auth-resend-status');
+      status.textContent = 'Sending…';
+      await API.resendVerification(current.user.email).catch(() => {});
+      status.textContent = 'Sent. Check your inbox again.';
+    });
     return;
   }
 

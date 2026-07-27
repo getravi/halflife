@@ -29,12 +29,24 @@ against D1. `BETTER_AUTH_SECRET` is required — Better Auth refuses to start
 without it, which is correct: a session secret that falls back to a constant is
 worse than one that is missing.
 
-**Email is not wired to a provider yet.** `worker/email.js` records and logs
-instead of sending, so verification links appear in `wrangler tail` rather than
-in an inbox. Until a provider is chosen, nobody but you can complete a signup.
-Choosing one is a one-file change to that seam — Cloudflare Email Service needs
-the Workers Paid plan and an onboarded sending domain; Resend's free tier needs
-neither.
+**Email goes through [Resend](https://resend.com), and is optional.** Without
+`RESEND_API_KEY` set, `worker/email.js` logs verification links instead of
+sending them — visible in `wrangler tail` — so the project runs locally with no
+provider account at all.
+
+To send for real: create a Resend API key, verify a sending domain, then set
+`RESEND_API_KEY` and `EMAIL_FROM`. The free tier covers 3,000 messages a month
+and 100 a day. Without a verified domain, Resend will only deliver to your own
+account address.
+
+Cloudflare Email Service was the alternative and was rejected on cost: there is
+no free outbound tier, and reaching arbitrary recipients requires the Workers
+Paid plan at five dollars a month for the same 3,000 messages.
+
+**A failed send never blocks signup.** Better Auth writes the user row before
+sending, so throwing would leave an address that is taken, unverifiable, and
+cannot be signed up with again. Failures are logged as `[email:FAILED]` and
+recovered with the resend button on the account screen.
 
 GitHub sign-in is optional and off by default. Set `GITHUB_CLIENT_ID` and
 `GITHUB_CLIENT_SECRET` (both, or neither) and the button appears; without them

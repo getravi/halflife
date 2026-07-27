@@ -74,6 +74,11 @@ export const API = {
         { provider: 'github', callbackURL: '/' });
     },
 
+    async resendVerification(email) {
+      return API.request('POST', '/api/auth/send-verification-email',
+        { email, callbackURL: '/' });
+    },
+
     async forgotPassword(email) {
       return API.request('POST', '/api/auth/forget-password',
         { email, redirectTo: `${window.location.origin}/#account` });
@@ -172,9 +177,6 @@ export const API = {
         API.dequeue(entry);
         return result;
       } catch (e) {
-        // A 401 is not a retryable failure. Queueing it would mean every tick
-        // piles up a write that can never succeed, behind an offline banner
-        // that never clears. Drop it and let the caller re-authenticate.
         // Neither 401 nor 403 is retryable. Queueing a write that can never
         // land leaves an offline banner that never clears.
         if (e.unverified) {

@@ -86,6 +86,35 @@ describe('signing up', () => {
   });
 });
 
+describe('when the provider fails', () => {
+  beforeEach(resetDb);
+
+  it('still creates the account, because a thrown send would leave it unverifiable', async () => {
+    // sendEmail never throws: Better Auth writes the user row before calling
+    // the hook, so an exception would leave an address that is taken, cannot
+    // be verified, and cannot be signed up with again.
+    const res = await post('/api/auth/sign-up/email',
+      { email: 'fail@example.com', password: 'correct-horse-battery', name: 'F' });
+    expect(res.status).toBeLessThan(400);
+
+    const row = await env.DB.prepare('SELECT email FROM user WHERE email = ?')
+      .bind('fail@example.com').first();
+    expect(row).toBeTruthy();
+  });
+
+  it('can send the verification again, which is the only way out of a failed send', async () => {
+    await post('/api/auth/sign-up/email',
+      { email: 'again@example.com', password: 'correct-horse-battery', name: 'A' });
+    const before = sentMail().length;
+
+    const res = await post('/api/auth/send-verification-email',
+      { email: 'again@example.com', callbackURL: '/' });
+
+    expect(res.status).toBeLessThan(400);
+    expect(sentMail().length).toBeGreaterThan(before);
+  });
+});
+
 describe('signing out', () => {
   beforeEach(resetDb);
 
