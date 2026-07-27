@@ -1,20 +1,8 @@
 import { env, SELF } from 'cloudflare:test';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resetDb } from '../helpers.js';
+import { resetDb, signUp } from '../helpers.js';
 
-import * as db from '../../worker/db.js';
-import { sha256Hex } from '../../worker/crypto.js';
-
-const AUTH_DAY = 86400000;
 let COOKIE;
-
-async function signInAs(userId = 'u1') {
-  await env.DB.prepare('INSERT INTO users (id, login, created_at) VALUES (?, ?, 0)')
-    .bind(userId, userId).run();
-  await db.createSession(env, userId, await sha256Hex(`tok-${userId}`),
-    Date.now(), 30 * AUTH_DAY, 'test');
-  return `flp_session=tok-${userId}`;
-}
 
 // Every request in this file goes through a real session now. Before auth
 // landed these tests passed because the app authenticated nobody.
@@ -33,12 +21,12 @@ const enrol = (body) => api('/api/enrollments', {
 describe('me and enrolment', () => {
   beforeEach(async () => {
     await resetDb();
-    COOKIE = await signInAs();
+    COOKIE = await signUp();
   });
 
   it('reports the signed-in user with no enrolments initially', async () => {
     const body = await (await api('/api/me')).json();
-    expect(body.user.login).toBe('u1');
+    expect(body.user.email).toBe('a@example.com');
     expect(body.enrollments).toEqual([]);
   });
 
@@ -77,7 +65,9 @@ describe('me and enrolment', () => {
 
     expect((await api('/api/me', { method: 'DELETE' })).status).toBe(200);
 
-    for (const table of ['users', 'enrollments', 'progress', 'cards', 'reviews']) {
+    // Better Auth owns `user` and `session` now; the domain tables cascade
+    // from `user`, so emptiness across all of them is the real assertion.
+    for (const table of ['user', 'session', 'enrollments', 'progress', 'cards', 'reviews']) {
       const { results } = await env.DB.prepare(`SELECT * FROM ${table}`).all();
       expect(results, `${table} should be empty`).toHaveLength(0);
     }

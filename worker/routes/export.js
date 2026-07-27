@@ -18,9 +18,9 @@ export async function dump(request, env, user) {
 
   return json({
     exportedAt: Date.now(),
-    // Only the login. The internal id and the GitHub id are of no use to the
-    // reader and there is no reason to write them into a downloaded file.
-    user: { login: user.login },
+    // Only the email. The internal id is of no use to the reader and there is
+    // no reason to write it into a file that sits in a downloads folder.
+    user: { email: user.email },
     enrollments: enrollments.map(e => ({ pathId: e.path_id, startedOn: e.started_on })),
     progress: progress.map(p => ({ pathId: p.path_id, nodeId: p.node_id })),
     cards,

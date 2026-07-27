@@ -26,7 +26,7 @@ export function buildMarkdown(data, path) {
   const lines = [
     `# ${path.title} — cards`,
     '',
-    `Exported by **${data.user?.login ?? 'unknown'}** on ${day(data.exportedAt)}.`,
+    `Exported by **${data.user?.email ?? 'unknown'}** on ${day(data.exportedAt)}.`,
     ''
   ];
 

@@ -1,18 +1,6 @@
 import { env, SELF } from 'cloudflare:test';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resetDb } from '../helpers.js';
-import * as db from '../../worker/db.js';
-import { sha256Hex } from '../../worker/crypto.js';
-
-const DAY = 86400000;
-
-async function signIn(userId) {
-  await env.DB.prepare('INSERT INTO users (id, login, created_at) VALUES (?, ?, 0)')
-    .bind(userId, userId).run();
-  await db.createSession(env, userId, await sha256Hex(`tok-${userId}`),
-    Date.now(), 30 * DAY, 'test');
-  return `flp_session=tok-${userId}`;
-}
+import { resetDb, signUp } from '../helpers.js';
 
 const as = (cookie, path, init = {}) => SELF.fetch(`https://x${path}`, {
   ...init, headers: { ...(init.headers ?? {}), cookie, 'content-type': 'application/json' }
@@ -30,8 +18,8 @@ describe('export route', () => {
 
   beforeEach(async () => {
     await resetDb();
-    A = await signIn('alice');
-    B = await signIn('bob');
+    A = await signUp('alice@example.com');
+    B = await signUp('bob@example.com');
   });
 
   it('401s without a session, because an export is the worst route to leave open', async () => {
@@ -44,9 +32,9 @@ describe('export route', () => {
       .toEqual(['cards', 'enrollments', 'exportedAt', 'progress', 'reviews', 'user']);
   });
 
-  it('carries only the login, not the internal or github id', async () => {
+  it('carries only the email, not the internal id', async () => {
     const body = await (await as(A, '/api/export')).json();
-    expect(body.user).toEqual({ login: 'alice' });
+    expect(body.user).toEqual({ email: 'alice@example.com' });
   });
 
   it('includes the cards, progress, enrolments and reviews the user owns', async () => {

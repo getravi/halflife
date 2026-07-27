@@ -8,7 +8,7 @@ const NOW = 1_800_000_000_000;
 
 const data = {
   exportedAt: NOW,
-  user: { login: 'ravi' },
+  user: { email: 'ravi@example.com' },
   enrollments: [{ pathId: 'frontier-lab', startedOn: '2026-07-25' }],
   progress: [],
   reviews: [],
@@ -44,7 +44,7 @@ describe('buildMarkdown', () => {
 
   it('records who exported it and when', () => {
     const md = buildMarkdown(data, path);
-    expect(md).toContain('ravi');
+    expect(md).toContain('ravi@example.com');
     expect(md).toMatch(/\d{4}-\d{2}-\d{2}/);
   });
 

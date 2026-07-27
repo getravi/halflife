@@ -1,18 +1,6 @@
 import { env, SELF } from 'cloudflare:test';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resetDb } from '../helpers.js';
-import * as db from '../../worker/db.js';
-import { sha256Hex } from '../../worker/crypto.js';
-
-const DAY = 86400000;
-
-async function signIn(userId) {
-  await env.DB.prepare('INSERT INTO users (id, login, created_at) VALUES (?, ?, 0)')
-    .bind(userId, userId).run();
-  await db.createSession(env, userId, await sha256Hex(`tok-${userId}`),
-    Date.now(), 30 * DAY, 'test');
-  return `flp_session=tok-${userId}`;
-}
+import { resetDb, signUp } from '../helpers.js';
 
 const as = (cookie, path, init = {}) => SELF.fetch(`https://x${path}`, {
   ...init, headers: { ...(init.headers ?? {}), cookie, 'content-type': 'application/json' }
@@ -30,8 +18,8 @@ describe('isolation through real sessions', () => {
 
   beforeEach(async () => {
     await resetDb();
-    A = await signIn('alice');
-    B = await signIn('bob');
+    A = await signUp('alice@example.com');
+    B = await signUp('bob@example.com');
   });
 
   it("does not list one signed-in user another's cards", async () => {

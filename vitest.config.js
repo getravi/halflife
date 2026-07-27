@@ -15,7 +15,14 @@ export default defineConfig({
             wrangler: { configPath: './wrangler.jsonc' },
             miniflare: {
               d1Databases: ['DB'],
-              bindings: { TEST_MIGRATIONS: migrations }
+              bindings: {
+                TEST_MIGRATIONS: migrations,
+                BETTER_AUTH_SECRET: 'test-secret-0123456789abcdefghijklmnop',
+                APP_URL: 'https://x',
+                // The email seam pushes here, so a test can read the
+                // verification link Better Auth actually generated.
+                SENT_MAIL: []
+              }
             }
           })
         ],

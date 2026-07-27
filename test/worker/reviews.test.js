@@ -1,21 +1,9 @@
 import { env, SELF } from 'cloudflare:test';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resetDb, seedUsers } from '../helpers.js';
+import { resetDb, seedUsers, signUp } from '../helpers.js';
 import { newCard, review as applyGrade } from '../../worker/scheduler.js';
 
-import * as db from '../../worker/db.js';
-import { sha256Hex } from '../../worker/crypto.js';
-
-const AUTH_DAY = 86400000;
 let COOKIE;
-
-async function signInAs(userId = 'u1') {
-  await env.DB.prepare('INSERT INTO users (id, login, created_at) VALUES (?, ?, 0)')
-    .bind(userId, userId).run();
-  await db.createSession(env, userId, await sha256Hex(`tok-${userId}`),
-    Date.now(), 30 * AUTH_DAY, 'test');
-  return `flp_session=tok-${userId}`;
-}
 
 // Every request in this file goes through a real session now. Before auth
 // landed these tests passed because the app authenticated nobody.
@@ -48,7 +36,7 @@ const grade = (cardId, g) => api('/api/reviews', {
 describe('reviews route', () => {
   beforeEach(async () => {
     await resetDb();
-    COOKIE = await signInAs();
+    COOKIE = await signUp();
   });
 
   it('grading good schedules four days out on the first review', async () => {

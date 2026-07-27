@@ -1,20 +1,8 @@
 import { env, SELF } from 'cloudflare:test';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resetDb } from '../helpers.js';
+import { resetDb, signUp } from '../helpers.js';
 
-import * as db from '../../worker/db.js';
-import { sha256Hex } from '../../worker/crypto.js';
-
-const AUTH_DAY = 86400000;
 let COOKIE;
-
-async function signInAs(userId = 'u1') {
-  await env.DB.prepare('INSERT INTO users (id, login, created_at) VALUES (?, ?, 0)')
-    .bind(userId, userId).run();
-  await db.createSession(env, userId, await sha256Hex(`tok-${userId}`),
-    Date.now(), 30 * AUTH_DAY, 'test');
-  return `flp_session=tok-${userId}`;
-}
 
 // Every request in this file goes through a real session now. Before auth
 // landed these tests passed because the app authenticated nobody.
@@ -33,7 +21,7 @@ const put = (body) => api('/api/progress', {
 describe('progress routes', () => {
   beforeEach(async () => {
     await resetDb();
-    COOKIE = await signInAs();
+    COOKIE = await signUp();
   });
 
   it('round-trips a tick', async () => {
