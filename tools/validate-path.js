@@ -62,6 +62,51 @@ export function validatePath(p, previous) {
     }
   }
 
+  // ---- prerequisites ----
+  // Order matters here: a plan that tells you to build something before its
+  // dependency is a bug in the plan, and nothing else catches it.
+  const order = new Map();
+  let seq = 0;
+  for (const ph of p.phases ?? []) {
+    for (const t of ph.tasks ?? []) {
+      for (const s of t.subtasks ?? []) order.set(s.id, seq++);
+    }
+  }
+
+  const edges = new Map();
+  for (const ph of p.phases ?? []) {
+    for (const t of ph.tasks ?? []) {
+      for (const s of t.subtasks ?? []) {
+        const prereqs = s.prereqs ?? [];
+        edges.set(s.id, prereqs);
+        for (const dep of prereqs) {
+          if (!order.has(dep)) {
+            problems.push(`${s.id}: unknown prereq "${dep}"`);
+          } else if (order.get(dep) > order.get(s.id)) {
+            problems.push(
+              `${s.id}: prereq "${dep}" comes after it in the path`);
+          }
+        }
+      }
+    }
+  }
+
+  // Depth-first cycle detection. A cycle means a plan you can never start.
+  const state = new Map();
+  const walk = (id) => {
+    if (state.get(id) === 'done') return false;
+    if (state.get(id) === 'open') return true;
+    state.set(id, 'open');
+    for (const dep of edges.get(id) ?? []) {
+      if (order.has(dep) && walk(dep)) return true;
+    }
+    state.set(id, 'done');
+    return false;
+  };
+  for (const id of edges.keys()) {
+    if (walk(id)) { problems.push(`prereq cycle involving ${id}`); break; }
+  }
+
   if (previous) {
     const now = new Set(collectIds(p));
     for (const id of collectIds(previous)) {

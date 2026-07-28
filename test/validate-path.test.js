@@ -95,4 +95,43 @@ describe('validatePath', () => {
     next.phases[0].tasks[0].subtasks[0].title = 'Completely different wording';
     expect(validatePath(next, previous)).toEqual([]);
   });
+
+  it('rejects a prereq pointing at a subtask that does not exist', () => {
+    const p = valid();
+    p.phases[0].tasks[0].subtasks[0].prereqs = ['no-such-subtask'];
+    expect(validatePath(p, null).join()).toMatch(/unknown prereq/i);
+  });
+
+  it('rejects a cycle, because a plan you can never start is worse than no plan', () => {
+    const p = valid();
+    p.phases[0].tasks[0].subtasks.push({
+      id: 't1-s02', title: 'B', desc: 'd', steps: [], resources: {},
+      prereqs: ['t1-s01']
+    });
+    p.phases[0].tasks[0].subtasks[0].prereqs = ['t1-s02'];
+    expect(validatePath(p, null).join()).toMatch(/cycle/i);
+  });
+
+  it('rejects a prereq that comes later in the path than the subtask needing it', () => {
+    const p = valid();
+    p.phases[0].tasks[0].subtasks.push({
+      id: 't1-s02', title: 'B', desc: 'd', steps: [], resources: {}
+    });
+    // s01 comes first but claims to depend on s02, which comes after it.
+    p.phases[0].tasks[0].subtasks[0].prereqs = ['t1-s02'];
+    expect(validatePath(p, null).join()).toMatch(/after|later/i);
+  });
+
+  it('accepts a prereq that comes earlier', () => {
+    const p = valid();
+    p.phases[0].tasks[0].subtasks.push({
+      id: 't1-s02', title: 'B', desc: 'd', steps: [], resources: {},
+      prereqs: ['t1-s01']
+    });
+    expect(validatePath(p, null)).toEqual([]);
+  });
+
+  it('accepts a path with no prereqs at all, because the field is optional', () => {
+    expect(validatePath(valid(), null)).toEqual([]);
+  });
 });
