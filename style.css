@@ -985,3 +985,15 @@ weight-badge {
 .prereq-item:hover { color: var(--text); }
 .prereq-done { color: var(--muted); }
 .prereq-undone { color: var(--amber); }
+
+/* ── Term index ────────────────────────────────────────────── */
+.glossary-row { border-bottom: 1px solid var(--border); padding: 10px 0; }
+.glossary-row:last-child { border-bottom: none; }
+.glossary-term { font-family: var(--mono); font-size: 13px; }
+.glossary-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.glossary-ref {
+  background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  color: var(--muted2); text-decoration: none;
+}
+.glossary-ref:hover { color: var(--text); }
+#glossary-filter { margin-bottom: 14px; }

@@ -40,9 +40,12 @@ export function initSidebar(context) {
 
   // Delegated, because the phase panels are built after this runs.
   document.addEventListener('click', e => {
+    // Prerequisites and glossary references both jump to a subtask. Matching
+    // the button rather than either class leaves the glossary's outbound <a>
+    // links alone — they go to somebody else's docs, not into the sidebar.
     // Checked first: a prerequisite sits inside the open sidebar, so it must
     // replace what is showing rather than fall through to the panel behind it.
-    const jump = e.target.closest('.prereq-item');
+    const jump = e.target.closest('button[data-subtask-id]');
     if (jump) { openSidebar(jump.dataset.subtaskId); return; }
 
     const item = e.target.closest('.task-item');

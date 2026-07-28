@@ -14,6 +14,7 @@ import { initSidebar, CAPTURE_STATE } from './sidebar.js';
 import { initToday } from './today.js';
 import { renderPaths } from './paths-view.js';
 import { renderCards } from './cards-view.js';
+import { renderGlossary } from './glossary-view.js';
 import { renderSettings } from './settings-view.js';
 import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { renderAuthView } from './auth-view.js';
@@ -54,6 +55,9 @@ async function boot() {
   renderPath(path, document.getElementById('phase-views'));
   renderNav(path, document.querySelector('.nav'));
   initSidebar(ctx);
+
+  // Content, not user data — it renders whether or not anyone is signed in.
+  renderGlossary(ctx);
 
   // isSignedIn means signed in AND verified: an unverified account must not
   // request the data it is not allowed to change.
