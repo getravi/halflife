@@ -14,8 +14,8 @@ import { initSidebar, CAPTURE_STATE } from './sidebar.js';
 import { initToday } from './today.js';
 import { renderPaths } from './paths-view.js';
 import { renderCards } from './cards-view.js';
-import { renderGlossary } from './glossary-view.js';
-import { NOTES_STATE } from './notes-view.js';
+import { renderGlossary, initTermJumps } from './glossary-view.js';
+import { NOTES_STATE, renderNotesView } from './notes-view.js';
 import { renderSettings } from './settings-view.js';
 import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { renderAuthView } from './auth-view.js';
@@ -59,6 +59,7 @@ async function boot() {
 
   // Content, not user data — it renders whether or not anyone is signed in.
   renderGlossary(ctx);
+  initTermJumps();
 
   // isSignedIn means signed in AND verified: an unverified account must not
   // request the data it is not allowed to change.
@@ -67,6 +68,11 @@ async function boot() {
     CAPTURE_STATE.cards = await API.getCards(PATH_ID);
     NOTES_STATE.notes = await API.getNotes(PATH_ID);
   }
+
+  // Outside the signed-in branch on purpose. The #notes panel exists in the
+  // markup for everyone, so if this only ran for a signed-in person the view
+  // would be a blank page rather than one saying there is nothing here.
+  renderNotesView(ctx);
 
   // Re-boot after a successful sign-in or sign-up rather than patching state
   // in place: every view depends on who is asking.

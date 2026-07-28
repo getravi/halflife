@@ -37,6 +37,63 @@ export function notesHtml(notes, ctx, subtaskId) {
 }
 
 /**
+ * Every note for the path, grouped by subtask in path order — you come here
+ * remembering roughly where in the plan you wrote something.
+ *
+ * The filter matches the markdown source and the subtask title, not the
+ * rendered HTML: searching for "code" should not match every note that
+ * happens to contain a code block.
+ */
+export function allNotesHtml(notes, ctx, filter) {
+  const needle = String(filter ?? '').trim().toLowerCase();
+  const groups = [];
+
+  for (const ph of ctx.path.phases ?? []) {
+    for (const t of ph.tasks ?? []) {
+      for (const s of t.subtasks ?? []) {
+        const mine = (notes ?? [])
+          .filter(n => n.subtask_id === s.id)
+          .filter(n => !needle
+            || n.body.toLowerCase().includes(needle)
+            || String(s.title).toLowerCase().includes(needle))
+          .sort((a, b) => b.created_at - a.created_at);
+
+        if (mine.length) groups.push({ subtask: s, notes: mine });
+      }
+    }
+  }
+
+  if (!groups.length) return `<p class="signed-out-note">No notes match.</p>`;
+
+  return groups.map(g => `
+    <div class="notes-group">
+      <button class="notes-group-title" data-subtask-id="${esc(g.subtask.id)}"
+        >${esc(g.subtask.title)}</button>
+      ${g.notes.map(n => `
+        <div class="note-row" data-note-id="${esc(n.id)}">
+          <div class="note-body">${renderNote(n.body, ctx)}</div>
+          <div class="note-meta">${esc(day(n.created_at))}</div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/**
+ * No editing here on purpose: the subtask heading is a button that opens the
+ * sidebar, where editing already lives. One place to change a note beats two.
+ */
+export function renderNotesView(ctx) {
+  const list = document.getElementById('notes-list-all');
+  const box = document.getElementById('notes-filter');
+  if (!list || !box) return;
+
+  const paint = () => {
+    list.innerHTML = allNotesHtml(NOTES_STATE.notes, ctx, box.value);
+  };
+  box.addEventListener('input', paint);
+  paint();
+}
+
+/**
  * Renders into the slot the sidebar leaves, and wires add, edit and delete.
  * Rebuilt from NOTES_STATE after every mutation rather than patched in place:
  * the list is small and a patch that drifts from the server is a bug you find

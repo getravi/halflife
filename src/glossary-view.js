@@ -50,3 +50,22 @@ export function renderGlossary(ctx) {
   box.addEventListener('input', paint);
   paint();
 }
+
+/**
+ * A [[term]] in a note has no sidebar to open, so it goes to the term index
+ * and narrows it to that term. Delegated, because notes are rendered long
+ * after this runs.
+ */
+export function initTermJumps() {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-term]');
+    if (!btn) return;
+
+    const box = document.getElementById('glossary-filter');
+    if (box) {
+      box.value = btn.dataset.term;
+      box.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    window.location.hash = '#glossary';
+  });
+}

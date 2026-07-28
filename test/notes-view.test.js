@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { notesHtml } from '../src/notes-view.js';
+import { notesHtml, allNotesHtml } from '../src/notes-view.js';
 import { indexPath } from '../src/weights.js';
 
 const path = {
@@ -66,5 +66,43 @@ describe('notesHtml', () => {
     const stale = [{ id: 'n9', subtask_id: 'gone', body: 'x',
                      created_at: 1, updated_at: 1 }];
     expect(() => notesHtml(stale, ctx, 's1')).not.toThrow();
+  });
+});
+
+describe('allNotesHtml', () => {
+  it('groups notes under their subtask title, in path order', () => {
+    const html = allNotesHtml(notes, ctx, '');
+    expect(html.indexOf('Stand up vLLM'))
+      .toBeLessThan(html.indexOf('Continuous batching'));
+  });
+
+  it('filters on the note text', () => {
+    const html = allNotesHtml(notes, ctx, 'older');
+    expect(html).toContain('older note');
+    expect(html).not.toContain('different subtask');
+  });
+
+  it('filters on the subtask title too, because that is how you remember it', () => {
+    const html = allNotesHtml(notes, ctx, 'batching');
+    expect(html).toContain('different subtask');
+    expect(html).not.toContain('older note');
+  });
+
+  it('drops a subtask heading entirely when none of its notes match', () => {
+    expect(allNotesHtml(notes, ctx, 'older')).not.toContain('Continuous batching');
+  });
+
+  it('says so when nothing matches', () => {
+    expect(allNotesHtml(notes, ctx, 'zzzz')).toMatch(/no notes/i);
+  });
+
+  it('has an honest empty state with no notes at all', () => {
+    expect(allNotesHtml([], ctx, '')).toMatch(/no notes/i);
+  });
+
+  it('skips a note whose subtask has been removed from the path', () => {
+    const stale = [{ id: 'n9', subtask_id: 'gone', body: 'orphan',
+                     created_at: 1, updated_at: 1 }];
+    expect(allNotesHtml(stale, ctx, '')).toMatch(/no notes/i);
   });
 });
