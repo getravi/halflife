@@ -13,6 +13,11 @@ const makeCard = (cookie, prompt) => as(cookie, '/api/cards', {
   })
 });
 
+const makeNote = (cookie, body) => as(cookie, '/api/notes', {
+  method: 'POST',
+  body: JSON.stringify({ pathId: 'frontier-lab', subtaskId: 'p2-serving-s01', body })
+});
+
 describe('isolation through real sessions', () => {
   let A, B;
 
@@ -108,5 +113,50 @@ describe('isolation through real sessions', () => {
     const row = await env.DB.prepare('SELECT id FROM cards WHERE id = ?')
       .bind(bob.id).first();
     expect(row).toBeTruthy();
+  });
+
+  it("does not list one signed-in user another's notes", async () => {
+    await makeNote(A, 'alice note');
+    await makeNote(B, 'bob note');
+
+    const forA = await (await as(A, '/api/notes?pathId=frontier-lab')).json();
+    expect(forA.notes).toHaveLength(1);
+    expect(forA.notes[0].body).toBe('alice note');
+  });
+
+  it("refuses to rewrite another user's note, and leaves its text alone", async () => {
+    const mine = (await (await makeNote(B, 'bob note')).json()).note;
+
+    const res = await as(A, '/api/notes', {
+      method: 'PATCH',
+      body: JSON.stringify({ noteId: mine.id, body: 'hijacked' })
+    });
+    expect(res.status).toBe(404);
+
+    const forB = await (await as(B, '/api/notes?pathId=frontier-lab')).json();
+    expect(forB.notes[0].body).toBe('bob note');
+  });
+
+  it("refuses to delete another user's note", async () => {
+    const mine = (await (await makeNote(B, 'bob note')).json()).note;
+
+    expect((await as(A, `/api/notes?noteId=${mine.id}`, { method: 'DELETE' })).status)
+      .toBe(404);
+
+    const forB = await (await as(B, '/api/notes?pathId=frontier-lab')).json();
+    expect(forB.notes).toHaveLength(1);
+  });
+
+  it('deletes the notes of a deleted account, rather than orphaning them', async () => {
+    await makeNote(A, 'alice note');
+
+    expect((await as(A, '/api/me', { method: 'DELETE' })).status).toBe(200);
+
+    // Asserted against the table, not through a route. Every route for this
+    // user now answers 401, which would pass whether or not the row survived.
+    // The whole suite's resetDb() leans on this cascade and nothing tested it.
+    const { results } = await env.DB
+      .prepare('SELECT * FROM notes WHERE body = ?').bind('alice note').all();
+    expect(results).toHaveLength(0);
   });
 });

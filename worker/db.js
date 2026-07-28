@@ -148,3 +148,48 @@ export async function deleteCard(env, userId, cardId) {
     .bind(cardId, userId).run();
   return meta.changes > 0;
 }
+
+export async function listNotes(env, userId, pathId) {
+  const { results } = await env.DB
+    .prepare(`SELECT * FROM notes WHERE user_id = ? AND path_id = ?
+              ORDER BY created_at DESC`)
+    .bind(userId, pathId).all();
+  return results;
+}
+
+export async function insertNote(env, note) {
+  await env.DB.prepare(
+    `INSERT INTO notes (id, user_id, path_id, subtask_id, body, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    note.id, note.user_id, note.path_id, note.subtask_id,
+    note.body, note.created_at, note.updated_at
+  ).run();
+  return note;
+}
+
+// The user_id in the WHERE clause is the whole access check. Doing it here
+// rather than in the handler means no future route can forget it.
+export async function updateNoteBody(env, userId, noteId, body, now) {
+  const { meta } = await env.DB.prepare(
+    'UPDATE notes SET body = ?, updated_at = ? WHERE id = ? AND user_id = ?'
+  ).bind(body, now, noteId, userId).run();
+
+  if (!meta.changes) return null;
+  return env.DB.prepare('SELECT * FROM notes WHERE id = ?').bind(noteId).first();
+}
+
+export async function deleteNote(env, userId, noteId) {
+  const { meta } = await env.DB
+    .prepare('DELETE FROM notes WHERE id = ? AND user_id = ?')
+    .bind(noteId, userId).run();
+  return meta.changes > 0;
+}
+
+export async function listAllNotes(env, userId) {
+  const { results } = await env.DB
+    .prepare(`SELECT * FROM notes WHERE user_id = ?
+              ORDER BY path_id, subtask_id, created_at`)
+    .bind(userId).all();
+  return results;
+}
