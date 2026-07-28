@@ -12,6 +12,7 @@ import * as reviews from './routes/reviews.js';
 import * as meRoutes from './routes/me.js';
 import * as exportRoute from './routes/export.js';
 import * as tokens from './routes/tokens.js';
+import * as attempts from './routes/attempts.js';
 
 // [method, path, handler, isPublic]
 const ROUTES = [
@@ -31,7 +32,11 @@ const ROUTES = [
   ['POST', '/api/enrollments', meRoutes.enrol],
   ['GET', '/api/export', exportRoute.dump],
   ['POST', '/api/exercise-token', tokens.mint],
-  ['DELETE', '/api/exercise-token', tokens.revoke]
+  ['DELETE', '/api/exercise-token', tokens.revoke],
+  // Public in this table only because it carries a bearer token instead of a
+  // cookie. attempts.create does its own authentication, first thing.
+  ['POST', '/api/attempts', attempts.create, true],
+  ['GET', '/api/attempts', attempts.list]
 ];
 
 export default {
