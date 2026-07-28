@@ -41,8 +41,18 @@ external sources keep doing the teaching. Four sub-projects came out of that:
 
 1. **Structure** (this spec) — prerequisites and a term index.
 2. **Notes** — searchable, linked, accumulating from the capture moment.
-3. **Curated open material** — genuinely open-licensed content, rendered
-   in-app, each source's licence verified individually.
+3. ~~**Curated open material**~~ — **cancelled 2026-07-28, on measurement.**
+   A sample of 24 of the 97 distinct arXiv papers in this path: 13 carry
+   arXiv's default `nonexclusive-distrib` licence, which grants arXiv the right
+   to distribute and grants us nothing; 2 are CC BY-NC-SA; only 9 are CC BY or
+   CC0. There is no licence field in the arXiv API, so establishing this for
+   the rest means scraping 97 abstract pages.
+
+   The third of papers we *could* reproduce are PDFs, so the payoff is reading
+   them in a worse viewer than arXiv's own. The documentation sites — JAX,
+   vLLM, PyTorch, NumPy — are Apache, BSD or MIT and may be copied freely, but
+   they are canonical and they change, so a local copy is strictly worse than
+   the link. Copying is either not permitted or not an improvement.
 4. **Coding exercises** — run in Google Colab, which is the only option that
    handles a PyTorch and CUDA curriculum. Colab notebooks can make outbound
    requests, so a final cell can post results back; free GPU is heavily
