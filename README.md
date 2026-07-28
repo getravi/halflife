@@ -1,4 +1,12 @@
-# Frontier Lab Learning Plan
+# halflife
+
+A study tracker that measures what you retained, not what you covered.
+
+Ticking a box records that you read something. It does not record whether you
+still know it a month later, and the gap between those two is the whole point:
+every card carries a stability in days, retrievability decays as
+`0.9 ^ (elapsed / stability)`, and the app reports **Covered** and **Retained**
+as separate numbers.
 
 A hosted tracker for multi-week learning paths, with a spaced-repetition
 review loop over them. The curriculum is data; the app is a Cloudflare Worker
