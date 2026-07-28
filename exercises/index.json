@@ -1,0 +1,34 @@
+{
+  "word-frequencies": {
+    "title": "Word frequencies from an empty file",
+    "pathId": "frontier-lab",
+    "subtaskId": "p0-python-basics-s04",
+    "gatedNodeId": "p0-python-basics-s04-07",
+    "notebook": "word-frequencies.ipynb",
+    "tests": 5
+  },
+  "lru-and-fetcher": {
+    "title": "Typed LRU cache and a concurrent fetcher",
+    "pathId": "frontier-lab",
+    "subtaskId": "p0-python-fluency-s05",
+    "gatedNodeId": "p0-python-fluency-s05-07",
+    "notebook": "lru-and-fetcher.ipynb",
+    "tests": 6
+  },
+  "attention-einsum": {
+    "title": "Attention in einsum",
+    "pathId": "frontier-lab",
+    "subtaskId": "p0-numpy-s03",
+    "gatedNodeId": "p0-numpy-s03-07",
+    "notebook": "attention-einsum.ipynb",
+    "tests": 5
+  },
+  "autograd-from-memory": {
+    "title": "Scalar autograd from memory",
+    "pathId": "frontier-lab",
+    "subtaskId": "p1-karpathy-hero-s04",
+    "gatedNodeId": "p1-karpathy-hero-s04-07",
+    "notebook": "autograd-from-memory.ipynb",
+    "tests": 6
+  }
+}

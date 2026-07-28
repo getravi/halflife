@@ -569,6 +569,10 @@
                 {
                   "id": "p0-python-basics-s04-06",
                   "text": "Run it on a book you did not choose (grab any plain-text file you have never opened) and on a path that does not exist. Commit both outputs to the public repo."
+                },
+                {
+                  "id": "p0-python-basics-s04-07",
+                  "text": "The graded suite passes. This one is not yours to tick — run the notebook and it ticks itself."
                 }
               ],
               "resources": {
@@ -898,6 +902,10 @@
                 {
                   "id": "p0-python-fluency-s05-06",
                   "text": "Test the retry path against a local stub server that fails deterministically for the first two attempts — assert the number of attempts, not just the final success."
+                },
+                {
+                  "id": "p0-python-fluency-s05-07",
+                  "text": "The graded suite passes. This one is not yours to tick — run the notebook and it ticks itself."
                 }
               ],
               "resources": {
@@ -1089,6 +1097,10 @@
                 {
                   "id": "p0-numpy-s03-06",
                   "text": "Sanity-check the mask: row 0 of the attention matrix must be one-hot on position 0, and every row must sum to 1."
+                },
+                {
+                  "id": "p0-numpy-s03-07",
+                  "text": "The graded suite passes. This one is not yours to tick — run the notebook and it ticks itself."
                 }
               ],
               "resources": {
@@ -2045,6 +2057,10 @@
                 {
                   "id": "p1-karpathy-hero-s04-06",
                   "text": "Only after it passes, diff your implementation against micrograd and note every difference, however small."
+                },
+                {
+                  "id": "p1-karpathy-hero-s04-07",
+                  "text": "The graded suite passes. This one is not yours to tick — run the notebook and it ticks itself."
                 }
               ],
               "resources": {

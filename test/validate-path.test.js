@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validatePath } from '../tools/validate-path.js';
+import { validatePath, validateExercises } from '../tools/validate-path.js';
 
 const valid = () => ({
   id: 'p', title: 'P',
@@ -133,5 +133,47 @@ describe('validatePath', () => {
 
   it('accepts a path with no prereqs at all, because the field is optional', () => {
     expect(validatePath(valid(), null)).toEqual([]);
+  });
+});
+
+describe('validateExercises', () => {
+  const ex = (over = {}) => ({
+    ghost: {
+      pathId: 'p', subtaskId: 't1-s01', gatedNodeId: 't1-s01-01', tests: 1, ...over
+    }
+  });
+
+  it('rejects an exercise whose gated step is not in the path', () => {
+    expect(validateExercises(valid(), ex({ gatedNodeId: 'nope-07' })).join())
+      .toMatch(/nope-07/);
+  });
+
+  it('rejects an exercise whose subtask is not in the path', () => {
+    expect(validateExercises(valid(), ex({ subtaskId: 'gone' })).join()).toMatch(/gone/);
+  });
+
+  it('rejects a test count that is not a positive integer', () => {
+    expect(validateExercises(valid(), ex({ tests: 0 })).join()).toMatch(/tests/i);
+  });
+
+  it('rejects a missing pathId, which would write progress nothing reads back', () => {
+    expect(validateExercises(valid(), ex({ pathId: undefined })).join())
+      .toMatch(/pathId/i);
+  });
+
+  it('rejects two exercises claiming the same gated step', () => {
+    const problems = validateExercises(valid(), {
+      a: { pathId: 'p', subtaskId: 't1-s01', gatedNodeId: 't1-s01-01', tests: 1 },
+      b: { pathId: 'p', subtaskId: 't1-s01', gatedNodeId: 't1-s01-01', tests: 1 }
+    });
+    expect(problems.join()).toMatch(/twice|duplicate/i);
+  });
+
+  it('accepts a well-formed exercise', () => {
+    expect(validateExercises(valid(), ex())).toEqual([]);
+  });
+
+  it('accepts a path with no exercises at all', () => {
+    expect(validateExercises(valid(), {})).toEqual([]);
   });
 });

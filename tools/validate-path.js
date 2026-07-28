@@ -119,6 +119,53 @@ export function validatePath(p, previous) {
   return problems;
 }
 
+/**
+ * Cross-checks the exercise definitions against the path. Separate from
+ * validatePath because exercises are a different file with a different
+ * lifecycle, and a path without them stays valid.
+ */
+export function validateExercises(p, exercises) {
+  const problems = [];
+  const subtasks = new Set();
+  const steps = new Set();
+
+  for (const ph of p.phases ?? []) {
+    for (const t of ph.tasks ?? []) {
+      for (const s of t.subtasks ?? []) {
+        subtasks.add(s.id);
+        for (const st of s.steps ?? []) steps.add(st.id);
+      }
+    }
+  }
+
+  const claimed = new Map();
+  for (const [id, e] of Object.entries(exercises ?? {})) {
+    if (!subtasks.has(e.subtaskId)) {
+      problems.push(`${id}: no such subtask "${e.subtaskId}"`);
+    }
+    // The gate hangs off this id. If it does not exist the exercise gates
+    // nothing at all, and the whole feature is decoration that reads as
+    // working.
+    if (!steps.has(e.gatedNodeId)) {
+      problems.push(`${id}: no such step "${e.gatedNodeId}"`);
+    }
+    if (!Number.isInteger(e.tests) || e.tests < 1) {
+      problems.push(`${id}: tests must be a positive integer`);
+    }
+    // Progress rows are keyed by path. Without this the gate would write a
+    // row nothing ever reads back.
+    if (!e.pathId) problems.push(`${id}: pathId is required`);
+
+    if (claimed.has(e.gatedNodeId)) {
+      problems.push(
+        `${e.gatedNodeId} is claimed twice: ${claimed.get(e.gatedNodeId)} and ${id}`);
+    }
+    claimed.set(e.gatedNodeId, id);
+  }
+
+  return problems;
+}
+
 export function emit(paths, outDir) {
   // Clear first. Hashed filenames mean every content edit leaves its
   // predecessor behind, and the directory would grow without bound. The
@@ -164,6 +211,24 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const problems = validatePath(p, previous);
     if (problems.length) failures.push([f, problems]);
     loaded.push(p);
+  }
+
+  // Exercises are optional: a path with none is valid, and a fresh clone that
+  // has not written any must still validate.
+  const exFile = path.join(ROOT, 'exercises', 'index.json');
+  if (fs.existsSync(exFile)) {
+    const exercises = JSON.parse(fs.readFileSync(exFile, 'utf8'));
+    const byPath = new Map(loaded.map(p => [p.id, p]));
+
+    for (const [id, e] of Object.entries(exercises)) {
+      const target = byPath.get(e.pathId);
+      if (!target) {
+        failures.push(['exercises/index.json', [`${id}: no such path "${e.pathId}"`]]);
+        continue;
+      }
+      const problems = validateExercises(target, { [id]: e });
+      if (problems.length) failures.push(['exercises/index.json', problems]);
+    }
   }
 
   if (failures.length) {
