@@ -150,13 +150,19 @@ describe('isolation through real sessions', () => {
   it('deletes the notes of a deleted account, rather than orphaning them', async () => {
     await makeNote(A, 'alice note');
 
+    const count = async () => (await env.DB
+      .prepare('SELECT * FROM notes WHERE body = ?').bind('alice note').all()).results.length;
+
+    // Asserted before as well as after, or the test passes just as happily
+    // when the note was never written — which is exactly how it behaved
+    // before the routes existed.
+    expect(await count()).toBe(1);
+
     expect((await as(A, '/api/me', { method: 'DELETE' })).status).toBe(200);
 
-    // Asserted against the table, not through a route. Every route for this
-    // user now answers 401, which would pass whether or not the row survived.
-    // The whole suite's resetDb() leans on this cascade and nothing tested it.
-    const { results } = await env.DB
-      .prepare('SELECT * FROM notes WHERE body = ?').bind('alice note').all();
-    expect(results).toHaveLength(0);
+    // Against the table, not through a route. Every route for this user now
+    // answers 401, which would pass whether or not the row survived. The whole
+    // suite's resetDb() leans on this cascade and nothing tested it.
+    expect(await count()).toBe(0);
   });
 });

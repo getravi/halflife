@@ -7,6 +7,7 @@ import { getUser, createAuth } from './auth.js';
 import { error } from './http.js';
 import * as progress from './routes/progress.js';
 import * as cards from './routes/cards.js';
+import * as notes from './routes/notes.js';
 import * as reviews from './routes/reviews.js';
 import * as meRoutes from './routes/me.js';
 import * as exportRoute from './routes/export.js';
@@ -20,6 +21,10 @@ const ROUTES = [
   ['POST', '/api/cards', cards.create],
   ['PATCH', '/api/cards', cards.update],
   ['DELETE', '/api/cards', cards.destroy],
+  ['GET', '/api/notes', notes.list],
+  ['POST', '/api/notes', notes.create],
+  ['PATCH', '/api/notes', notes.update],
+  ['DELETE', '/api/notes', notes.destroy],
   ['POST', '/api/reviews', reviews.create],
   ['DELETE', '/api/me', meRoutes.destroy],
   ['POST', '/api/enrollments', meRoutes.enrol],
