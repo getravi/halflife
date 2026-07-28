@@ -997,3 +997,20 @@ weight-badge {
 }
 .glossary-ref:hover { color: var(--text); }
 #glossary-filter { margin-bottom: 14px; }
+
+/* ── Notes ─────────────────────────────────────────────────── */
+.note-row { border-bottom: 1px solid var(--border); padding: 10px 0; }
+.note-row:last-of-type { border-bottom: none; }
+.note-body { font-size: 13px; line-height: 1.6; }
+.note-body pre {
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 8px; overflow-x: auto; font-size: 12px;
+}
+.note-body code { font-family: var(--mono); font-size: 12px; }
+.note-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.note-link {
+  background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  color: var(--muted2); border-bottom: 1px solid var(--border);
+}
+.note-link:hover { color: var(--text); }
+#note-input { margin-top: 10px; }

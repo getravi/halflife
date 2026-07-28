@@ -9,6 +9,7 @@ import { API } from './api.js';
 import { isDone, toggle, rollup, allDone } from './progress.js';
 import { isSignedIn } from './auth.js';
 import { prereqHtml, neededByHtml } from './prereq-view.js';
+import { mountSidebarNotes } from './notes-view.js';
 
 let ctx = null;                       // { path, index, weights, pathId }
 export const CAPTURE_STATE = { cards: [] };
@@ -142,6 +143,10 @@ export function openSidebar(subtaskId) {
 
   html += neededByHtml(s, ctx);
 
+  // Notes are entirely user data. Unlike the term index, there is nothing
+  // here worth showing to someone who cannot write one.
+  if (isSignedIn()) html += `<div class="sidebar-section" id="notes-slot"></div>`;
+
   for (const [key, heading] of KINDS) {
     const list = s.resources?.[key];
     if (!list?.length) continue;
@@ -168,6 +173,8 @@ export function openSidebar(subtaskId) {
       }
     });
   });
+
+  if (isSignedIn()) mountSidebarNotes(ctx, s.id);
 
   document.getElementById('sidebar-backdrop').classList.add('active');
   document.getElementById('resources-sidebar').classList.add('active');

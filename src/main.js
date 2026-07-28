@@ -15,6 +15,7 @@ import { initToday } from './today.js';
 import { renderPaths } from './paths-view.js';
 import { renderCards } from './cards-view.js';
 import { renderGlossary } from './glossary-view.js';
+import { NOTES_STATE } from './notes-view.js';
 import { renderSettings } from './settings-view.js';
 import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { renderAuthView } from './auth-view.js';
@@ -64,6 +65,7 @@ async function boot() {
   if (isSignedIn()) {
     setProgressState(await API.getProgress(PATH_ID));
     CAPTURE_STATE.cards = await API.getCards(PATH_ID);
+    NOTES_STATE.notes = await API.getNotes(PATH_ID);
   }
 
   // Re-boot after a successful sign-in or sign-up rather than patching state

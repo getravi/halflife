@@ -9,6 +9,7 @@
 const CACHE_CARDS = 'flp_cache_cards';
 const CACHE_PROGRESS = 'flp_cache_progress';
 const CACHE_ME = 'flp_cache_me';
+const CACHE_NOTES = 'flp_cache_notes';
 const OUTBOX = 'flp_outbox';
 
 const read = (key, fallback) => {
@@ -128,6 +129,33 @@ export const API = {
         API.online = false;
         return read(CACHE_CARDS, []);
       }
+    },
+
+    async getNotes(pathId) {
+      try {
+        const { notes } = await API.request(
+          'GET', `/api/notes?pathId=${encodeURIComponent(pathId)}`);
+        API.online = true;
+        write(CACHE_NOTES, notes);
+        return notes;
+      } catch {
+        API.online = false;
+        return read(CACHE_NOTES, []);
+      }
+    },
+
+    async createNote(fields) {
+      const res = await API.mutate('POST', '/api/notes', fields);
+      return res ? res.note : null;
+    },
+
+    async updateNote(noteId, body) {
+      const res = await API.mutate('PATCH', '/api/notes', { noteId, body });
+      return res ? res.note : null;
+    },
+
+    async deleteNote(noteId) {
+      return API.mutate('DELETE', `/api/notes?noteId=${encodeURIComponent(noteId)}`);
     },
 
     // A read, so it is not an outbox mutation: a failure must surface rather
