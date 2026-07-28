@@ -10105,5 +10105,801 @@
         }
       ]
     }
+  ],
+  "terms": [
+    {
+      "term": "AISI",
+      "mentionedIn": [
+        "p0-operating-rhythm-s02",
+        "p4-opensource-s02",
+        "p4-apply-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "UK AI Security Institute — careers (they build Inspect)",
+          "url": "https://www.aisi.gov.uk/careers"
+        },
+        {
+          "label": "METR — hiring (work tests, not credential screening)",
+          "url": "https://metr.org/hiring"
+        },
+        {
+          "label": "Apollo Research — careers (evals and control roles)",
+          "url": "https://www.apolloresearch.ai/careers"
+        }
+      ]
+    },
+    {
+      "term": "ARENA",
+      "mentionedIn": [
+        "p0-operating-rhythm-s06",
+        "p4-apply-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "ARENA — Alignment Research Engineer Accelerator (4–5 week in-person bootcamp, 2–3 cohorts/year)",
+          "url": "https://www.arena.education/"
+        },
+        {
+          "label": "MATS — research fellowship (10 weeks, stipend + compute, Berkeley/London)",
+          "url": "https://www.matsprogram.org/"
+        },
+        {
+          "label": "MATS — mentor list (apply to a named agenda, not to the program)",
+          "url": "https://www.matsprogram.org/mentors"
+        }
+      ]
+    },
+    {
+      "term": "CPU",
+      "mentionedIn": [
+        "p0-git-tooling-s02",
+        "p2-eval-infra-s03",
+        "p3-jax-core-s08",
+        "p3-cs336-systems-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "tmux — Getting Started wiki",
+          "url": "https://github.com/tmux/tmux/wiki/Getting-Started"
+        },
+        {
+          "label": "`ssh_config` manual — Host aliases, IdentityFile, ServerAliveInterval, LocalForward",
+          "url": "https://man.openbsd.org/ssh_config"
+        },
+        {
+          "label": "tmux cheat sheet",
+          "url": "https://tmuxcheatsheet.com/"
+        }
+      ]
+    },
+    {
+      "term": "CUDA",
+      "mentionedIn": [
+        "p1-pytorch-engineering-s03",
+        "p3-cs336-systems-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "PyTorch — PyTorch Profiler recipe",
+          "url": "https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html"
+        },
+        {
+          "label": "PyTorch — Profiling your PyTorch Module",
+          "url": "https://docs.pytorch.org/tutorials/beginner/profiler.html"
+        },
+        {
+          "label": "Scaling book — All About Rooflines (make the prediction first)",
+          "url": "https://jax-ml.github.io/scaling-book/roofline/"
+        }
+      ]
+    },
+    {
+      "term": "DAPO",
+      "mentionedIn": [
+        "p2-rl-posttraining-s05",
+        "p2-rl-posttraining-s08"
+      ],
+      "seeAlso": [
+        {
+          "label": "TRL — GRPOTrainer",
+          "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+        },
+        {
+          "label": "The RLHF Book — Reinforcement Learning / policy gradients",
+          "url": "https://rlhfbook.com/c/11-policy-gradients"
+        },
+        {
+          "label": "arXiv 2503.14476 ↗",
+          "url": "https://arxiv.org/abs/2503.14476"
+        }
+      ]
+    },
+    {
+      "term": "FLOP",
+      "mentionedIn": [
+        "p1-modern-arch-s02",
+        "p3-scaling-book-s01",
+        "p3-scaling-book-s02",
+        "p3-scaling-book-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
+          "url": "https://arxiv.org/abs/2307.08691"
+        },
+        {
+          "label": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+          "url": "https://arxiv.org/abs/2205.14135"
+        },
+        {
+          "label": "FlashAttention-3: Fast and Accurate Attention with Asynchrony and Low-precision",
+          "url": "https://arxiv.org/abs/2407.08608"
+        }
+      ]
+    },
+    {
+      "term": "FSDP",
+      "mentionedIn": [
+        "p3-scaling-book-s02",
+        "p3-pytorch-distributed-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "PyTorch — Large Scale Transformer model training with Tensor Parallel (TP)",
+          "url": "https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html"
+        },
+        {
+          "label": "PyTorch API — Tensor Parallelism (torch.distributed.tensor.parallel)",
+          "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.parallel.html"
+        },
+        {
+          "label": "torchtitan — docs/composability.md",
+          "url": "https://github.com/pytorch/torchtitan/blob/main/docs/composability.md"
+        }
+      ]
+    },
+    {
+      "term": "GELU",
+      "mentionedIn": [
+        "p1-cs336-basics-s03",
+        "p3-scaling-book-s01",
+        "p3-cs336-systems-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "stanford-cs336/assignment1-basics — transformer tests",
+          "url": "https://github.com/stanford-cs336/assignment1-basics"
+        },
+        {
+          "label": "`torch.nn.functional.scaled_dot_product_attention` — the reference to check against once your own passes",
+          "url": "https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html"
+        },
+        {
+          "label": "arXiv 1910.07467 — RMSNorm ↗",
+          "url": "https://arxiv.org/abs/1910.07467"
+        }
+      ]
+    },
+    {
+      "term": "GPU",
+      "mentionedIn": [
+        "p0-git-tooling-s02",
+        "p1-pytorch-engineering-s01",
+        "p1-pytorch-engineering-s05",
+        "p1-cs336-basics-s04",
+        "p1-modern-arch-s02",
+        "p2-serving-s02",
+        "p2-rl-posttraining-s02",
+        "p2-rl-posttraining-s07",
+        "p3-jax-core-s08",
+        "p3-scaling-book-s01",
+        "p3-scaling-book-s02",
+        "p3-scaling-book-s03",
+        "p3-scaling-book-s06",
+        "p3-cs336-systems-s01",
+        "p3-serving-performance-s01",
+        "p3-serving-performance-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "Scaling book — How to Think About GPUs (chapter 12)",
+          "url": "https://jax-ml.github.io/scaling-book/gpus/"
+        },
+        {
+          "label": "Scaling book — All About Rooflines (the arithmetic this chapter grounds)",
+          "url": "https://jax-ml.github.io/scaling-book/roofline/"
+        },
+        {
+          "label": "Hugging Face — The Ultra-Scale Playbook",
+          "url": "https://huggingface.co/spaces/nanotron/ultrascale-playbook"
+        }
+      ]
+    },
+    {
+      "term": "GQA",
+      "mentionedIn": [
+        "p1-modern-arch-s01",
+        "p1-modern-arch-s04"
+      ],
+      "seeAlso": [
+        {
+          "label": "DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model (MLA)",
+          "url": "https://arxiv.org/abs/2405.04434"
+        },
+        {
+          "label": "YaRN: Efficient Context Window Extension of Large Language Models",
+          "url": "https://arxiv.org/abs/2309.00071"
+        },
+        {
+          "label": "GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints — the comparison point",
+          "url": "https://arxiv.org/abs/2305.13245"
+        }
+      ]
+    },
+    {
+      "term": "GRPO",
+      "mentionedIn": [
+        "p2-rl-posttraining-s04",
+        "p2-rl-posttraining-s05",
+        "p2-rl-posttraining-s07",
+        "p2-rl-posttraining-s08",
+        "p2-rl-posttraining-s09",
+        "p2-environment-s04"
+      ],
+      "seeAlso": [
+        {
+          "label": "TRL — GRPOTrainer",
+          "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+        },
+        {
+          "label": "The RLHF Book — Reinforcement Learning / policy gradients",
+          "url": "https://rlhfbook.com/c/11-policy-gradients"
+        },
+        {
+          "label": "arXiv 2503.14476 ↗",
+          "url": "https://arxiv.org/abs/2503.14476"
+        }
+      ]
+    },
+    {
+      "term": "HBM",
+      "mentionedIn": [
+        "p1-modern-arch-s02",
+        "p3-scaling-book-s01",
+        "p3-scaling-book-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
+          "url": "https://arxiv.org/abs/2307.08691"
+        },
+        {
+          "label": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+          "url": "https://arxiv.org/abs/2205.14135"
+        },
+        {
+          "label": "FlashAttention-3: Fast and Accurate Attention with Asynchrony and Low-precision",
+          "url": "https://arxiv.org/abs/2407.08608"
+        }
+      ]
+    },
+    {
+      "term": "JAX",
+      "mentionedIn": [
+        "p3-jax-core-s01",
+        "p3-jax-core-s02",
+        "p3-jax-core-s03",
+        "p3-jax-core-s04",
+        "p3-jax-core-s05",
+        "p3-jax-core-s06",
+        "p3-jax-core-s07",
+        "p3-jax-core-s08",
+        "p3-pytorch-distributed-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "JAX — Quickstart: How to think in JAX",
+          "url": "https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html"
+        },
+        {
+          "label": "JAX — 🔪 The Sharp Bits 🔪 (common gotchas)",
+          "url": "https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html"
+        },
+        {
+          "label": "JAX — Errors reference (UnexpectedTracerError, ConcretizationTypeError)",
+          "url": "https://docs.jax.dev/en/latest/errors.html"
+        }
+      ]
+    },
+    {
+      "term": "jit",
+      "mentionedIn": [
+        "p3-jax-core-s01",
+        "p3-jax-core-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "JAX — Just-in-time compilation",
+          "url": "https://docs.jax.dev/en/latest/jit-compilation.html"
+        },
+        {
+          "label": "JAX API — jax.grad",
+          "url": "https://docs.jax.dev/en/latest/_autosummary/jax.grad.html"
+        },
+        {
+          "label": "JAX API — jax.value_and_grad",
+          "url": "https://docs.jax.dev/en/latest/_autosummary/jax.value_and_grad.html"
+        }
+      ]
+    },
+    {
+      "term": "KL",
+      "mentionedIn": [
+        "p0-math-refresh-s03",
+        "p2-rl-posttraining-s04",
+        "p2-rl-posttraining-s08"
+      ],
+      "seeAlso": [
+        {
+          "label": "The Softmax function and its derivative (Eli Bendersky) — the full derivation",
+          "url": "https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative/"
+        },
+        {
+          "label": "A Short Introduction to Entropy, Cross-Entropy and KL-Divergence (Aurélien Géron)",
+          "url": "https://www.youtube.com/watch?v=ErfnhcEV1O8"
+        },
+        {
+          "label": "Visual Information Theory (Chris Olah)",
+          "url": "https://colah.github.io/posts/2015-09-Visual-Information/"
+        }
+      ]
+    },
+    {
+      "term": "KV",
+      "mentionedIn": [
+        "p1-modern-arch-s01",
+        "p1-modern-arch-s04",
+        "p1-modern-arch-s06",
+        "p2-serving-s01",
+        "p2-serving-s02",
+        "p2-serving-s03",
+        "p2-serving-s04",
+        "p2-serving-s05",
+        "p3-serving-performance-s01",
+        "p3-serving-performance-s02",
+        "p3-serving-performance-s04"
+      ],
+      "seeAlso": [
+        {
+          "label": "vLLM — Quantization",
+          "url": "https://docs.vllm.ai/en/latest/features/quantization/"
+        },
+        {
+          "label": "vLLM — Quantized KV Cache",
+          "url": "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/"
+        },
+        {
+          "label": "vLLM — FP8 W8A8 with llm-compressor",
+          "url": "https://docs.vllm.ai/en/latest/features/quantization/llm_compressor/fp8/"
+        }
+      ]
+    },
+    {
+      "term": "LR",
+      "mentionedIn": [
+        "p1-nanochat-s03",
+        "p2-rl-posttraining-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "Deep Learning Tuning Playbook (Google Research) — how to run comparisons that mean something",
+          "url": "https://github.com/google-research/tuning_playbook"
+        },
+        {
+          "label": "`scipy.stats.bootstrap` — paired differences and BCa intervals",
+          "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html"
+        },
+        {
+          "label": "nanochat — leaderboard notes, for how the project itself reports comparisons",
+          "url": "https://github.com/karpathy/nanochat/blob/master/dev/LEADERBOARD.md"
+        }
+      ]
+    },
+    {
+      "term": "MATS",
+      "mentionedIn": [
+        "p0-operating-rhythm-s06",
+        "p4-apply-s02"
+      ],
+      "seeAlso": [
+        {
+          "label": "ARENA — Alignment Research Engineer Accelerator (4–5 week in-person bootcamp, 2–3 cohorts/year)",
+          "url": "https://www.arena.education/"
+        },
+        {
+          "label": "MATS — research fellowship (10 weeks, stipend + compute, Berkeley/London)",
+          "url": "https://www.matsprogram.org/"
+        },
+        {
+          "label": "MATS — mentor list (apply to a named agenda, not to the program)",
+          "url": "https://www.matsprogram.org/mentors"
+        }
+      ]
+    },
+    {
+      "term": "MDE",
+      "mentionedIn": [
+        "p2-stats-s01",
+        "p2-benchmark-audit-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "statsmodels — TTestPower (paired / one-sample power)",
+          "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.TTestPower.html"
+        },
+        {
+          "label": "statsmodels — NormalIndPower (two-proportion power)",
+          "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.power.NormalIndPower.html"
+        },
+        {
+          "label": "statsmodels — proportion_effectsize (Cohen's h)",
+          "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.proportion.proportion_effectsize.html"
+        }
+      ]
+    },
+    {
+      "term": "METR",
+      "mentionedIn": [
+        "p2-safety-evals-s04",
+        "p4-apply-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "UK AI Security Institute — careers (they build Inspect)",
+          "url": "https://www.aisi.gov.uk/careers"
+        },
+        {
+          "label": "METR — hiring (work tests, not credential screening)",
+          "url": "https://metr.org/hiring"
+        },
+        {
+          "label": "Apollo Research — careers (evals and control roles)",
+          "url": "https://www.apolloresearch.ai/careers"
+        }
+      ]
+    },
+    {
+      "term": "MLP",
+      "mentionedIn": [
+        "p0-math-refresh-s02",
+        "p1-karpathy-hero-s01",
+        "p1-karpathy-hero-s02",
+        "p1-cs336-basics-s03",
+        "p3-scaling-book-s02",
+        "p3-pytorch-distributed-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "karpathy/makemore — the repo",
+          "url": "https://github.com/karpathy/makemore"
+        },
+        {
+          "label": "Neural Networks: Zero to Hero — course page",
+          "url": "https://karpathy.ai/zero-to-hero.html"
+        },
+        {
+          "label": "github.com/karpathy/makemore ↗",
+          "url": "https://github.com/karpathy/makemore"
+        }
+      ]
+    },
+    {
+      "term": "OOM",
+      "mentionedIn": [
+        "p1-pytorch-engineering-s03",
+        "p3-pytorch-distributed-s04",
+        "p3-pytorch-distributed-s07"
+      ],
+      "seeAlso": [
+        {
+          "label": "PyTorch tutorial — Saving and Loading Models (including the general checkpoint pattern)",
+          "url": "https://pytorch.org/tutorials/beginner/saving_loading_models.html"
+        },
+        {
+          "label": "PyTorch — Understanding CUDA Memory Usage / snapshot tooling",
+          "url": "https://pytorch.org/docs/stable/torch_cuda_memory.html"
+        },
+        {
+          "label": "PyTorch — CUDA semantics and the caching allocator",
+          "url": "https://pytorch.org/docs/stable/notes/cuda.html"
+        }
+      ]
+    },
+    {
+      "term": "PPO",
+      "mentionedIn": [
+        "p2-rl-posttraining-s05",
+        "p2-rl-posttraining-s08"
+      ],
+      "seeAlso": [
+        {
+          "label": "TRL — GRPOTrainer",
+          "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+        },
+        {
+          "label": "The RLHF Book — Reinforcement Learning / policy gradients",
+          "url": "https://rlhfbook.com/c/11-policy-gradients"
+        },
+        {
+          "label": "arXiv 2503.14476 ↗",
+          "url": "https://arxiv.org/abs/2503.14476"
+        }
+      ]
+    },
+    {
+      "term": "RL",
+      "mentionedIn": [
+        "p1-nanochat-s02",
+        "p2-serving-s04",
+        "p2-rl-posttraining-s06",
+        "p2-rl-posttraining-s07",
+        "p2-rl-posttraining-s08",
+        "p2-rl-posttraining-s09"
+      ],
+      "seeAlso": [
+        {
+          "label": "The RLHF Book — Reasoning and Inference-Time Scaling",
+          "url": "https://rlhfbook.com/c/14-reasoning"
+        },
+        {
+          "label": "arXiv 2510.04028 ↗",
+          "url": "https://arxiv.org/abs/2510.04028"
+        },
+        {
+          "label": "Does Reinforcement Learning Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model? (arXiv 2504.13837)",
+          "url": "https://arxiv.org/abs/2504.13837"
+        }
+      ]
+    },
+    {
+      "term": "RLVR",
+      "mentionedIn": [
+        "p2-rl-posttraining-s06",
+        "p2-rl-posttraining-s07"
+      ],
+      "seeAlso": [
+        {
+          "label": "The RLHF Book",
+          "url": "https://rlhfbook.com"
+        },
+        {
+          "label": "arXiv 2510.13786 ↗",
+          "url": "https://arxiv.org/abs/2510.13786"
+        },
+        {
+          "label": "The Art of Scaling Reinforcement Learning Compute for LLMs (arXiv 2510.13786)",
+          "url": "https://arxiv.org/abs/2510.13786"
+        }
+      ]
+    },
+    {
+      "term": "SFT",
+      "mentionedIn": [
+        "p1-nanochat-s02",
+        "p1-nanochat-s03",
+        "p2-rl-posttraining-s02",
+        "p2-rl-posttraining-s07"
+      ],
+      "seeAlso": [
+        {
+          "label": "TRL — SFTTrainer",
+          "url": "https://huggingface.co/docs/trl/en/sft_trainer"
+        },
+        {
+          "label": "TRL — Dataset formats and types",
+          "url": "https://huggingface.co/docs/trl/en/dataset_formats"
+        },
+        {
+          "label": "TRL — PEFT integration",
+          "url": "https://huggingface.co/docs/trl/en/peft_integration"
+        }
+      ]
+    },
+    {
+      "term": "SGD",
+      "mentionedIn": [
+        "p0-algorithms-s02",
+        "p0-algorithms-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "`torch.optim` — the reference pseudocode for every rule you are deriving",
+          "url": "https://pytorch.org/docs/stable/optim.html"
+        },
+        {
+          "label": "An overview of gradient descent optimization algorithms (Sebastian Ruder)",
+          "url": "https://www.ruder.io/optimizing-gradient-descent/"
+        },
+        {
+          "label": "Why Momentum Really Works (Distill)",
+          "url": "https://distill.pub/2017/momentum/"
+        }
+      ]
+    },
+    {
+      "term": "shard_map",
+      "mentionedIn": [
+        "p3-jax-core-s06",
+        "p3-jax-core-s07",
+        "p3-jax-core-s08"
+      ],
+      "seeAlso": [
+        {
+          "label": "JAX — Manual parallelism with shard_map",
+          "url": "https://docs.jax.dev/en/latest/notebooks/shard_map.html"
+        },
+        {
+          "label": "JAX API — jax.shard_map",
+          "url": "https://docs.jax.dev/en/latest/_autosummary/jax.shard_map.html"
+        },
+        {
+          "label": "JAX API — jax.lax.psum",
+          "url": "https://docs.jax.dev/en/latest/_autosummary/jax.lax.psum.html"
+        }
+      ]
+    },
+    {
+      "term": "SSM",
+      "mentionedIn": [
+        "p0-algorithms-s01",
+        "p1-modern-arch-s05"
+      ],
+      "seeAlso": [
+        {
+          "label": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+          "url": "https://arxiv.org/abs/2312.00752"
+        },
+        {
+          "label": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+          "url": "https://arxiv.org/abs/2006.16236"
+        },
+        {
+          "label": "Transformers are SSMs: Structured State Space Duality (Mamba-2)",
+          "url": "https://arxiv.org/abs/2405.21060"
+        }
+      ]
+    },
+    {
+      "term": "torch.compile",
+      "mentionedIn": [
+        "p3-pytorch-distributed-s02",
+        "p3-pytorch-distributed-s04"
+      ],
+      "seeAlso": [
+        {
+          "label": "PyTorch API — torch.distributed.tensor (DTensor)",
+          "url": "https://docs.pytorch.org/docs/stable/distributed.tensor.html"
+        },
+        {
+          "label": "PyTorch — Getting Started with DeviceMesh",
+          "url": "https://docs.pytorch.org/tutorials/recipes/distributed_device_mesh.html"
+        },
+        {
+          "label": "PyTorch API — torch.distributed (collectives, process groups, debug flags)",
+          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+        }
+      ]
+    },
+    {
+      "term": "TP",
+      "mentionedIn": [
+        "p2-serving-s06",
+        "p3-pytorch-distributed-s03",
+        "p3-serving-performance-s01"
+      ],
+      "seeAlso": [
+        {
+          "label": "vLLM — Parallelism and Scaling",
+          "url": "https://docs.vllm.ai/en/latest/serving/parallelism_scaling/"
+        },
+        {
+          "label": "vLLM — Troubleshooting distributed deployments",
+          "url": "https://docs.vllm.ai/en/latest/serving/distributed_troubleshooting/"
+        },
+        {
+          "label": "Scaling book — How to Think About GPUs (interconnect costs)",
+          "url": "https://jax-ml.github.io/scaling-book/gpus/"
+        }
+      ]
+    },
+    {
+      "term": "TPU",
+      "mentionedIn": [
+        "p3-jax-core-s08",
+        "p3-scaling-book-s01",
+        "p3-scaling-book-s03"
+      ],
+      "seeAlso": [
+        {
+          "label": "JAX — Installation (CPU, GPU and TPU wheels)",
+          "url": "https://docs.jax.dev/en/latest/installation.html"
+        },
+        {
+          "label": "JAX API — jax.config (jax_num_cpu_devices and friends)",
+          "url": "https://docs.jax.dev/en/latest/_autosummary/jax.config.html"
+        },
+        {
+          "label": "Kaggle — Tensor Processing Units (TPUs) documentation",
+          "url": "https://www.kaggle.com/docs/tpu"
+        }
+      ]
+    },
+    {
+      "term": "TRL",
+      "mentionedIn": [
+        "p2-rl-posttraining-s02",
+        "p2-rl-posttraining-s04",
+        "p2-rl-posttraining-s05",
+        "p2-rl-posttraining-s08"
+      ],
+      "seeAlso": [
+        {
+          "label": "TRL — GRPOTrainer",
+          "url": "https://huggingface.co/docs/trl/en/grpo_trainer"
+        },
+        {
+          "label": "The RLHF Book — Reinforcement Learning / policy gradients",
+          "url": "https://rlhfbook.com/c/11-policy-gradients"
+        },
+        {
+          "label": "arXiv 2503.14476 ↗",
+          "url": "https://arxiv.org/abs/2503.14476"
+        }
+      ]
+    },
+    {
+      "term": "TTFT",
+      "mentionedIn": [
+        "p2-serving-s04",
+        "p2-serving-s05",
+        "p2-serving-s06"
+      ],
+      "seeAlso": [
+        {
+          "label": "vLLM — Automatic Prefix Caching (feature guide)",
+          "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+        },
+        {
+          "label": "vLLM — Automatic Prefix Caching (design and hashing scheme)",
+          "url": "https://docs.vllm.ai/en/latest/design/prefix_caching/"
+        },
+        {
+          "label": "vLLM — Benchmark CLI",
+          "url": "https://docs.vllm.ai/en/latest/benchmarking/cli/"
+        }
+      ]
+    },
+    {
+      "term": "verifiers",
+      "mentionedIn": [
+        "p2-serving-s06",
+        "p4-environment-harden-s04"
+      ],
+      "seeAlso": [
+        {
+          "label": "github.com/willccbb/verifiers (now PrimeIntellect-ai/verifiers)",
+          "url": "https://github.com/willccbb/verifiers"
+        },
+        {
+          "label": "Prime Intellect — verifiers overview",
+          "url": "https://docs.primeintellect.ai/verifiers/overview"
+        },
+        {
+          "label": "vLLM — OpenAI-Compatible Server",
+          "url": "https://docs.vllm.ai/en/latest/serving/online_serving/openai_compatible_server/"
+        }
+      ]
+    }
   ]
 }
