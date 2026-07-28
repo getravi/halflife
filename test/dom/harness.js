@@ -20,6 +20,7 @@ export async function mountApp(state = {}) {
     enrolled = false,
     cards = [],
     notes = [],
+    attempts = [],
     progress = [],
     providers = { github: false }
   } = state;
@@ -68,6 +69,10 @@ export async function mountApp(state = {}) {
     if (u.includes('/api/progress')) return json({ nodeIds: progress });
     if (u.includes('/api/cards')) return json({ cards });
     if (u.includes('/api/notes')) return json({ notes });
+    // Before the catch-all: a notes or attempts GET falling through to
+    // {ok: true} leaves the state undefined rather than empty.
+    if (u.includes('/api/attempts')) return json({ attempts });
+    if (u.includes('/api/exercise-token')) return json({ token: 'test-token-abc123' });
     if (u.includes('/api/reviews')) return json({ card: {} });
     if (u.includes('/api/enrollments')) return json({ ok: true });
     return json({ ok: true });

@@ -10,9 +10,15 @@ import { isDone, toggle, rollup, allDone } from './progress.js';
 import { isSignedIn } from './auth.js';
 import { prereqHtml, neededByHtml } from './prereq-view.js';
 import { mountSidebarNotes } from './notes-view.js';
+import { exerciseHtml } from './exercise-view.js';
+import EXERCISES from '../exercises/index.json';
 
 let ctx = null;                       // { path, index, weights, pathId }
 export const CAPTURE_STATE = { cards: [] };
+export const ATTEMPTS_STATE = { attempts: [] };
+
+const EXERCISE_FOR = new Map(
+  Object.entries(EXERCISES).map(([id, e]) => [e.subtaskId, { id, ...e }]));
 if (typeof window !== 'undefined') window.CAPTURE_STATE = CAPTURE_STATE;
 
 export function initSidebar(context) {
@@ -114,17 +120,26 @@ export function openSidebar(subtaskId) {
   // the links without tick state.
   html += prereqHtml(s, ctx, isSignedIn() ? allDone() : null);
 
+  const exercise = EXERCISE_FOR.get(s.id);
+  if (exercise && isSignedIn()) {
+    html += exerciseHtml(exercise, ATTEMPTS_STATE.attempts, Date.now());
+  }
+
   html += `<div class="sidebar-section">
      <div class="sidebar-section-title">${steps.length ? 'Step-by-Step Guide' : 'Status'}</div>
      <ul class="sidebar-steps" style="list-style:none">`;
 
   if (steps.length) {
     for (const st of steps) {
+      // The graded step is written by a passing attempt and by nothing else.
+      // Disabled rather than hidden: it still shows whether it is ticked, and
+      // the route refuses it regardless of what the markup says.
+      const gated = exercise?.gatedNodeId === st.id;
       html += `<li class="sidebar-step-item">
         <label class="step-check-label">
           <input type="checkbox" class="step-checkbox" data-node-id="${st.id}"
                  data-subtask-id="${s.id}" ${isDone(st.id) ? 'checked' : ''}
-                 ${isSignedIn() ? '' : 'disabled'}>
+                 ${isSignedIn() && !gated ? '' : 'disabled'}>
           <span class="step-text">${st.text}</span>
         </label>
         <div class="weight-input-container"><span>w: ${ctx.weights.steps[st.id]}</span></div>

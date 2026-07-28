@@ -10,6 +10,7 @@ const CACHE_CARDS = 'flp_cache_cards';
 const CACHE_PROGRESS = 'flp_cache_progress';
 const CACHE_ME = 'flp_cache_me';
 const CACHE_NOTES = 'flp_cache_notes';
+const CACHE_ATTEMPTS = 'flp_cache_attempts';
 const OUTBOX = 'flp_outbox';
 
 const read = (key, fallback) => {
@@ -156,6 +157,28 @@ export const API = {
 
     async deleteNote(noteId) {
       return API.mutate('DELETE', `/api/notes?noteId=${encodeURIComponent(noteId)}`);
+    },
+
+    async getAttempts() {
+      try {
+        const { attempts } = await API.request('GET', '/api/attempts');
+        API.online = true;
+        write(CACHE_ATTEMPTS, attempts);
+        return attempts;
+      } catch {
+        API.online = false;
+        return read(CACHE_ATTEMPTS, []);
+      }
+    },
+
+    // Not outbox mutations: a token you never saw is worse than an error, and
+    // there is nothing sensible to replay later.
+    async mintToken() {
+      return API.request('POST', '/api/exercise-token');
+    },
+
+    async revokeToken() {
+      return API.request('DELETE', '/api/exercise-token');
     },
 
     // A read, so it is not an outbox mutation: a failure must surface rather

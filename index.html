@@ -217,6 +217,19 @@
 <div id="view-settings" class="view-panel">
   <div class="container">
     <section class="today-block">
+      <div class="today-block-title">Exercise token</div>
+      <p class="settings-note">Paste this into an exercise notebook. It can
+        record attempts and do nothing else &mdash; a notebook is a document you
+        might share.</p>
+      <div class="settings-actions">
+        <button class="capture-skip" id="token-mint">Create a new token</button>
+        <button class="capture-skip" id="token-revoke">Revoke</button>
+        <span class="capture-status" id="token-status"></span>
+      </div>
+      <input class="capture-input" id="token-value" readonly hidden>
+    </section>
+
+    <section class="today-block">
       <div class="today-block-title">Export your data</div>
       <p class="settings-note">JSON restores everything. Markdown is your cards
         as a readable document.</p>

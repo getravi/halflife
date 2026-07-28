@@ -25,6 +25,30 @@ const stamp = () => {
 export function renderSettings(ctx, me) {
   const status = document.getElementById('export-status');
 
+  // Shown once. Only its digest is stored, so there is nothing to show later
+  // and no way to recover one you did not copy — minting again is the fix.
+  document.getElementById('token-mint').addEventListener('click', async () => {
+    const tokenStatus = document.getElementById('token-status');
+    const field = document.getElementById('token-value');
+    tokenStatus.textContent = 'Creating…';
+    try {
+      const { token } = await API.mintToken();
+      field.value = token;
+      field.hidden = false;
+      tokenStatus.textContent = 'Copy it now — it is not shown again.';
+    } catch {
+      tokenStatus.textContent = 'Could not create a token.';
+    }
+  });
+
+  document.getElementById('token-revoke').addEventListener('click', async () => {
+    const field = document.getElementById('token-value');
+    await API.revokeToken().catch(() => {});
+    field.value = '';
+    field.hidden = true;
+    document.getElementById('token-status').textContent = 'Revoked.';
+  });
+
   async function grab() {
     status.textContent = 'Preparing…';
     try {

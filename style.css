@@ -1021,3 +1021,12 @@ weight-badge {
 }
 .notes-group-title:hover { color: var(--muted2); }
 #notes-filter { margin-bottom: 14px; }
+
+/* ── Exercises ─────────────────────────────────────────────── */
+.exercise-name { font-size: 13px; margin-bottom: 4px; }
+.exercise-status { font-size: 12px; margin-bottom: 10px; }
+.exercise-passed { color: var(--accent); }
+.exercise-failed { color: var(--amber); }
+.exercise-pending { color: var(--muted); }
+.exercise-when { color: var(--muted); margin-left: 6px; }
+#token-value { font-family: var(--mono); font-size: 12px; margin-top: 10px; }

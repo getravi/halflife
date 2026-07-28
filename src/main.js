@@ -10,7 +10,7 @@ import { indexPath, computeWeights } from './weights.js';
 import { setProgressState } from './progress.js';
 import { renderPath, renderNav } from './render-path.js';
 import { initNav } from './nav.js';
-import { initSidebar, CAPTURE_STATE } from './sidebar.js';
+import { initSidebar, CAPTURE_STATE, ATTEMPTS_STATE } from './sidebar.js';
 import { initToday } from './today.js';
 import { renderPaths } from './paths-view.js';
 import { renderCards } from './cards-view.js';
@@ -67,6 +67,7 @@ async function boot() {
     setProgressState(await API.getProgress(PATH_ID));
     CAPTURE_STATE.cards = await API.getCards(PATH_ID);
     NOTES_STATE.notes = await API.getNotes(PATH_ID);
+    ATTEMPTS_STATE.attempts = await API.getAttempts();
   } else {
     // Cleared rather than left alone. Today this only shows up in tests, since
     // signing out reloads the page and module state starts empty — but relying
@@ -74,6 +75,7 @@ async function boot() {
     // person's writing.
     CAPTURE_STATE.cards = [];
     NOTES_STATE.notes = [];
+    ATTEMPTS_STATE.attempts = [];
   }
 
   // Outside the signed-in branch on purpose. The #notes panel exists in the
