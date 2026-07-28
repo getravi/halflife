@@ -2098,7 +2098,12 @@
                     "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p0-operating-rhythm-s01",
+                "p1-karpathy-hero-s01",
+                "p1-karpathy-hero-s02"
+              ]
             }
           ]
         },
@@ -3009,7 +3014,10 @@
                     "url": "https://arxiv.org/abs/2405.04434"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p1-modern-arch-s01"
+              ]
             },
             {
               "id": "p1-modern-arch-s05",
@@ -3250,7 +3258,10 @@
                     "url": "https://github.com/karpathy/makemore"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p1-cs336-basics-s03"
+              ]
             },
             {
               "id": "p1-nanochat-s03",
@@ -3302,7 +3313,10 @@
                     "url": "https://docs.wandb.ai/guides/track/"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p1-pytorch-engineering-s05"
+              ]
             },
             {
               "id": "p1-nanochat-s04",
@@ -3553,7 +3567,10 @@
                     "url": "https://arxiv.org/abs/2309.06180"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-serving-s01"
+              ]
             },
             {
               "id": "p2-serving-s03",
@@ -3669,7 +3686,10 @@
                     "url": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-serving-s01"
+              ]
             },
             {
               "id": "p2-serving-s05",
@@ -3725,7 +3745,10 @@
                     "url": "https://docs.sglang.ai/docs/advanced_features/hyperparameter_tuning"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-serving-s01"
+              ]
             },
             {
               "id": "p2-serving-s06",
@@ -3785,7 +3808,10 @@
                     "url": "https://github.com/willccbb/verifiers"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-serving-s01"
+              ]
             }
           ]
         },
@@ -4215,7 +4241,10 @@
                     "url": "https://github.com/PrimeIntellect-ai/verifiers"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-serving-s01"
+              ]
             },
             {
               "id": "p2-environment-v0-s03",
@@ -5545,7 +5574,13 @@
                     "url": "https://www.youtube.com/watch?v=3Hggv3abkmI"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-agent-harness-s01",
+                "p2-eval-infra-s01",
+                "p2-eval-infra-s03",
+                "p2-eval-infra-s04"
+              ]
             },
             {
               "id": "p2-benchmark-audit-s04",
@@ -6861,7 +6896,11 @@
                     "url": "https://arxiv.org/abs/2411.00640"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-environment-v0-s04",
+                "p2-stats-s06"
+              ]
             },
             {
               "id": "p2-environment-s02",
@@ -6983,7 +7022,10 @@
                     "url": "https://app.primeintellect.ai/dashboard/environments"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p2-rl-posttraining-s04"
+              ]
             },
             {
               "id": "p2-environment-s05",
@@ -7764,7 +7806,10 @@
                     "url": "https://www.youtube.com/watch?v=izZba4UA7iY"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p3-scaling-book-s01"
+              ]
             },
             {
               "id": "p3-scaling-book-s04",
@@ -7930,7 +7975,10 @@
                     "url": "https://arxiv.org/abs/1910.02054"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p3-scaling-book-s02"
+              ]
             }
           ]
         },
@@ -9178,7 +9226,10 @@
                   "text": "Publish the drift as an update rather than quietly replacing the old numbers."
                 }
               ],
-              "resources": {}
+              "resources": {},
+              "prereqs": [
+                "p2-environment-s05"
+              ]
             },
             {
               "id": "p4-environment-harden-s02",
@@ -9817,7 +9868,10 @@
                     "url": "https://aisafety.com/jobs"
                   }
                 ]
-              }
+              },
+              "prereqs": [
+                "p0-operating-rhythm-s06"
+              ]
             },
             {
               "id": "p4-apply-s02",
