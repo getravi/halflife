@@ -1,6 +1,6 @@
 import { json } from '../http.js';
 import {
-  listAllCards, listAllProgress, listUserReviews, getEnrollments
+  listAllCards, listAllProgress, listUserReviews, getEnrollments, listAllNotes
 } from '../db.js';
 
 /**
@@ -9,11 +9,12 @@ import {
  * person had ever written in a single unauthenticated GET.
  */
 export async function dump(request, env, user) {
-  const [cards, progress, reviews, enrollments] = await Promise.all([
+  const [cards, progress, reviews, enrollments, notes] = await Promise.all([
     listAllCards(env, user.id),
     listAllProgress(env, user.id),
     listUserReviews(env, user.id),
-    getEnrollments(env, user.id)
+    getEnrollments(env, user.id),
+    listAllNotes(env, user.id)
   ]);
 
   return json({
@@ -24,6 +25,7 @@ export async function dump(request, env, user) {
     enrollments: enrollments.map(e => ({ pathId: e.path_id, startedOn: e.started_on })),
     progress: progress.map(p => ({ pathId: p.path_id, nodeId: p.node_id })),
     cards,
+    notes,
     reviews
   });
 }

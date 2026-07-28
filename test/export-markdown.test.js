@@ -73,4 +73,36 @@ describe('buildMarkdown', () => {
     ] }, path);
     expect(md).not.toContain('ghost prompt');
   });
+
+  it('includes notes under their subtask', () => {
+    const md = buildMarkdown({ ...data, notes: [
+      { subtask_id: P0, body: 'the flag was 0.85', created_at: NOW }
+    ] }, path);
+
+    expect(md).toContain('the flag was 0.85');
+  });
+
+  it('reads correctly for a subtask with notes but no cards', () => {
+    const md = buildMarkdown({
+      ...data,
+      cards: [],
+      notes: [{ subtask_id: P0, body: 'note only', created_at: NOW }]
+    }, path);
+
+    expect(md).not.toMatch(/no cards or notes yet/i);
+    expect(md).toContain('note only');
+  });
+
+  it('exports the markdown source, not anything rendered', () => {
+    const md = buildMarkdown({ ...data, notes: [
+      { subtask_id: P0, body: '`--flag` and **bold**', created_at: NOW }
+    ] }, path);
+
+    expect(md).toContain('`--flag` and **bold**');
+  });
+
+  it('says so when there are neither cards nor notes', () => {
+    const md = buildMarkdown({ ...data, cards: [], notes: [] }, path);
+    expect(md).toMatch(/no cards or notes yet/i);
+  });
 });

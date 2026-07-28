@@ -19,6 +19,7 @@ export async function mountApp(state = {}) {
     verified = true,
     enrolled = false,
     cards = [],
+    notes = [],
     progress = [],
     providers = { github: false }
   } = state;
@@ -66,6 +67,7 @@ export async function mountApp(state = {}) {
     if (u.includes('/api/me')) return json(me);
     if (u.includes('/api/progress')) return json({ nodeIds: progress });
     if (u.includes('/api/cards')) return json({ cards });
+    if (u.includes('/api/notes')) return json({ notes });
     if (u.includes('/api/reviews')) return json({ card: {} });
     if (u.includes('/api/enrollments')) return json({ ok: true });
     return json({ ok: true });

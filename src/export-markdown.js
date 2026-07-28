@@ -23,15 +23,22 @@ export function buildMarkdown(data, path) {
     bySubtask.get(c.subtask_id).push(c);
   }
 
+  const notesBySubtask = new Map();
+  for (const n of data.notes ?? []) {
+    if (!index.subtasks.has(n.subtask_id)) continue;   // stale id, skip
+    if (!notesBySubtask.has(n.subtask_id)) notesBySubtask.set(n.subtask_id, []);
+    notesBySubtask.get(n.subtask_id).push(n);
+  }
+
   const lines = [
-    `# ${path.title} — cards`,
+    `# ${path.title} — cards and notes`,
     '',
     `Exported by **${data.user?.email ?? 'unknown'}** on ${day(data.exportedAt)}.`,
     ''
   ];
 
-  if (bySubtask.size === 0) {
-    lines.push('No cards yet.');
+  if (bySubtask.size === 0 && notesBySubtask.size === 0) {
+    lines.push('No cards or notes yet.');
     return lines.join('\n') + '\n';
   }
 
@@ -40,7 +47,10 @@ export function buildMarkdown(data, path) {
     for (const t of ph.tasks ?? []) {
       for (const s of t.subtasks ?? []) {
         const cards = bySubtask.get(s.id);
-        if (cards) groups.push({ subtask: s, cards });
+        const notes = notesBySubtask.get(s.id);
+        if (cards || notes) {
+          groups.push({ subtask: s, cards: cards ?? [], notes: notes ?? [] });
+        }
       }
     }
     if (!groups.length) continue;
@@ -52,6 +62,13 @@ export function buildMarkdown(data, path) {
         lines.push(`**Q.** ${c.prompt}`, '');
         lines.push(`**A.** ${c.answer}`, '');
         lines.push(`_due ${day(c.due_at)} · ${plural(c.reps ?? 0, 'review')} · ${plural(c.lapses ?? 0, 'lapse')}_`, '');
+      }
+
+      // Verbatim, for the same reason nothing else here is escaped: the body
+      // is already Markdown and this file is Markdown.
+      if (g.notes.length) {
+        lines.push('**Notes**', '');
+        for (const n of g.notes) lines.push(n.body, '');
       }
     }
   }

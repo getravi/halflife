@@ -26,10 +26,11 @@ describe('export route', () => {
     expect((await SELF.fetch('https://x/api/export')).status).toBe(401);
   });
 
-  it('returns all five collections', async () => {
+  it('returns all six collections', async () => {
     const body = await (await as(A, '/api/export')).json();
     expect(Object.keys(body).sort())
-      .toEqual(['cards', 'enrollments', 'exportedAt', 'progress', 'reviews', 'user']);
+      .toEqual(['cards', 'enrollments', 'exportedAt', 'notes', 'progress',
+                'reviews', 'user']);
   });
 
   it('carries only the email, not the internal id', async () => {

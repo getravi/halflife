@@ -67,6 +67,13 @@ async function boot() {
     setProgressState(await API.getProgress(PATH_ID));
     CAPTURE_STATE.cards = await API.getCards(PATH_ID);
     NOTES_STATE.notes = await API.getNotes(PATH_ID);
+  } else {
+    // Cleared rather than left alone. Today this only shows up in tests, since
+    // signing out reloads the page and module state starts empty — but relying
+    // on that means one view rendered without a reload would show the previous
+    // person's writing.
+    CAPTURE_STATE.cards = [];
+    NOTES_STATE.notes = [];
   }
 
   // Outside the signed-in branch on purpose. The #notes panel exists in the
