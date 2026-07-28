@@ -974,3 +974,14 @@ weight-badge {
   border: 1px solid var(--red); border-radius: 2px;
   background: rgba(248,113,113,0.08); color: var(--red); cursor: pointer; }
 .settings-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Prerequisites ─────────────────────────────────────────── */
+.prereq-block { padding-bottom: 4px; }
+.prereq-list { font-size: 13px; line-height: 1.9; }
+.prereq-item {
+  background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  color: var(--muted2); border-bottom: 1px solid var(--border);
+}
+.prereq-item:hover { color: var(--text); }
+.prereq-done { color: var(--muted); }
+.prereq-undone { color: var(--amber); }

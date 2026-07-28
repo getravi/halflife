@@ -8,6 +8,7 @@
 import { API } from './api.js';
 import { isDone, toggle, rollup, allDone } from './progress.js';
 import { isSignedIn } from './auth.js';
+import { prereqHtml, neededByHtml } from './prereq-view.js';
 
 let ctx = null;                       // { path, index, weights, pathId }
 export const CAPTURE_STATE = { cards: [] };
@@ -39,6 +40,11 @@ export function initSidebar(context) {
 
   // Delegated, because the phase panels are built after this runs.
   document.addEventListener('click', e => {
+    // Checked first: a prerequisite sits inside the open sidebar, so it must
+    // replace what is showing rather than fall through to the panel behind it.
+    const jump = e.target.closest('.prereq-item');
+    if (jump) { openSidebar(jump.dataset.subtaskId); return; }
+
     const item = e.target.closest('.task-item');
     if (item && !e.target.closest('a') && !e.target.closest('input')) {
       openSidebar(item.dataset.subtaskId);
@@ -100,6 +106,10 @@ export function openSidebar(subtaskId) {
       <div class="sidebar-section-title">Overview &amp; Goal</div>
       <p class="sidebar-desc">${s.desc}</p></div>`;
 
+  // Progress is only known for a signed-in, verified person. Anyone else sees
+  // the links without tick state.
+  html += prereqHtml(s, ctx, isSignedIn() ? allDone() : null);
+
   html += `<div class="sidebar-section">
      <div class="sidebar-section-title">${steps.length ? 'Step-by-Step Guide' : 'Status'}</div>
      <ul class="sidebar-steps" style="list-style:none">`;
@@ -126,6 +136,8 @@ export function openSidebar(subtaskId) {
       </label></li>`;
   }
   html += '</ul></div>';
+
+  html += neededByHtml(s, ctx);
 
   for (const [key, heading] of KINDS) {
     const list = s.resources?.[key];
