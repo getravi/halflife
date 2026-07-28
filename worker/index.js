@@ -11,6 +11,7 @@ import * as notes from './routes/notes.js';
 import * as reviews from './routes/reviews.js';
 import * as meRoutes from './routes/me.js';
 import * as exportRoute from './routes/export.js';
+import * as tokens from './routes/tokens.js';
 
 // [method, path, handler, isPublic]
 const ROUTES = [
@@ -28,7 +29,9 @@ const ROUTES = [
   ['POST', '/api/reviews', reviews.create],
   ['DELETE', '/api/me', meRoutes.destroy],
   ['POST', '/api/enrollments', meRoutes.enrol],
-  ['GET', '/api/export', exportRoute.dump]
+  ['GET', '/api/export', exportRoute.dump],
+  ['POST', '/api/exercise-token', tokens.mint],
+  ['DELETE', '/api/exercise-token', tokens.revoke]
 ];
 
 export default {

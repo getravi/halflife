@@ -193,3 +193,52 @@ export async function listAllNotes(env, userId) {
     .bind(userId).all();
   return results;
 }
+
+export async function upsertToken(env, userId, hash, now) {
+  // One token per user: minting again replaces rather than accumulates, so a
+  // token you thought you had rotated away cannot still be live. D1 has no
+  // interactive transactions, so this is a batch.
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM exercise_tokens WHERE user_id = ?').bind(userId),
+    env.DB.prepare(
+      'INSERT INTO exercise_tokens (token_hash, user_id, created_at) VALUES (?, ?, ?)'
+    ).bind(hash, userId, now)
+  ]);
+}
+
+export async function deleteToken(env, userId) {
+  const { meta } = await env.DB
+    .prepare('DELETE FROM exercise_tokens WHERE user_id = ?').bind(userId).run();
+  return meta.changes > 0;
+}
+
+export async function userIdForToken(env, hash) {
+  const row = await env.DB
+    .prepare('SELECT user_id FROM exercise_tokens WHERE token_hash = ?')
+    .bind(hash).first();
+  return row?.user_id ?? null;
+}
+
+export async function insertAttempt(env, attempt) {
+  await env.DB.prepare(
+    `INSERT INTO attempts (id, user_id, exercise_id, passed, total, ran_at)
+     VALUES (?, ?, ?, ?, ?, ?)`
+  ).bind(attempt.id, attempt.user_id, attempt.exercise_id,
+         attempt.passed, attempt.total, attempt.ran_at).run();
+  return attempt;
+}
+
+export async function listAttempts(env, userId) {
+  const { results } = await env.DB
+    .prepare('SELECT * FROM attempts WHERE user_id = ? ORDER BY ran_at DESC')
+    .bind(userId).all();
+  return results;
+}
+
+export async function hasPassingAttempt(env, userId, exerciseId) {
+  const row = await env.DB.prepare(
+    `SELECT 1 AS ok FROM attempts
+     WHERE user_id = ? AND exercise_id = ? AND passed >= total LIMIT 1`
+  ).bind(userId, exerciseId).first();
+  return Boolean(row);
+}
