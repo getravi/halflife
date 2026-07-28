@@ -5517,7 +5517,7 @@
             {
               "id": "p2-benchmark-audit-s03",
               "title": "Reproduce it with your own harness",
-              "desc": "Run the same model on the same tasks through the harness you built in weeks 37–38, with the queue, sandbox, and cost accounting from weeks 42–43. Log every trajectory. Set the budget cap first — this is the most expensive single task in the phase, and a partial reproduction with honest coverage beats a full one you cannot afford.",
+              "desc": "Run the same model on the same tasks through the harness you built in weeks 23–24, with the queue, sandbox, and cost accounting from weeks 30–31. Log every trajectory. Set the budget cap first — this is the most expensive single task in the phase, and a partial reproduction with honest coverage beats a full one you cannot afford.",
               "time": "Week 32",
               "steps": [
                 {
