@@ -26,11 +26,20 @@ describe('export route', () => {
     expect((await SELF.fetch('https://x/api/export')).status).toBe(401);
   });
 
-  it('returns all six collections', async () => {
+  it('returns all seven collections', async () => {
     const body = await (await as(A, '/api/export')).json();
     expect(Object.keys(body).sort())
-      .toEqual(['cards', 'enrollments', 'exportedAt', 'notes', 'progress',
-                'reviews', 'user']);
+      .toEqual(['attempts', 'cards', 'enrollments', 'exportedAt', 'notes',
+                'progress', 'reviews', 'user']);
+  });
+
+  it('never exports the exercise token, not even its digest', async () => {
+    await as(A, '/api/exercise-token', { method: 'POST' });
+    const body = await (await as(A, '/api/export')).json();
+
+    // A credential in a file that sits in a downloads folder, for no benefit:
+    // only the digest exists and it restores nothing.
+    expect(JSON.stringify(body)).not.toMatch(/token/i);
   });
 
   it('carries only the email, not the internal id', async () => {

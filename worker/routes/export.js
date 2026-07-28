@@ -1,6 +1,7 @@
 import { json } from '../http.js';
 import {
-  listAllCards, listAllProgress, listUserReviews, getEnrollments, listAllNotes
+  listAllCards, listAllProgress, listUserReviews, getEnrollments, listAllNotes,
+  listAttempts
 } from '../db.js';
 
 /**
@@ -9,12 +10,13 @@ import {
  * person had ever written in a single unauthenticated GET.
  */
 export async function dump(request, env, user) {
-  const [cards, progress, reviews, enrollments, notes] = await Promise.all([
+  const [cards, progress, reviews, enrollments, notes, attempts] = await Promise.all([
     listAllCards(env, user.id),
     listAllProgress(env, user.id),
     listUserReviews(env, user.id),
     getEnrollments(env, user.id),
-    listAllNotes(env, user.id)
+    listAllNotes(env, user.id),
+    listAttempts(env, user.id)
   ]);
 
   return json({
@@ -26,6 +28,11 @@ export async function dump(request, env, user) {
     progress: progress.map(p => ({ pathId: p.path_id, nodeId: p.node_id })),
     cards,
     notes,
+    // What you actually ran, which cannot be reconstructed from anything else
+    // here. The token is deliberately absent: only its digest exists, it
+    // restores nothing, and a credential sitting in a downloads folder is a
+    // cost with no benefit.
+    attempts,
     reviews
   });
 }

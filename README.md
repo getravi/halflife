@@ -116,6 +116,83 @@ the only module that knows SQL. The review log is append-only, so card
 scheduling state can always be rebuilt by replaying it — a scheduler bug is a
 recomputation rather than a data loss.
 
+## Structure: prerequisites and terms
+
+158 subtasks with nothing connecting them is a list, not a plan. Two optional
+fields close that.
+
+`prereqs` on a subtask lists the subtasks it assumes, and the sidebar shows
+them ticked or crossed — the tick state is the point, because a list showing
+you have not done the thing this assumes explains why you are stuck. The
+reverse edge, **Needed by**, answers *why am I doing this*.
+
+Edges come only from explicit textual references. `tools/derive-prereqs.js`
+prints candidates with the sentence that produced each one and writes nothing:
+its precision is poor on purpose, and its output is a worksheet for a human.
+Of 15 candidates, 12 survived review and one real edge the tool missed was
+added by hand.
+
+`terms` is an index, not a glossary — **it contains no definitions.** It
+answers where a term appears in the plan and where somebody who knows has
+explained it. `tools/extract-terms.js` keeps a term only if it appears in two
+or more subtasks, which took 622 candidates to 106; a review kept 35. Its
+outbound links come from the subtask that mentions the term *most*, not first:
+the earliest mention of `GPU` is a subtask about ssh hygiene.
+
+`pnpm validate` refuses a prereq that does not resolve, a cycle, and a
+prerequisite sitting later in the path than the subtask needing it. That last
+one is a bug in the plan, and nothing else catches it.
+
+## Notes
+
+Cards are deliberately narrow: a question and an answer, written at the moment
+you finish. Notes are everything else — a stack trace that cost two hours, the
+flag that fixed it, a derivation you want back in nine weeks.
+
+Markdown, rendered by `markdown-it` on its defaults. Two of those defaults are
+security properties rather than preferences: raw HTML is escaped and
+`javascript:` URLs are refused. That is why this project has no sanitiser, and
+tests assert both so a later options object cannot quietly turn them off.
+
+A name in double brackets links back into the plan — `[[Stand up vLLM]]` opens
+that subtask, `[[KV]]` opens the term index filtered to it. **An unresolved
+name stays literal text**, never a dead link: titles get reworded, and text
+showing you named something that is not there beats a link that has rotted.
+
+Notes attach to a subtask, appear in its sidebar, and are listed together under
+`#notes` with a filter. They are in the export, because the export stopped
+being a backup the moment the first note existed.
+
+## Graded exercises
+
+Every other tick in this app is self-judged. Four subtasks specify passing
+precisely enough to check, so those four have a seventh step that **you cannot
+tick**: it is written by a passing run and by nothing else.
+
+The exercises live in `exercises/` — percent-format Python, converted to
+notebooks by `node tools/build-notebooks.js`, and opened in Colab. Colab
+because two of the four check their answer against PyTorch, which is the
+reference implementation; an in-browser Python runtime has no torch.
+
+To run one: mint a token in Settings, paste it into the notebook's first cell,
+run the graded cell. It reports `passed / total` back to `POST /api/attempts`.
+The token authorises that one endpoint and nothing else, and only its SHA-256
+digest is stored — a notebook is a document you might share.
+
+**The gate is in the route.** `PUT /api/progress` answers 409 for a graded node
+in both directions, from any session, however well-formed. The disabled
+checkbox in the sidebar is a courtesy; a gate that only greys out a checkbox is
+theatre when the app is hosted and `curl` still works.
+
+What this proves is stated plainly in the interface: the graded cell is
+editable, so a pass records that **you ran it and it passed**. It is not proof,
+and implying otherwise would make it worth less than nothing.
+
+Adding an exercise means an entry in `exercises/index.json`, a graded step
+appended to the subtask, and a notebook. `pnpm validate` refuses a definition
+whose gated step does not exist — that failure would gate nothing while looking
+like it works.
+
 ## The one thing to know before editing
 
 Node **ids** in `paths/*.json` are load-bearing: user progress rows and cards
@@ -162,7 +239,14 @@ pnpm dev:worker   the Worker, D1 and the built page on :8787
 pnpm deploy       build and push the Worker
 pnpm db:migrate   apply migrations to the remote D1
 pnpm links        sweep every URL in paths/ for liveness (slow, network)
+
+node tools/build-notebooks.js    exercises/*.py -> exercises/*.ipynb
+node tools/derive-prereqs.js     print prerequisite candidates for review
+node tools/extract-terms.js      rebuild the term index (re-prune after)
 ```
+
+The last three are run by hand and their output is committed, the same
+arrangement `tools/convert-path.js` had. None is part of the build.
 
 ## Tests
 
