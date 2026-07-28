@@ -5,3 +5,4 @@ dist/
 .wrangler/
 public/paths/
 .dev.vars
+__pycache__/
