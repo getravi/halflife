@@ -11,7 +11,12 @@ import path from '../paths/frontier-lab.json';
  */
 function capture(fn) {
   let html = '';
-  fn({ insertAdjacentHTML: (_pos, s) => { html += s; } });
+  fn({
+    insertAdjacentHTML: (_pos, s) => { html += s; },
+    // renderNav wires a change listener onto the switcher it just inserted;
+    // the markup is what these tests assert, so the hook is a stub.
+    querySelector: () => ({ addEventListener() {} })
+  });
   return html;
 }
 
@@ -88,5 +93,22 @@ describe('renderNav', () => {
     const nav = capture(root => renderNav(path, root));
     expect(count(nav, /<a /g)).toBe(5);
     for (const ph of path.phases) expect(nav).toContain(`href="#${ph.id}"`);
+  });
+
+  it('offers a path switcher when the catalogue holds more than one path', () => {
+    const catalogue = { paths: [
+      { id: path.id, title: 'This one', phases: [] },
+      { id: 'other', title: 'Other one', phases: [{ id: 'o-p0', title: 'O' }] }
+    ] };
+    const nav = capture(root => renderNav(path, root, catalogue));
+    expect(nav).toContain('nav-path-switcher');
+    expect(nav).toContain('Other one');
+    expect(nav).toMatch(new RegExp(`value="${path.id}"[^>]*selected`));
+  });
+
+  it('renders no switcher when there is only one path', () => {
+    const catalogue = { paths: [{ id: path.id, title: 'Only', phases: [] }] };
+    const nav = capture(root => renderNav(path, root, catalogue));
+    expect(nav).not.toContain('nav-path-switcher');
   });
 });

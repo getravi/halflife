@@ -10,11 +10,12 @@ function cardButton(p, enrolledIds, signedIn) {
   if (enrolledIds.has(p.id)) {
     return `<a class="today-review-btn" href="/?path=${esc(p.id)}#today">Continue</a>`;
   }
-  if (signedIn) {
-    return `<button class="today-review-btn path-enrol" data-path-id="${esc(p.id)}">Enrol</button>`;
-  }
   const first = p.phases?.[0]?.id ?? '';
-  return `<a class="today-review-btn" href="/?path=${esc(p.id)}#${esc(first)}">View path</a>`;
+  const view = `<a class="today-review-btn" href="/?path=${esc(p.id)}#${esc(first)}">View path</a>`;
+  if (signedIn) {
+    return `${view} <button class="today-review-btn path-enrol" data-path-id="${esc(p.id)}">Enrol</button>`;
+  }
+  return view;
 }
 
 export function pathCardsHtml(catalogue, enrolledIds, signedIn) {

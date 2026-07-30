@@ -55,7 +55,7 @@ async function boot() {
   };
 
   renderPath(path, document.getElementById('phase-views'));
-  renderNav(path, document.querySelector('.nav'));
+  renderNav(path, document.querySelector('.nav'), catalogue);
   initSidebar(ctx);
 
   // Content, not user data — it renders whether or not anyone is signed in.
@@ -132,12 +132,12 @@ async function boot() {
 
   if (me.user && !me.user.emailVerified) {
     window.location.hash = '#account';
-  } else if (isSignedIn() && !enrolled.has(PATH_ID)) {
-    window.location.hash = '#paths';
   } else if (!window.location.hash) {
-    // Enrolled people land on their work; everyone else lands on the
-    // catalogue, which is the homepage.
-    window.location.hash = isSignedIn() ? '#today' : '#paths';
+    // An explicit hash is always respected — browsing a path you have not
+    // enrolled in is legitimate. Only the landing depends on enrolment:
+    // your own path opens on your work, anything else on the catalogue.
+    window.location.hash =
+      isSignedIn() && enrolled.has(PATH_ID) ? '#today' : '#paths';
   }
 
   initNav();

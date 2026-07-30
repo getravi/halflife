@@ -32,6 +32,12 @@ describe('pathCardsHtml', () => {
     expect(html).toContain('data-path-id="mm"');
   });
 
+  it('also offers a view link when signed in but not enrolled, because browsing must not require enrolment', () => {
+    const html = pathCardsHtml(catalogue, new Set(), true);
+    expect(html).toContain('View path');
+    expect(html).toContain('/?path=mm#mm-p0');
+  });
+
   it('offers a read-only view link when signed out', () => {
     const html = pathCardsHtml(catalogue, new Set(), false);
     expect(html).toContain('View path');
