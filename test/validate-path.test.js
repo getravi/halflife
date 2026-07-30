@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { validatePath, validateExercises } from '../tools/validate-path.js';
+import { validatePath, validateExercises, catalogueEntry } from '../tools/validate-path.js';
 
 const valid = () => ({
-  id: 'p', title: 'P',
+  id: 'p', title: 'P', tagline: 't',
   phases: [{
     id: 'ph1', title: 'One', weeks: [1, 4], weight: 1,
     tasks: [{
@@ -175,5 +175,25 @@ describe('validateExercises', () => {
 
   it('accepts a path with no exercises at all', () => {
     expect(validateExercises(valid(), {})).toEqual([]);
+  });
+});
+
+describe('catalogue metadata', () => {
+  it('rejects a path without a tagline', () => {
+    const p = valid();
+    delete p.tagline;
+    expect(validatePath(p, null).join()).toMatch(/tagline/i);
+  });
+
+  it('derives card stats for the catalogue', () => {
+    const p = valid();
+    p.tagline = 'One line.';
+    const entry = catalogueEntry(p, 'p-abc123.json');
+    expect(entry).toEqual({
+      id: 'p', title: 'P', tagline: 'One line.',
+      weeks: 4, tasks: 1,
+      phases: [{ id: 'ph1', title: 'One' }],
+      url: '/paths/p-abc123.json'
+    });
   });
 });

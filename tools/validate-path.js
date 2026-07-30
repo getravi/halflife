@@ -35,6 +35,8 @@ export function collectIds(p) {
 export function validatePath(p, previous) {
   const problems = [];
 
+  if (!p.tagline) problems.push('no tagline — the homepage card would be blank');
+
   const seen = new Set();
   for (const id of collectIds(p)) {
     if (!id) problems.push('a node has no id');
@@ -166,6 +168,29 @@ export function validateExercises(p, exercises) {
   return problems;
 }
 
+/**
+ * The catalogue entry a path's homepage card renders from. Derived here so
+ * the card never has to fetch the full path, and so the numbers can never
+ * drift from the content that produced them.
+ */
+export function catalogueEntry(p, file) {
+  let weeks = 0;
+  let tasks = 0;
+  for (const ph of p.phases ?? []) {
+    if (ph.weeks) weeks = Math.max(weeks, ph.weeks[1]);
+    tasks += (ph.tasks ?? []).length;
+  }
+  return {
+    id: p.id,
+    title: p.title,
+    tagline: p.tagline,
+    weeks,
+    tasks,
+    phases: (p.phases ?? []).map(ph => ({ id: ph.id, title: ph.title })),
+    url: `/paths/${file}`
+  };
+}
+
 export function emit(paths, outDir) {
   // Clear first. Hashed filenames mean every content edit leaves its
   // predecessor behind, and the directory would grow without bound. The
@@ -179,7 +204,7 @@ export function emit(paths, outDir) {
     const hash = crypto.createHash('sha256').update(body).digest('hex').slice(0, 8);
     const file = `${p.id}-${hash}.json`;
     fs.writeFileSync(path.join(outDir, file), body);
-    catalogue.paths.push({ id: p.id, title: p.title, url: `/paths/${file}` });
+    catalogue.paths.push(catalogueEntry(p, file));
   }
 
   fs.writeFileSync(path.join(outDir, 'index.json'),

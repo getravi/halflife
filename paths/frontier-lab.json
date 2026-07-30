@@ -1,6 +1,7 @@
 {
   "id": "frontier-lab",
   "title": "Frontier Lab Learning Plan",
+  "tagline": "Fifty-two weeks of public, verifiable work from programming foundations to a frontier-lab-ready portfolio.",
   "phases": [
     {
       "id": "p0",
