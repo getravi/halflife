@@ -15,6 +15,17 @@ export async function loadCatalogue() {
   return fetchJSON('/paths/index.json', { cache: 'no-cache' });
 }
 
+/**
+ * Which path this page-load renders. The URL wins so a link or bookmark
+ * always shows what it says; an unknown id falls through silently because
+ * a stale bookmark should degrade to the person's own path, not an error.
+ */
+export function resolvePathId(search, catalogue, enrollments) {
+  const wanted = new URLSearchParams(search).get('path');
+  if (wanted && catalogue.paths.some(p => p.id === wanted)) return wanted;
+  return enrollments?.[0]?.pathId ?? 'frontier-lab';
+}
+
 export async function loadPath(pathId) {
   const catalogue = await loadCatalogue();
   const entry = catalogue.paths.find(p => p.id === pathId);
