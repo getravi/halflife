@@ -1,0 +1,1036 @@
+{
+  "id": "mission-masters-degree",
+  "title": "Mission Masters Degree",
+  "phases": [
+    {
+      "id": "mm-p0",
+      "title": "August — Command center",
+      "num": "00",
+      "weeks": [1, 4],
+      "weight": 12,
+      "intro": "Week 1 is the first week of August 2026. Both anchor applications — UC Berkeley MIMS and CMU MHCI — are due in mid-January 2027, which gives you about 24 working weeks. That is enough, but only if the slow-moving pieces start now: Brazilian transcripts and sworn translations take weeks to arrive, TOEFL dates fill up, and recommenders need months of lead time. This phase builds the tracking system, fixes the resume, and starts every long-lead-time process. Nothing here is glamorous; all of it is load-bearing.",
+      "callouts": [
+        {
+          "type": "warn",
+          "html": "<strong>Berkeley does NOT require a NACES evaluation.</strong> Despite what many checklists say, the Berkeley Graduate Division evaluates international transcripts itself — you upload unofficial scanned transcripts with a certified English translation, and official documents are only needed if you enrol. Do not spend $200+ on a NACES course-by-course report for Berkeley. The only school on the target list that names WES explicitly is San José State."
+        },
+        {
+          "type": "warn",
+          "html": "<strong>The English test cannot be waived.</strong> CMU is explicit: no amount of work or study in English exempts a non-native speaker — the Apple apprenticeship does not count. Berkeley exempts only a full year of degree coursework at a US institution, which you do not have. Plan around taking the TOEFL, and treat CMU's bar (roughly 25 per section) as the score to beat, because it is higher than Berkeley's minimum."
+        },
+        {
+          "type": "tip",
+          "html": "<strong>Your profile has a real story.</strong> Admitted MIMS students average five years of work experience; you have about one. The counter is that your one year is unusually dense — an Apple apprenticeship presenting to IS&amp;T leadership, AI-product QA, a hackathon, Anthropic certifications — and it maps exactly onto where both programs are heading: human-AI interaction and AI product work. Every essay, case study, and recommendation in this plan exists to make that argument."
+        }
+      ],
+      "tasks": [
+        {
+          "id": "mm-p0-command",
+          "title": "Stand up the command center",
+          "badge": "Task 01",
+          "tag": "exercise",
+          "weeks": [1, 1],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p0-command-s01",
+              "title": "Build the application tracker",
+              "desc": "One spreadsheet is the single source of truth for the whole campaign: every school, every requirement, every deadline, every status. Applications fail on dropped details — a letter not uploaded, a form not noticed — far more often than on weak essays.",
+              "time": "Week 1",
+              "steps": [
+                { "id": "mm-p0-command-s01-01", "text": "Create a spreadsheet with one row per school and columns for: deadline, fee, SOP spec, number of letters, video/portfolio requirements, English test minimums, transcript rules, portal URL, and status." },
+                { "id": "mm-p0-command-s01-02", "text": "Fill in the two anchors first: Berkeley MIMS (deadline was Jan 6 in the last cycle — exact Fall 2027 date posts after Sept 24) and CMU MHCI (confirmed: Jan 15, 2027, 3:00 pm EST, letters due noon that day)." },
+                { "id": "mm-p0-command-s01-03", "text": "Add the deadline calendar entries with two reminders each: four weeks out and one week out. Key dates: UT Austin Jan 5, Stanford LDT Jan 7, UW HCDE Jan 13, UMich MSI and CMU Jan 15, Georgia Tech and SJSU Feb 1." },
+                { "id": "mm-p0-command-s01-04", "text": "Block a fixed weekly review slot (Sunday evening works) to update statuses and pick the next week's three priorities. This rhythm is what keeps a six-month project from silently stalling in October." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "CMU SCS graduate admissions — dates & fees", "url": "https://www.cs.cmu.edu/education/graduate-admissions" },
+                  { "name": "Berkeley MIMS admissions overview", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions" }
+                ]
+              }
+            },
+            {
+              "id": "mm-p0-command-s02",
+              "title": "Choose the school list",
+              "desc": "Two anchors plus three to five backups chosen from programs whose requirements overlap, so every extra application costs one adapted essay rather than a whole new campaign. The research is done; this is a decision, not a project.",
+              "time": "Week 1",
+              "steps": [
+                { "id": "mm-p0-command-s02-01", "text": "Anchors: Berkeley MIMS (2yr, product/data/AI strategy, ~$70k, local) and CMU MHCI (1yr, UX/human-AI interaction, ~$86k tuition, ~13% acceptance)." },
+                { "id": "mm-p0-command-s02-02", "text": "Strong-fit backups to consider: Georgia Tech MS-HCI Interactive Computing track (Feb 1, no portfolio required, ~$32k/yr, top HCI brand), UW HCDE (Jan 13, built for career-changers, evening classes, ~$50k total), UT Austin MSIS (Jan 5, cheapest iSchool), SJSU Human Factors UX (Feb 1, local, ~$15k/yr, evening-friendly safety school)." },
+                { "id": "mm-p0-command-s02-03", "text": "Optional stretch: Stanford LDT (Jan 7, 11 months, local) — only if an AI-products-for-learning story feels honest. Skip UCSD (no standalone HCI master's) and UW MSIM residential (requires GRE for international bachelor's degrees)." },
+                { "id": "mm-p0-command-s02-04", "text": "Decide the final list of 4–7 schools with Ravi, weighing cost, duration, and location against the household budget. Write the list in the tracker and stop relitigating it — every hour spent re-choosing schools is an hour not spent on essays." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Georgia Tech MS-HCI requirements", "url": "https://mshci.gatech.edu/admissions/requirements" },
+                  { "name": "UW HCDE MS admissions", "url": "https://www.hcde.washington.edu/ms/admissions" },
+                  { "name": "UT Austin MSIS admissions", "url": "https://ischool.utexas.edu/programs/msis/admissions" },
+                  { "name": "SJSU Human Factors MS admissions", "url": "https://www.sjsu.edu/hfe/ms-program/admissions/index.php" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p0-resume",
+          "title": "Resume: fix the foundation",
+          "badge": "Task 02",
+          "tag": "exercise",
+          "weeks": [1, 2],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p0-resume-s01",
+              "title": "Add the missing degree",
+              "desc": "The current resume lists Year Up but not the Brazilian bachelor's degree — and a bachelor's is the first eligibility requirement at every school. An admissions reader who cannot find the degree stops reading. This is the single highest-priority fix in the entire plan.",
+              "time": "Week 1",
+              "steps": [
+                { "id": "mm-p0-resume-s01-01", "text": "Add the Brazilian degree to the Education section: institution, degree name (with English translation), field, city/country, and graduation year — listed above Year Up." },
+                { "id": "mm-p0-resume-s01-02", "text": "If the degree is a 4–5 year bacharelado, note that it maps cleanly to a US bachelor's for every school on the list; no equivalency disclaimer needed on the resume itself." },
+                { "id": "mm-p0-resume-s01-03", "text": "Keep Year Up listed as professional training — the career-change engine is part of the story — but the degree carries the eligibility." }
+              ]
+            },
+            {
+              "id": "mm-p0-resume-s02",
+              "title": "Rewrite for the admissions audience",
+              "desc": "The resume currently speaks to engineering recruiters. Admissions committees read for different signals: trajectory, initiative, collaboration, and numbers. Same facts, different emphasis.",
+              "time": "Week 2",
+              "steps": [
+                { "id": "mm-p0-resume-s02-01", "text": "Quantify every bullet that can carry a number: users affected, test cases run, defects found, team size, one of three apprentices selected to present to Apple IS&T leadership." },
+                { "id": "mm-p0-resume-s02-02", "text": "Reframe the summary line toward the target: an engineer moving into human-AI interaction and product work, with hands-on AI evaluation experience — not a generalist software engineer seeking any role." },
+                { "id": "mm-p0-resume-s02-03", "text": "Surface the human-centered threads that are currently buried: translating mockups into UI at Apple, usability testing of AI products at Sticky AI, Figma. These are the bullets a UX/HCI committee scans for." },
+                { "id": "mm-p0-resume-s02-04", "text": "Update LinkedIn to match, and fix the resume email/name consistency everywhere — every school cross-references." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p0-transcripts",
+          "title": "Transcript and credential ops",
+          "badge": "Task 03",
+          "tag": "exercise",
+          "weeks": [2, 3],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p0-transcripts-s01",
+              "title": "Order Brazilian documents now",
+              "desc": "Brazilian universities can take four to eight weeks to issue official documents, and the sworn translation adds more. This is the longest external dependency in the plan, so it starts in week 2 regardless of anything else.",
+              "time": "Weeks 2–3",
+              "steps": [
+                { "id": "mm-p0-transcripts-s01-01", "text": "Request from the university: full academic transcript (histórico escolar) showing grades and GPA, plus the degree certificate/diploma (most Latin American countries need the conferral certificate, not just the transcript)." },
+                { "id": "mm-p0-transcripts-s01-02", "text": "Commission a certified English translation. Berkeley accepts translations from the institution itself, an ATA-certified translator, or WES ICAP — a sworn ATA translation covers every school at once." },
+                { "id": "mm-p0-transcripts-s01-03", "text": "Scan everything into clean PDFs (original + translation together) — applications want uploads, not paper. Officials get mailed only after an offer is accepted." },
+                { "id": "mm-p0-transcripts-s01-04", "text": "Only if SJSU makes the final list: start a WES evaluation, since Cal State Apply is the one portal that names WES explicitly. Order the ICAP version so the same report is reusable anywhere." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Berkeley Grad Division — application requirements", "url": "https://grad.berkeley.edu/admissions/application-process/requirements/" },
+                  { "name": "WES ICAP evaluation", "url": "https://www.wes.org/evaluations-and-fees/icap/" },
+                  { "name": "ATA certified translator directory", "url": "https://www.atanet.org/directory/" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p0-intel",
+          "title": "Know the targets cold",
+          "badge": "Task 04",
+          "tag": "theory",
+          "weeks": [2, 3],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p0-intel-s01",
+              "title": "Get inside each program's head",
+              "desc": "Every essay prompt on the list asks some version of 'why us' — and generic answers are the most common stated reason strong applicants get rejected. The raw material for specific answers gets collected now, while there is no deadline pressure.",
+              "time": "Weeks 2–3",
+              "steps": [
+                { "id": "mm-p0-intel-s01-01", "text": "Join the mailing list and register for fall info sessions at every school on the list. Both Berkeley and CMU run virtual admissions sessions from September; attending is also how you hear requirement changes first." },
+                { "id": "mm-p0-intel-s01-02", "text": "For each anchor, write a one-page fit sheet: three named courses you would take, one lab/faculty/studio whose work excites you, and what the capstone (CMU industry capstone; MIMS final project) would let you build. This becomes essay ammunition in November." },
+                { "id": "mm-p0-intel-s01-03", "text": "Read admitted-student writeups — several MHCI admits without design backgrounds have published detailed application breakdowns on Medium. Note what evidence they led with." },
+                { "id": "mm-p0-intel-s01-04", "text": "Where the school offers current-student ambassador chats (Berkeley and CMU both do), book one for September and prepare three questions you cannot answer from the website." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Meet the MIMS Class of 2027 (class profile)", "url": "https://www.ischool.berkeley.edu/news/2025/meet-mims-class-2027" },
+                  { "name": "MHCI FAQ (class size, acceptance rate, prerequisites)", "url": "https://www.hcii.cmu.edu/academics/mhci/mhci-faqs" },
+                  { "name": "Into MHCI without a design background (admit writeup)", "url": "https://medium.com/design-bootcamp/how-i-got-into-the-best-hci-ux-programs-without-any-design-background-c8ff6e49fab9" },
+                  { "name": "Deconstructing an MHCI application (admit writeup)", "url": "https://saloneegupta.medium.com/deconstructing-my-mhci-graduate-application-db915c8753e8" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p0-toefl-setup",
+          "title": "TOEFL: diagnose and book",
+          "badge": "Task 05",
+          "tag": "exercise",
+          "weeks": [3, 4],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p0-toefl-setup-s01",
+              "title": "Take a diagnostic and set the target",
+              "desc": "You cannot plan prep without knowing the starting point. The bar that matters is CMU's — roughly 25 per TOEFL section on the old scale — because clearing it clears every other school on the list. Berkeley's minimum is lower (90 old scale / 5.0 new scale) but its admitted average was 111, so aim high, not minimum.",
+              "time": "Weeks 3–4",
+              "steps": [
+                { "id": "mm-p0-toefl-setup-s01-01", "text": "Take ETS's free TOEFL practice test under timed conditions and record per-section scores. Living and working in English is a real advantage — the diagnostic tells you whether prep is a 4-week polish or a 10-week build." },
+                { "id": "mm-p0-toefl-setup-s01-02", "text": "Note the scale change: TOEFL moved to a new scoring scale for tests taken after Jan 21, 2026. Berkeley's Fall 2027 bar on the new scale is 5.0 overall with 4.5 in speaking and writing; confirm CMU's new-scale equivalents on the MHCI admissions page before booking." },
+                { "id": "mm-p0-toefl-setup-s01-03", "text": "Decide TOEFL vs Duolingo English Test. CMU accepts Duolingo (Conversation 105, Production 120, Comprehension 125, Literacy 115), but not every school on the list does — TOEFL is the only test every target accepts, so default to TOEFL unless the diagnostic says otherwise." },
+                { "id": "mm-p0-toefl-setup-s01-04", "text": "Book the real test for mid-October (weeks 11–12) and note a backup retake window in mid-November — CMU advises all scores be in by roughly Nov 25 for processing. October dates in the Bay Area fill up; book now." },
+                { "id": "mm-p0-toefl-setup-s01-05", "text": "Record the score-reporting codes in the tracker: Berkeley institution code 4833. Scores are valid 2 years for CMU but only 18 months from the deadline for Berkeley — anything taken after June 2025 is fine." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Berkeley MIMS test-score requirements", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions/testscores" },
+                  { "name": "CMU MHCI admissions (English requirements)", "url": "https://hcii.cmu.edu/academics/mhci/admissions" },
+                  { "name": "ETS TOEFL practice tests", "url": "https://www.ets.org/toefl/test-takers/ibt/prepare/practice-tests.html" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p0-milestone",
+          "title": "Phase 0 complete",
+          "badge": "Milestone",
+          "tag": "milestone",
+          "weeks": null,
+          "weight": 3,
+          "subtasks": [],
+          "milestone": {
+            "heading": "The machine is running",
+            "items": [
+              "Tracker holds every school, requirement, and deadline, with a weekly review rhythm in the calendar",
+              "Resume shows the Brazilian degree and speaks to an admissions reader, not a recruiter",
+              "Brazilian transcript, degree certificate, and sworn translation are ordered and in flight",
+              "TOEFL diagnostic done, target score set, real test booked for October with a November backup",
+              "Final school list agreed and frozen"
+            ],
+            "next": "September: applications open, and you start manufacturing the evidence the essays will point at."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mm-p1",
+      "title": "September — Raw material",
+      "num": "01",
+      "weeks": [5, 9],
+      "weight": 18,
+      "intro": "Applications open this month — CMU on September 9, Berkeley on September 24. This phase manufactures the raw material everything later is built from: two written case studies that reframe your existing work as human-AI interaction evidence, three committed recommenders, a Python credential for Berkeley's programming form, and steady TOEFL reps. The essays in November can only be as good as what this month produces.",
+      "callouts": [
+        {
+          "type": "tip",
+          "html": "<strong>Open the portals the week they launch.</strong> Requirements drift year to year, and the only authoritative list is inside the live application. Creating accounts early costs nothing and surfaces surprises — an extra short answer, a changed prompt — while there are still four months to react."
+        },
+        {
+          "type": "warn",
+          "html": "<strong>Ask recommenders this month, not in November.</strong> Three letters for CMU (at least two from faculty or recent employers), two professional letters for Berkeley (recent supervisors preferred). A rushed letter reads as a rushed letter. Asking in September is the difference between a advocate and a form-filler."
+        }
+      ],
+      "tasks": [
+        {
+          "id": "mm-p1-portals",
+          "title": "Open the applications",
+          "badge": "Task 01",
+          "tag": "exercise",
+          "weeks": [5, 7],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p1-portals-s01",
+              "title": "Create accounts and harvest the real requirements",
+              "desc": "The live portals are the ground truth. Every requirement in the tracker gets verified against what the application actually asks, and every essay prompt gets captured verbatim so November's writing targets the real questions.",
+              "time": "Weeks 5–7",
+              "steps": [
+                { "id": "mm-p1-portals-s01-01", "text": "Create the CMU application when it opens Sept 9 and the Berkeley application when the Grad Division portal opens Sept 24; then the backup schools as their portals open." },
+                { "id": "mm-p1-portals-s01-02", "text": "Walk every section of each application and copy the exact essay prompts, word limits, and short-answer questions into the tracker. Screenshot anything ambiguous." },
+                { "id": "mm-p1-portals-s01-03", "text": "Confirm Berkeley's exact Fall 2027 deadline (last cycle: Jan 6) and re-verify CMU's Jan 15 date on the live pages. Update the calendar reminders if anything moved." },
+                { "id": "mm-p1-portals-s01-04", "text": "Enter recommender names and emails into each portal as soon as recommenders confirm (next task) — most systems let letters arrive before submission, and early invitations give recommenders the whole fall to write." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Berkeley graduate application portal", "url": "https://gradapp.berkeley.edu/apply/" },
+                  { "name": "CMU MHCI admissions page", "url": "https://hcii.cmu.edu/academics/mhci/admissions" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p1-case-apple",
+          "title": "Case study #1: the Apple apprenticeship",
+          "badge": "Task 02",
+          "tag": "exercise",
+          "weeks": [5, 7],
+          "weight": 6,
+          "subtasks": [
+            {
+              "id": "mm-p1-case-apple-s01",
+              "title": "Reframe the Apple project as a product story",
+              "desc": "The apprenticeship is your strongest brand asset, but a committee reads 'translated mockups into functional UI' as an engineering bullet. Rewritten as a case study — problem, users, constraints, collaboration, outcome — the same six months become evidence of exactly what MHCI and MIMS say they want: cross-functional product work.",
+              "time": "Weeks 5–7",
+              "steps": [
+                { "id": "mm-p1-case-apple-s01-01", "text": "Write the story in the standard case-study arc: what the feature was for and who used it → how designs and requirements flowed between designers, PMs, backend engineers and QA → what you built and what tradeoffs you hit → the demo to the client engineering team and the IS&T leadership presentation." },
+                { "id": "mm-p1-case-apple-s01-02", "text": "Respect confidentiality: describe the shape of the problem and your role, not Apple internals. 'A customer-facing feature in a large shared codebase' is enough; no internal tool names or unreleased details." },
+                { "id": "mm-p1-case-apple-s01-03", "text": "Pull out the two or three moments where you made a call that affected users — a flow you pushed back on, an edge case QA surfaced, a mockup that could not work as drawn. Those moments are the design-thinking evidence." },
+                { "id": "mm-p1-case-apple-s01-04", "text": "Produce two artifacts: a one-page written case study (essay ammunition) and a 4–6 slide visual version with sanitized diagrams (portfolio ammunition)." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p1-case-sticky",
+          "title": "Case study #2: AI evaluation at Sticky",
+          "badge": "Task 03",
+          "tag": "exercise",
+          "weeks": [6, 8],
+          "weight": 6,
+          "subtasks": [
+            {
+              "id": "mm-p1-case-sticky-s01",
+              "title": "Turn AI QA into a human-AI interaction story",
+              "desc": "Evaluating AI-generated content, testing AI features with users, and reporting on quality is human-AI interaction research in industry clothing — and almost no applicant has it. CMU teaches Human-AI Interaction as a course; you have practiced it. This case study is your differentiator, so it gets more depth than the Apple one.",
+              "time": "Weeks 6–8",
+              "steps": [
+                { "id": "mm-p1-case-sticky-s01-01", "text": "Document the evaluation work as research: what made an AI-generated interactive series 'good', how you tested it, what failure modes you found, and how findings changed the product. Frame defect reports as usability findings." },
+                { "id": "mm-p1-case-sticky-s01-02", "text": "Include the judgment layer explicitly — evaluating AI output quality is a research-methods skill (criteria, consistency, edge cases), and naming it that way signals you already think like a UX researcher." },
+                { "id": "mm-p1-case-sticky-s01-03", "text": "Add the hackathon as a coda: 48 hours, multidisciplinary team, accessible AI product on WhatsApp, your role in prompt iteration and behavior refinement. Short, but it shows initiative outside employment." },
+                { "id": "mm-p1-case-sticky-s01-04", "text": "Same two artifacts: one-page written case study plus a visual version with examples of evaluation criteria and before/after quality improvements (sanitized)." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p1-python",
+          "title": "Python credential for Berkeley",
+          "badge": "Task 04",
+          "tag": "exercise",
+          "weeks": [6, 9],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p1-python-s01",
+              "title": "Close the programming proficiency form cleanly",
+              "desc": "Berkeley requires a Programming Proficiency form from every applicant: languages, self-rating, and how you learned object-oriented programming, with uploaded evidence recommended. You have Java and Swift, but MIMS core courses use Python — a completed Python course removes the committee's only possible technical doubt and takes maybe 20 hours you can spread across a month.",
+              "time": "Weeks 6–9",
+              "steps": [
+                { "id": "mm-p1-python-s01-01", "text": "Work through a Python course that covers classes, objects, methods, and inheritance. Berkeley's own guidance names Codecademy's Python track as acceptable evidence — with Java OOP already in hand this is translation, not learning from zero." },
+                { "id": "mm-p1-python-s01-02", "text": "Download the completion certificate and file it with the application documents for upload with the proficiency form." },
+                { "id": "mm-p1-python-s01-03", "text": "Draft the form answers now while it is fresh: Java (Year Up bootcamp, projects on GitHub), Swift/SwiftUI (Apple, production codebase), Python (course + certificate). Concrete evidence for each beats self-ratings." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Berkeley MIMS programming requirement", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions/programming" }
+                ],
+                "courses": [
+                  { "name": "Codecademy — Learn Python 3", "url": "https://www.codecademy.com/learn/learn-python-3" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p1-recommenders",
+          "title": "Recruit the recommenders",
+          "badge": "Task 05",
+          "tag": "exercise",
+          "weeks": [7, 9],
+          "weight": 6,
+          "subtasks": [
+            {
+              "id": "mm-p1-recommenders-s01",
+              "title": "Choose three, ask now",
+              "desc": "CMU wants three letters with at least two from faculty or recent employers, and explicitly calls pure character references weak. Berkeley wants two professional letters, supervisors preferred. Three well-chosen people cover every school. The committee is reading for two things: can she handle graduate coursework, and can she work in interdisciplinary teams at a professional level.",
+              "time": "Weeks 7–9",
+              "steps": [
+                { "id": "mm-p1-recommenders-s01-01", "text": "First choice: the Apple supervisor or mentor who saw the cross-functional project and the leadership presentation — the single strongest possible letter for both committees." },
+                { "id": "mm-p1-recommenders-s01-02", "text": "Second: the Sticky AI supervisor, who can speak to AI evaluation judgment, initiative, and professional-level remote collaboration." },
+                { "id": "mm-p1-recommenders-s01-03", "text": "Third: a Year Up instructor or program manager who can attest to coursework ability and the velocity of the career change — the closest available thing to a faculty letter." },
+                { "id": "mm-p1-recommenders-s01-04", "text": "Ask each personally (call or coffee beats email), name the January deadlines up front, and confirm they can write a *strong* letter — a lukewarm yes is a no. Line up a backup (hackathon teammate's lead, another Apple colleague) in case anyone goes quiet." },
+                { "id": "mm-p1-recommenders-s01-05", "text": "Record each confirmed recommender in the tracker with their preferred contact channel and enter their emails into every portal so invitation links go out early. Briefing packets come in November." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Berkeley MIMS — letters of recommendation guidance", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions/letters" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p1-toefl-reps",
+          "title": "TOEFL reps",
+          "badge": "Task 06",
+          "tag": "theory",
+          "weeks": [7, 9],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p1-toefl-reps-s01",
+              "title": "Train the sections the diagnostic flagged",
+              "desc": "Whatever the August diagnostic showed, September is steady reps — five focused sessions a week, weighted toward speaking and writing, because those are the sections with hard per-section bars (CMU ~25 each; Berkeley 4.5 each on the new scale) and the ones hardest to cram.",
+              "time": "Weeks 7–9",
+              "steps": [
+                { "id": "mm-p1-toefl-reps-s01-01", "text": "Five sessions a week, 45–60 minutes each: two speaking (record yourself against the timer, review, redo), two writing (full timed essays, compare against high-scoring samples), one reading/listening set." },
+                { "id": "mm-p1-toefl-reps-s01-02", "text": "Use the TOEFL TestReady official practice materials so the interface on test day is familiar — surprises in the UI cost speaking-section seconds." },
+                { "id": "mm-p1-toefl-reps-s01-03", "text": "End the month with a full-length timed practice test. If any section sits below target, shift October prep entirely onto that section; if all clear the bar, drop to maintenance reps." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "TOEFL TestReady official prep", "url": "https://www.ets.org/toefl/test-takers/ibt/prepare.html" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p1-milestone",
+          "title": "Phase 1 complete",
+          "badge": "Milestone",
+          "tag": "milestone",
+          "weeks": null,
+          "weight": 3,
+          "subtasks": [],
+          "milestone": {
+            "heading": "The raw material exists",
+            "items": [
+              "Both anchor applications open, real prompts captured in the tracker",
+              "Two case studies written: Apple as cross-functional product work, Sticky AI as human-AI interaction research",
+              "Three recommenders personally asked and confirmed, portal invitations sent",
+              "Python certificate earned and Berkeley proficiency form drafted",
+              "TOEFL practice trending at or above the CMU bar"
+            ],
+            "next": "October: sit the test, run a real usability study, and put the portfolio online."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mm-p2",
+      "title": "October — Test and evidence",
+      "num": "02",
+      "weeks": [10, 14],
+      "weight": 18,
+      "intro": "Two things happen in October: the TOEFL gets taken and banked, and you run the one project this plan adds from scratch — a small, real usability study of an AI product. The study is deliberately scoped to two weeks. It exists because it converts 'interested in UX' into 'has done UX research', which is the exact gap between your resume and the programs' stated evidence bar. The month ends with a live portfolio and the narrative spine every essay will hang from.",
+      "callouts": [
+        {
+          "type": "warn",
+          "html": "<strong>Score processing takes weeks.</strong> CMU advises all test scores be taken by ~Nov 25 for January processing. An October test date leaves exactly one retake window. If test day goes badly, book the retake the same week — not after deliberating for three."
+        },
+        {
+          "type": "tip",
+          "html": "<strong>The portfolio is optional everywhere that matters — which is why it works.</strong> No iSchool on the list requires one, CMU calls it optional, Georgia Tech's Interactive Computing track only encourages it. A tight three-case-study site from a non-designer reads as initiative; its absence reads as nothing. Two weeks of effort, asymmetric payoff."
+        }
+      ],
+      "tasks": [
+        {
+          "id": "mm-p2-toefl-final",
+          "title": "Final prep and mock week",
+          "badge": "Task 01",
+          "tag": "theory",
+          "weeks": [10, 11],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p2-toefl-final-s01",
+              "title": "Taper into test day",
+              "desc": "The last two weeks before the test are for consolidation, not new material. One full mock under exact test conditions, then targeted review of whatever it exposes, then rest.",
+              "time": "Weeks 10–11",
+              "steps": [
+                { "id": "mm-p2-toefl-final-s01-01", "text": "Take one full-length mock at the same time of day as the real test, no pauses, headset on — the endurance is half the exam." },
+                { "id": "mm-p2-toefl-final-s01-02", "text": "Spend the remaining sessions only on the weakest section from the mock. Everything else is maintenance." },
+                { "id": "mm-p2-toefl-final-s01-03", "text": "Logistics the day before: ID matching the registration name exactly, test center route, arrival time. Name mismatches void test dates." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p2-toefl-sit",
+          "title": "Take the TOEFL",
+          "badge": "Task 02",
+          "tag": "exercise",
+          "weeks": [11, 12],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p2-toefl-sit-s01",
+              "title": "Sit it, score it, decide",
+              "desc": "Test day plus the decision rule after. The retake decision is mechanical, made in advance, so a disappointing score triggers a booking, not a spiral.",
+              "time": "Weeks 11–12",
+              "steps": [
+                { "id": "mm-p2-toefl-sit-s01-01", "text": "Sit the test at the booked mid-October date." },
+                { "id": "mm-p2-toefl-sit-s01-02", "text": "When scores post (typically 4–8 days): send official scores to every school on the list — Berkeley's institution code is 4833 — and self-report numbers in each application." },
+                { "id": "mm-p2-toefl-sit-s01-03", "text": "Apply the pre-agreed rule: every section at or above the CMU bar → done, cancel the backup. Any section below → book the mid-November retake immediately and resume section-targeted reps." },
+                { "id": "mm-p2-toefl-sit-s01-04", "text": "Log scores and send-dates in the tracker; official-score arrival gets verified per school in December." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p2-capstone",
+          "title": "Capstone: run a real usability study",
+          "badge": "Task 03",
+          "tag": "agent",
+          "weeks": [11, 13],
+          "weight": 7,
+          "subtasks": [
+            {
+              "id": "mm-p2-capstone-s01",
+              "title": "Design and run the study",
+              "desc": "Pick one AI product people actually use — or resurrect the hackathon WhatsApp agent — and run a five-user usability study on one task flow. Five users is the industry-standard small study; this is a real method, done for real, at weekend scale. It becomes case study #3, the concrete answer to 'what have you done in UX research', and fresh material for every essay.",
+              "time": "Weeks 11–12",
+              "steps": [
+                { "id": "mm-p2-capstone-s01-01", "text": "Choose the product and one core task (e.g., a first-time user getting a useful answer out of an AI chat feature). Write a one-page study plan: research question, task script, five participants, what you will measure." },
+                { "id": "mm-p2-capstone-s01-02", "text": "Recruit five participants from friends-of-friends who match real users (not Ravi). Run 30-minute moderated sessions — think-aloud protocol, screen recorded with permission, notes on where they stall, misread, or mistrust the AI." },
+                { "id": "mm-p2-capstone-s01-03", "text": "Synthesize: cluster observations into 4–6 findings, rank by severity, and note which are AI-specific (trust, hallucination handling, unclear model limits) — that AI-flavored analysis is what makes this study unusual." },
+                { "id": "mm-p2-capstone-s01-04", "text": "Read the classic Nielsen 'why 5 users' argument first so the method choices are defensible in an interview." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Nielsen Norman Group — Why You Only Need to Test with 5 Users", "url": "https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/" },
+                  { "name": "NN/g — Usability Testing 101", "url": "https://www.nngroup.com/articles/usability-testing-101/" }
+                ]
+              }
+            },
+            {
+              "id": "mm-p2-capstone-s02",
+              "title": "Redesign and write it up",
+              "desc": "Findings without a response are a complaint; findings with a redesign are a case study. A small Figma pass on the two worst problems closes the loop from research to design — the full arc both programs teach.",
+              "time": "Week 13",
+              "steps": [
+                { "id": "mm-p2-capstone-s02-01", "text": "Mock the two highest-severity fixes in Figma — before/after frames, annotated with the finding each change answers. Polish is not the point; reasoning is." },
+                { "id": "mm-p2-capstone-s02-02", "text": "Write case study #3 in the same arc as the others: question → method → findings → redesign → what you would test next." },
+                { "id": "mm-p2-capstone-s02-03", "text": "Extract one vivid specific — a participant quote, a failure moment — for use in the SOPs. Concrete beats general in every essay." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p2-portfolio",
+          "title": "Portfolio site v1",
+          "badge": "Task 04",
+          "tag": "exercise",
+          "weeks": [13, 14],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p2-portfolio-s01",
+              "title": "Put the three case studies online",
+              "desc": "A simple, fast site: three case studies, a short about page, a resume link. Notion or Framer is fine — committees judge the thinking, not the CSS. Done in a weekend, linked from every application that has a portfolio field.",
+              "time": "Weeks 13–14",
+              "steps": [
+                { "id": "mm-p2-portfolio-s01-01", "text": "One page per case study — Apple, Sticky AI, usability capstone — each in the problem → process → outcome arc with its visuals. Lead with the capstone; it is the most research-shaped." },
+                { "id": "mm-p2-portfolio-s01-02", "text": "About page: three sentences of the career-change story plus the certifications (Anthropic Academy, Salesforce AI Associate). Same narrative as the essays — consistency across materials is itself a signal." },
+                { "id": "mm-p2-portfolio-s01-03", "text": "Get one brutal review from a designer or PM acquaintance, fix the top three issues, then add the URL to the resume, LinkedIn, and the portfolio field of CMU, Georgia Tech, and SJSU applications." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p2-spine",
+          "title": "The story spine",
+          "badge": "Task 05",
+          "tag": "theory",
+          "weeks": [14, 14],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p2-spine-s01",
+              "title": "Write the one-paragraph narrative",
+              "desc": "Before drafting four thousand words of essays, get the underlying argument right in one paragraph. Every application asks the same implicit question — why you, why this, why now — and answering it once, well, is what keeps seven essay variants from drifting into seven different people.",
+              "time": "Week 14",
+              "steps": [
+                { "id": "mm-p2-spine-s01-01", "text": "Draft the spine: Brazil → deliberate career change through Year Up → engineering at Apple, where the interesting problems turned out to be human ones → AI product evaluation at Sticky, where 'does the AI work' became 'does it work *for people*' → graduate school as the bridge from noticing those problems to being trained to solve them → five-year goal in AI product / human-AI interaction work." },
+                { "id": "mm-p2-spine-s01-02", "text": "Address the experience gap head-on in one sentence: one year, but a year that spans a trillion-dollar company's engineering culture and a startup's AI product floor — breadth most five-year resumes lack. Confidence, not apology." },
+                { "id": "mm-p2-spine-s01-03", "text": "Read it aloud to two people, at least one who knows nothing about admissions. If they cannot repeat the arc back, revise until they can. This paragraph is now canon for every essay, the video, and the recommender packets." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p2-milestone",
+          "title": "Phase 2 complete",
+          "badge": "Milestone",
+          "tag": "milestone",
+          "weeks": null,
+          "weight": 3,
+          "subtasks": [],
+          "milestone": {
+            "heading": "Evidence banked",
+            "items": [
+              "TOEFL taken, scores sent (or retake booked inside the November window)",
+              "A real five-user usability study run, synthesized, and answered with a redesign",
+              "Portfolio live with three case studies, linked from resume and applications",
+              "The one-paragraph story spine survives being retold by strangers"
+            ],
+            "next": "November: the writing month. Every deliverable from here on is words and a camera."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mm-p3",
+      "title": "November — Essays and video",
+      "num": "03",
+      "weeks": [15, 19],
+      "weight": 22,
+      "intro": "The heaviest month, and the one that moves admissions odds most. One master essay gets written properly, then adapted into each school's actual prompts — never pasted verbatim, because every school asks a different question and committees can smell a mail-merge. Berkeley alone wants three distinct pieces plus a form; CMU wants an essay and you on camera. Recommenders get their briefing packets mid-month so letters are written from your best material, not from memory.",
+      "callouts": [
+        {
+          "type": "warn",
+          "html": "<strong>November 25 is the last sensible TOEFL retake.</strong> If October's score missed any bar, the retake happens in the first half of this month — essays flex around it, not the other way."
+        },
+        {
+          "type": "tip",
+          "html": "<strong>Specificity is the whole game.</strong> 'Berkeley's interdisciplinary approach' persuades no one. 'The Human-AI Interaction course sequence, Prof. X's work on Y, and a capstone with a real client' persuades. The fit sheets from September exist precisely so every variant can name real courses, real faculty, real reasons."
+        }
+      ],
+      "tasks": [
+        {
+          "id": "mm-p3-master-sop",
+          "title": "Master SOP",
+          "badge": "Task 01",
+          "tag": "exercise",
+          "weeks": [15, 16],
+          "weight": 6,
+          "subtasks": [
+            {
+              "id": "mm-p3-master-sop-s01",
+              "title": "Write the ~1000-word master essay",
+              "desc": "One essay, written to the superset of prompts (preparation, motivation, why-this-field, career goals), at the 1000-word cap most schools share. Every school variant is a re-aim of this document, so it gets the most drafts and the most feedback.",
+              "time": "Weeks 15–16",
+              "steps": [
+                { "id": "mm-p3-master-sop-s01-01", "text": "Structure from the spine: open with a concrete moment (a specific AI evaluation or usability finding, not 'I have always been passionate'), then preparation (Apple, Sticky, the capstone study), then what you want to learn, then the five-year goal." },
+                { "id": "mm-p3-master-sop-s01-02", "text": "Draft 1 fast and too long; cut to 1000 words in draft 2 — cutting is where essays get good. Every paragraph must survive the question 'what does the committee learn from this that the resume didn't say?'" },
+                { "id": "mm-p3-master-sop-s01-03", "text": "Show, with evidence, the two things committees are checking: graduate-level ability (Year Up velocity, Apple codebase, Python cert) and a trajectory that this specific degree unlocks (engineer → human-AI product work)." },
+                { "id": "mm-p3-master-sop-s01-04", "text": "Leave a marked 150–200 word 'why this school' slot for per-school content — the part that gets rewritten from scratch each time." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p3-berkeley",
+          "title": "The Berkeley trio",
+          "badge": "Task 02",
+          "tag": "exercise",
+          "weeks": [16, 17],
+          "weight": 6,
+          "subtasks": [
+            {
+              "id": "mm-p3-berkeley-s01",
+              "title": "SOP and Personal History Statement",
+              "desc": "Berkeley wants two different essays doing two different jobs: the SOP argues aptitude and intellectual fit (1–2 pages), the Personal History Statement tells how life brought you here. Fran's PHS material is genuinely strong — immigrant, bilingual, a deliberate career change through a workforce program — and the PHS is where it belongs, freeing the SOP to be all substance.",
+              "time": "Week 16",
+              "steps": [
+                { "id": "mm-p3-berkeley-s01-01", "text": "Adapt the master into the Berkeley SOP: their prompt asks for aptitude, preparation, academic plans, career goals, and 'why UC Berkeley would be a good intellectual fit' — fill the fit slot with named MIMS courses, faculty, and the final-project angle from the September fit sheet." },
+                { "id": "mm-p3-berkeley-s01-02", "text": "Write the PHS fresh (not from the master): the path from Brazil, what the career change cost and taught, bilingual/bicultural perspective, and why graduate study now. Berkeley reads this for contribution to a diverse cohort — it is a story, not a second resume." },
+                { "id": "mm-p3-berkeley-s01-03", "text": "Keep the two essays non-overlapping: any anecdote used in one is banned from the other." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Berkeley MIMS essay prompts", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions/essays" }
+                ]
+              }
+            },
+            {
+              "id": "mm-p3-berkeley-s02",
+              "title": "The 300-word information problem",
+              "desc": "Berkeley's short essay — 'the most interesting information problem you have ever solved' — is explicitly how they gauge quantitative aptitude and problem-solving. 300 words rewards one concrete, well-told problem over anything sweeping.",
+              "time": "Week 17",
+              "steps": [
+                { "id": "mm-p3-berkeley-s02-01", "text": "Pick the sharpest candidate: building evaluation criteria for AI-generated content at Sticky (how do you *measure* whether generated media is good?), or the usability study's synthesis problem (turning five hours of user recordings into ranked findings). Choose whichever has the clearest problem → approach → insight shape." },
+                { "id": "mm-p3-berkeley-s02-02", "text": "Draft at 400 words, cut to 300. Structure: the problem and why it is genuinely an *information* problem, how you attacked it, what the solution revealed. End on the insight, not a moral." },
+                { "id": "mm-p3-berkeley-s02-03", "text": "Finalize the programming proficiency form drafted in September and stage the Python certificate for upload." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p3-cmu",
+          "title": "The CMU pair",
+          "badge": "Task 03",
+          "tag": "exercise",
+          "weeks": [17, 18],
+          "weight": 6,
+          "subtasks": [
+            {
+              "id": "mm-p3-cmu-s01",
+              "title": "MHCI statement of purpose",
+              "desc": "CMU's prompt is direct: objective in pursuing the MHCI, career goals, why this program, and how academic and industry experience prepares you. 1–2 pages, PDF, name and email on the document.",
+              "time": "Week 17",
+              "steps": [
+                { "id": "mm-p3-cmu-s01-01", "text": "Re-aim the master: lead with the human-AI interaction thread (Sticky evaluation work + the capstone study), since Human-AI Interaction is a pillar of the MHCI curriculum and almost no applicant arrives with industry reps in it." },
+                { "id": "mm-p3-cmu-s01-02", "text": "Fill the why-CMU slot with specifics: the industry capstone with a real client, named courses from the fit sheet, and the technical-track placement your SwiftUI background earns." },
+                { "id": "mm-p3-cmu-s01-03", "text": "Have the committee's two letter-criteria in mind — graduate-level ability and interdisciplinary teamwork — and make sure the essay evidences both, since essay and letters should corroborate each other." }
+              ]
+            },
+            {
+              "id": "mm-p3-cmu-s02",
+              "title": "The video essay",
+              "desc": "One to two minutes, you on camera, and — per CMU's own instructions — content NOT already in the SOP: what you like, what you do outside work, who you are. It is a personality and communication check, not a second essay. Bilingual warmth on camera is an asset most applicants cannot fake.",
+              "time": "Week 18",
+              "steps": [
+                { "id": "mm-p3-cmu-s02-01", "text": "Script 150–180 words of new material: life outside work — the things that make you interesting at a dinner table, not in a standup. One line may bridge to the degree; the rest is you." },
+                { "id": "mm-p3-cmu-s02-02", "text": "Production floor: daylight or a lamp facing you, phone at eye level, quiet room, decent audio. No slides, no b-roll — they asked to see you." },
+                { "id": "mm-p3-cmu-s02-03", "text": "Record three full takes, pick the one where you sound like yourself, and show it to one honest person before uploading. Warm and specific beats polished and generic." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "CMU MHCI application requirements (SOP + video specs)", "url": "https://hcii.cmu.edu/academics/mhci/admissions" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p3-variants",
+          "title": "Backup-school variants",
+          "badge": "Task 04",
+          "tag": "exercise",
+          "weeks": [17, 19],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p3-variants-s01",
+              "title": "Adapt the master for every remaining school",
+              "desc": "Each backup gets a real adaptation — its own why-school section and its prompt's actual structure — at roughly a day per school now that the master exists. The tracker's captured prompts from September are the spec.",
+              "time": "Weeks 17–19",
+              "steps": [
+                { "id": "mm-p3-variants-s01-01", "text": "Georgia Tech (1000-word cap + its own video requirement — reuse the CMU video script, re-record with GT-specific framing; justify the Interactive Computing track choice). UT Austin (1000 words + short answers; their 'technology for social good' framing suits the accessible-AI hackathon story)." },
+                { "id": "mm-p3-variants-s01-02", "text": "UW HCDE (standard SOP), UMich if on the list (website-driven short answers — budget extra time, their questions require reading the UMSI site), SJSU (letter of intent, no stated limit — keep it to one page)." },
+                { "id": "mm-p3-variants-s01-03", "text": "Track each variant's status in the tracker; a variant is 'done' only when it answers that school's literal prompt and names that school's specifics." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p3-packets",
+          "title": "Recommender briefing packets",
+          "badge": "Task 05",
+          "tag": "exercise",
+          "weeks": [18, 19],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p3-packets-s01",
+              "title": "Arm each recommender to write specifically",
+              "desc": "A great recommender with no material writes a generic letter. The packet puts your best evidence in front of them so their specifics corroborate your essays — the strongest pattern an application can show.",
+              "time": "Weeks 18–19",
+              "steps": [
+                { "id": "mm-p3-packets-s01-01", "text": "Assemble per recommender: the updated resume, the relevant case study, the story-spine paragraph, the school list with deadlines, and 3–4 bullets of 'moments you saw firsthand' they could draw on (the IS&T presentation, a specific QA save, a bootcamp turnaround)." },
+                { "id": "mm-p3-packets-s01-02", "text": "Tell each what the committees read for — graduate-level ability and professional interdisciplinary teamwork — and which of the two they are best placed to evidence." },
+                { "id": "mm-p3-packets-s01-03", "text": "Confirm every portal invitation email arrived (check spam), and set the nudge cadence in the tracker: a gentle check-in two weeks before each deadline, a direct one at one week." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p3-milestone",
+          "title": "Phase 3 complete",
+          "badge": "Milestone",
+          "tag": "milestone",
+          "weeks": null,
+          "weight": 3,
+          "subtasks": [],
+          "milestone": {
+            "heading": "Everything is written",
+            "items": [
+              "Master SOP at 1000 words, argument airtight",
+              "Berkeley trio drafted: SOP, Personal History Statement, 300-word information problem",
+              "CMU SOP drafted and video recorded — on camera, all-new content",
+              "Every backup school has a real variant against its real prompt",
+              "Recommenders briefed with packets; nudge cadence armed",
+              "TOEFL fully banked — no retakes pending"
+            ],
+            "next": "December: outside eyes, final assembly, and the first submissions."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mm-p4",
+      "title": "December — Polish and assemble",
+      "num": "04",
+      "weeks": [20, 23],
+      "weight": 15,
+      "intro": "Drafts become submissions. Two outside readers stress-test every essay, applications get assembled field by field against the tracker, and the early-January schools go out before New Year — because Berkeley's deadline landed on Jan 6 last cycle and UT's on Jan 5, and a portal outage on deadline day is a story you only get to tell once. The personal deadline for wave 1 is December 31.",
+      "callouts": [
+        {
+          "type": "warn",
+          "html": "<strong>Never submit on deadline day.</strong> Portals slow and crash under load, recommenders miss final-hour uploads, and support desks are closed. Every application in this plan submits at least five days early. The deadline is the fail-safe, not the target."
+        }
+      ],
+      "tasks": [
+        {
+          "id": "mm-p4-feedback",
+          "title": "Two-reader feedback cycle",
+          "badge": "Task 01",
+          "tag": "exercise",
+          "weeks": [20, 21],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p4-feedback-s01",
+              "title": "Stress-test every essay",
+              "desc": "Two readers, two jobs: one who knows Fran well (catches what is missing — the impressive things she forgot to claim) and one who does not (catches what is unclear — the jargon and gaps a committee would trip on). Their feedback drives one real revision pass, not a rewrite.",
+              "time": "Weeks 20–21",
+              "steps": [
+                { "id": "mm-p4-feedback-s01-01", "text": "Send each reader the Berkeley and CMU packages with three questions: What do you remember after one read? What was confusing? What would you cut?" },
+                { "id": "mm-p4-feedback-s01-02", "text": "Revise on the pattern of both responses. If neither reader can retell the story spine, the essay failed — fix the argument before the sentences." },
+                { "id": "mm-p4-feedback-s01-03", "text": "Final pass per essay: read aloud for rhythm and typos, run a grammar check, verify word/page limits against the tracker's captured specs, export clean PDFs named Lastname_School_Document.pdf with name and email on CMU documents as required." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p4-assemble",
+          "title": "Assemble the applications",
+          "badge": "Task 02",
+          "tag": "exercise",
+          "weeks": [21, 22],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p4-assemble-s01",
+              "title": "Fill every field, upload every file",
+              "desc": "The unglamorous completeness pass: every section of every portal filled, every document uploaded, every score verified as received. Applications die on missing checkboxes, not weak essays.",
+              "time": "Weeks 21–22",
+              "steps": [
+                { "id": "mm-p4-assemble-s01-01", "text": "Complete all biographical, education, and employment sections in each portal; upload transcripts + translations, resume, essays, and (Berkeley) the proficiency form with the Python certificate." },
+                { "id": "mm-p4-assemble-s01-02", "text": "Verify official TOEFL scores show as received in each portal; where a portal lags, confirm with the ETS send receipt and note it for a January follow-up." },
+                { "id": "mm-p4-assemble-s01-03", "text": "Check recommender status per school; anyone not yet submitted gets the two-week nudge now, warm and brief." },
+                { "id": "mm-p4-assemble-s01-04", "text": "Budget the fees (~$100–155 per school — no waivers for international applicants at Berkeley; CMU hardship waivers require requesting a week or more before the deadline) and have the card ready." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p4-wave1",
+          "title": "Submit wave 1",
+          "badge": "Task 03",
+          "tag": "milestone",
+          "weeks": [22, 23],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p4-wave1-s01",
+              "title": "Early-January deadlines out by New Year",
+              "desc": "Berkeley (~Jan 6), UT Austin (Jan 5), and Stanford LDT if on the list (Jan 7) all submit by December 31. A submitted application with a straggling letter is fine at most schools — letters can usually arrive after submission — but the application itself goes early.",
+              "time": "Weeks 22–23",
+              "steps": [
+                { "id": "mm-p4-wave1-s01-01", "text": "Final review of each wave-1 application top to bottom in preview mode, then submit and pay." },
+                { "id": "mm-p4-wave1-s01-02", "text": "Archive every confirmation email and screenshot the submitted-status page into the tracker." },
+                { "id": "mm-p4-wave1-s01-03", "text": "List any outstanding recommendation letters and confirm each recommender knows their true final date (Berkeley letters can follow submission; verify the portal's stated letter deadline)." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p4-milestone",
+          "title": "Phase 4 complete",
+          "badge": "Milestone",
+          "tag": "milestone",
+          "weeks": null,
+          "weight": 3,
+          "subtasks": [],
+          "milestone": {
+            "heading": "First applications live",
+            "items": [
+              "Every essay survived two outside readers and a read-aloud pass",
+              "All portals assembled: documents uploaded, scores verified, fees ready",
+              "Wave 1 (Berkeley, UT, Stanford if listed) submitted before January 1",
+              "Letter stragglers identified and personally nudged"
+            ],
+            "next": "January: the remaining waves, then the part you cannot control — so you prepare for the parts you can."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mm-p5",
+      "title": "January and beyond — Submit, interview, decide",
+      "num": "05",
+      "weeks": [23, 30],
+      "weight": 15,
+      "intro": "The remaining applications go out in two waves — mid-January (UW HCDE, CMU, UMich) and February 1 (Georgia Tech, SJSU) — and then the campaign shifts to what happens after submission: interview readiness, the money plan, and a decision framework ready before offers arrive in March. A plan that ends at 'submit' abandons you at the moment choices get hard; this one doesn't.",
+      "callouts": [
+        {
+          "type": "warn",
+          "html": "<strong>CMU's deadline has a clock on it: January 15, 3:00 pm EST — noon EST for letters.</strong> That is morning Pacific time. Submit the day before, and confirm all three letters are in by the 13th."
+        },
+        {
+          "type": "tip",
+          "html": "<strong>An interview invitation is follow-up, not a verdict.</strong> Berkeley interviews a minority of applicants — 15 minutes on Zoom, run like a professional business conversation — and says explicitly that not being interviewed reflects nothing. CMU 'may' interview. Prepare once, be ready for both, waste no energy reading tea leaves."
+        }
+      ],
+      "tasks": [
+        {
+          "id": "mm-p5-wave2",
+          "title": "Submit waves 2 and 3",
+          "badge": "Task 01",
+          "tag": "milestone",
+          "weeks": [23, 26],
+          "weight": 5,
+          "subtasks": [
+            {
+              "id": "mm-p5-wave2-s01",
+              "title": "Mid-January wave",
+              "desc": "UW HCDE (Jan 13), CMU MHCI (Jan 15, 3pm EST), and UMich (Jan 15) — each submitted at least a day early, with CMU's letter clock treated as the real deadline.",
+              "time": "Week 24",
+              "steps": [
+                { "id": "mm-p5-wave2-s01-01", "text": "Submit UW HCDE by Jan 12 and CMU + UMich by Jan 14. For CMU, confirm all three letters show as received by Jan 13 — chase by phone-call-grade urgency if not." },
+                { "id": "mm-p5-wave2-s01-02", "text": "Archive confirmations; update the tracker to 'submitted' with dates." }
+              ]
+            },
+            {
+              "id": "mm-p5-wave2-s02",
+              "title": "February wave and close-out",
+              "desc": "Georgia Tech and SJSU (both Feb 1) close the campaign. SJSU is the one school whose WES evaluation must be confirmed complete before submission.",
+              "time": "Weeks 25–26",
+              "steps": [
+                { "id": "mm-p5-wave2-s02-01", "text": "Submit both by Jan 28; verify the WES report was delivered to Cal State Apply if SJSU is on the list." },
+                { "id": "mm-p5-wave2-s02-02", "text": "Run the final all-schools audit: every application submitted, every letter received, every score delivered, every fee paid. Thank each recommender — specifically, and with the promise to report back." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p5-interviews",
+          "title": "Interview readiness",
+          "badge": "Task 02",
+          "tag": "exercise",
+          "weeks": [24, 27],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p5-interviews-s01",
+              "title": "Prepare once, for all of them",
+              "desc": "Invitations arrive on short notice between late January and March. One prep session now means an invitation triggers a calendar entry, not a panic.",
+              "time": "Weeks 24–27",
+              "steps": [
+                { "id": "mm-p5-interviews-s01-01", "text": "Prepare tight spoken answers (60–90 seconds each): the story spine, why this program specifically, the usability capstone walkthrough, and 'what will you contribute to the cohort'." },
+                { "id": "mm-p5-interviews-s01-02", "text": "Prepare two genuine questions per school that the website cannot answer — interviews are scored partly on the questions you ask." },
+                { "id": "mm-p5-interviews-s01-03", "text": "Run one 15-minute mock on Zoom with Ravi under real conditions: camera framing, lighting, and the discipline of answers that end. Berkeley's format is exactly this — short, professional, follow-up-driven." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p5-money",
+          "title": "The money plan",
+          "badge": "Task 03",
+          "tag": "theory",
+          "weeks": [25, 28],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p5-money-s01",
+              "title": "Know the real cost of each yes",
+              "desc": "Offers arrive with days-to-weeks decision windows, and the price spread across this list is enormous — roughly $30k total (SJSU) to $120k+ (UMich). The funding map gets built now so March is a values decision, not a scramble.",
+              "time": "Weeks 25–28",
+              "steps": [
+                { "id": "mm-p5-money-s01-01", "text": "Build the cost matrix: total tuition + fees + living for each school, minus realistic aid. Note Berkeley's automatic-consideration fellowships ($5k–30k, no separate application) and that CMU's HCII offers no aid for MHCI — external funding only (Rales Fellows, outside scholarships)." },
+                { "id": "mm-p5-money-s01-02", "text": "Research loan reality for non-citizens: federal aid is citizens/permanent-residents only, so the options are a cosigned private loan or no-cosigner lenders (MPOWER, Prodigy). Get pre-qualification numbers, not vibes. If Fran's immigration status affects any of this, confirm specifics with each school's international office before decision day." },
+                { "id": "mm-p5-money-s01-03", "text": "Set the household ceiling with Ravi in writing: the number at which a yes becomes a no, decided before any offer letter can make it emotional." }
+              ],
+              "resources": {
+                "docs": [
+                  { "name": "Berkeley MIMS funding & fellowships", "url": "https://www.ischool.berkeley.edu/programs/mims/funding" },
+                  { "name": "CMU MHCI tuition", "url": "https://hcii.cmu.edu/academics/mhci/tuition" }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mm-p5-decide",
+          "title": "Decisions and plan B",
+          "badge": "Task 04",
+          "tag": "exercise",
+          "weeks": [28, 30],
+          "weight": 4,
+          "subtasks": [
+            {
+              "id": "mm-p5-decide-s01",
+              "title": "Decide from a framework, not a feeling",
+              "desc": "Berkeley releases by early March; others follow through spring. The decision matrix and the plan-B path both exist before the first letter arrives, so good news gets compared and bad news has a next move.",
+              "time": "Weeks 28–30",
+              "steps": [
+                { "id": "mm-p5-decide-s01-01", "text": "Score each admit on the pre-agreed axes: total cost, program length, career outcomes for the target role, location/household impact, and gut excitement. Deposits are typically due mid-April; ask for extensions politely if comparing offers." },
+                { "id": "mm-p5-decide-s01-02", "text": "Waitlists: respond immediately with a brief continued-interest letter containing one new fact (the published portfolio, a new project, a promotion) — then let it go." },
+                { "id": "mm-p5-decide-s01-03", "text": "If the cycle shuts out: the profile problem is almost certainly the single year of experience, and the fix is a year of UX-adjacent or AI-product work plus the same materials, resubmitted stronger. UW MSIM Online admits every quarter as a working-while-studying bridge, and Georgia Tech's OMSCS with HCI specialization (~$7k, online, no GRE) is the budget wildcard for a coding background. Reapplying with a sharper profile is a strategy, not a failure." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mm-p5-milestone",
+          "title": "Mission complete",
+          "badge": "Milestone",
+          "tag": "milestone",
+          "weeks": null,
+          "weight": 3,
+          "subtasks": [],
+          "milestone": {
+            "heading": "Every application in, every outcome planned for",
+            "items": [
+              "All schools submitted early, letters confirmed, fees paid",
+              "Interview prep done before any invitation arrived",
+              "Cost matrix and household ceiling agreed in writing",
+              "Decision framework ready — and a concrete plan B that keeps the mission alive either way"
+            ],
+            "next": "August 2027: orientation week, somewhere good. That was the mission."
+          }
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "term": "SOP",
+      "mentionedIn": ["mm-p3-master-sop-s01", "mm-p3-berkeley-s01", "mm-p3-cmu-s01"],
+      "seeAlso": [
+        { "label": "Berkeley MIMS essay prompts (SOP + Personal History Statement)", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions/essays" },
+        { "label": "CMU MHCI application requirements", "url": "https://hcii.cmu.edu/academics/mhci/admissions" }
+      ]
+    },
+    {
+      "term": "TOEFL",
+      "mentionedIn": ["mm-p0-toefl-setup-s01", "mm-p1-toefl-reps-s01", "mm-p2-toefl-sit-s01"],
+      "seeAlso": [
+        { "label": "Berkeley MIMS test-score requirements (minimums + new scale)", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions/testscores" },
+        { "label": "ETS TOEFL registration", "url": "https://www.ets.org/toefl.html" }
+      ]
+    },
+    {
+      "term": "WES",
+      "mentionedIn": ["mm-p0-transcripts-s01", "mm-p5-wave2-s02"],
+      "seeAlso": [
+        { "label": "WES ICAP (course-by-course, reusable)", "url": "https://www.wes.org/evaluations-and-fees/icap/" },
+        { "label": "Berkeley Grad Division transcript rules (no NACES needed)", "url": "https://grad.berkeley.edu/admissions/application-process/requirements/" }
+      ]
+    },
+    {
+      "term": "MIMS",
+      "mentionedIn": ["mm-p0-command-s02", "mm-p1-python-s01", "mm-p3-berkeley-s01"],
+      "seeAlso": [
+        { "label": "Berkeley MIMS admissions", "url": "https://www.ischool.berkeley.edu/programs/mims/admissions" },
+        { "label": "MIMS Class of 2027 profile", "url": "https://www.ischool.berkeley.edu/news/2025/meet-mims-class-2027" }
+      ]
+    },
+    {
+      "term": "MHCI",
+      "mentionedIn": ["mm-p0-command-s02", "mm-p3-cmu-s01", "mm-p3-cmu-s02"],
+      "seeAlso": [
+        { "label": "CMU MHCI admissions", "url": "https://hcii.cmu.edu/academics/mhci/admissions" },
+        { "label": "MHCI FAQ (acceptance rate, prerequisites, deferrals)", "url": "https://www.hcii.cmu.edu/academics/mhci/mhci-faqs" }
+      ]
+    }
+  ]
+}
