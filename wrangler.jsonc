@@ -8,7 +8,7 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "APP_URL": "http://localhost:8787"
+    "APP_URL": "https://halflife.getravi.workers.dev"
   },
   "d1_databases": [
     {
