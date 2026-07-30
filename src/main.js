@@ -5,7 +5,7 @@
  * only writing is gated.
  */
 import '../style.css';
-import { loadPath, loadCatalogue } from './content.js';
+import { loadPath, loadCatalogue, resolvePathId } from './content.js';
 import { indexPath, computeWeights } from './weights.js';
 import { setProgressState } from './progress.js';
 import { renderPath, renderNav } from './render-path.js';
@@ -20,8 +20,6 @@ import { renderSettings } from './settings-view.js';
 import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { renderAuthView } from './auth-view.js';
 import { API } from './api.js';
-
-const DEFAULT_PATH_ID = 'frontier-lab';
 
 // The local calendar day. toISOString returns the UTC day and would shift the
 // plan start for anyone west of UTC.
@@ -45,9 +43,8 @@ async function boot() {
   setMe(me);
   renderHeader();
 
-  // Each account sees the path it enrolled in; signed out (or not yet
-  // enrolled) falls back to the default so the curriculum still renders.
-  const PATH_ID = me.enrollments?.[0]?.pathId ?? DEFAULT_PATH_ID;
+  const catalogue = await loadCatalogue();
+  const PATH_ID = resolvePathId(window.location.search, catalogue, me.enrollments);
 
   const path = await loadPath(PATH_ID);
   const ctx = {
@@ -92,11 +89,10 @@ async function boot() {
   renderAuthView(async () => { window.location.reload(); });
 
   const enrolled = new Set((me.enrollments ?? []).map(e => e.pathId));
-  const catalogue = await loadCatalogue();
-  renderPaths(catalogue, enrolled, async pathId => {
+  renderPaths(catalogue, enrolled, isSignedIn(), async pathId => {
     await API.enrol(pathId, localDate(new Date()));
-    window.location.hash = '#today';
-    window.location.reload();
+    // A changed query string is a navigation, so the reload comes free.
+    window.location.href = `/?path=${encodeURIComponent(pathId)}#today`;
   });
 
   // Cards are edited in place rather than refetched: the outbox guarantees
@@ -139,7 +135,9 @@ async function boot() {
   } else if (isSignedIn() && !enrolled.has(PATH_ID)) {
     window.location.hash = '#paths';
   } else if (!window.location.hash) {
-    window.location.hash = '#today';
+    // Enrolled people land on their work; everyone else lands on the
+    // catalogue, which is the homepage.
+    window.location.hash = isSignedIn() ? '#today' : '#paths';
   }
 
   initNav();

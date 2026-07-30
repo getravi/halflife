@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { vi } from 'vitest';
 import path from '../../paths/frontier-lab.json';
+import { catalogueEntry } from '../../tools/validate-path.js';
 
 const PATH_URL = '/paths/frontier-lab-test.json';
 
@@ -62,7 +63,9 @@ export async function mountApp(state = {}) {
     });
 
     if (u.includes('/paths/index.json')) {
-      return json({ paths: [{ id: 'frontier-lab', title: path.title, url: PATH_URL }] });
+      // The same derivation the build uses, so the stub can never drift
+      // from what emit() actually serves.
+      return json({ paths: [catalogueEntry(path, 'frontier-lab-test.json')] });
     }
     if (u.includes(PATH_URL)) return json(path);
     if (u.includes('/api/me')) return json(me);

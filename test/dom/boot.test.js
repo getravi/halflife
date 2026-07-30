@@ -39,6 +39,19 @@ describe('boot, signed out', () => {
     expect(urls).not.toMatch(/api\/progress/);
     expect(urls).not.toMatch(/api\/cards/);
   });
+
+  it('lands on the catalogue, which is the homepage', async () => {
+    await mountApp();
+    expect(window.location.hash).toBe('#paths');
+  });
+
+  it('offers a read-only view link into the path, not an enrol button', async () => {
+    await mountApp();
+    const link = $('#paths-list a[href^="/?path=frontier-lab#"]');
+    expect(link).toBeTruthy();
+    expect(link.textContent).toBe('View path');
+    expect($('#paths-list .path-enrol')).toBeFalsy();
+  });
 });
 
 describe('boot, signed in and enrolled', () => {
