@@ -1076,4 +1076,8 @@ weight-badge {
   .container, .container-sm { padding: 1.5rem 1rem; }
 
   .stats-row { grid-template-columns: repeat(2, 1fr); }
+
+  .sidebar-header { padding: 1rem; }
+  .sidebar-body { padding: 1rem; gap: 1.25rem; }
+  .step-checkbox { width: 18px; height: 18px; }
 }
