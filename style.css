@@ -1032,3 +1032,48 @@ weight-badge {
 .exercise-pending { color: var(--muted); }
 .exercise-when { color: var(--muted); margin-left: 6px; }
 #token-value { font-family: var(--mono); font-size: 12px; margin-top: 10px; }
+
+/* ── Mobile ── */
+.nav-toggle { display: none; }
+
+/* Media queries measure the pre-zoom viewport, so 700px catches phones even
+   though the desktop zoom would otherwise shrink them to ~312px of layout. */
+@media (max-width: 700px) {
+  /* The 1.25 is a desktop reading preference; a phone needs the width back. */
+  html { zoom: 1; }
+
+  .site-header { padding: 0 1rem; }
+
+  .nav-toggle {
+    display: block;
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-size: 16px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+
+  .nav {
+    display: none;
+    position: fixed;
+    top: 52px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    font-size: 13px;
+  }
+
+  .nav.nav-open { display: flex; }
+
+  .nav a { padding: 12px 1rem; border: none; border-top: 1px solid var(--border); }
+
+  .auth-slot .auth-login { display: none; }
+
+  .container, .container-sm { padding: 1.5rem 1rem; }
+
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}

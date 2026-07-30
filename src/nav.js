@@ -14,4 +14,12 @@ export function initNav() {
   };
   window.addEventListener('hashchange', apply);
   apply();
+
+  const nav = document.querySelector('.nav');
+  document.querySelector('.nav-toggle').addEventListener('click', () =>
+    nav.classList.toggle('nav-open'));
+  // Hash navigation keeps the page alive, so the drawer closes itself.
+  nav.addEventListener('click', e => {
+    if (e.target.closest('a')) nav.classList.remove('nav-open');
+  });
 }
