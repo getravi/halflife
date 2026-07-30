@@ -21,7 +21,7 @@ import { setMe, renderHeader, isSignedIn } from './auth.js';
 import { renderAuthView } from './auth-view.js';
 import { API } from './api.js';
 
-const PATH_ID = 'frontier-lab';
+const DEFAULT_PATH_ID = 'frontier-lab';
 
 // The local calendar day. toISOString returns the UTC day and would shift the
 // plan start for anyone west of UTC.
@@ -44,6 +44,10 @@ async function boot() {
   const me = await API.getMe();
   setMe(me);
   renderHeader();
+
+  // Each account sees the path it enrolled in; signed out (or not yet
+  // enrolled) falls back to the default so the curriculum still renders.
+  const PATH_ID = me.enrollments?.[0]?.pathId ?? DEFAULT_PATH_ID;
 
   const path = await loadPath(PATH_ID);
   const ctx = {
