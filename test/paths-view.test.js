@@ -45,3 +45,23 @@ describe('pathCardsHtml', () => {
     expect(html).not.toContain('path-enrol');
   });
 });
+
+describe('homepage sections', () => {
+  const two = { paths: [
+    catalogue.paths[0],
+    { id: 'fl', title: 'Frontier Lab', tagline: 'Go deep.', weeks: 52,
+      tasks: 36, phases: [{ id: 'p0', title: 'Zero' }], url: '/paths/fl-x.json' }
+  ] };
+
+  it('groups enrolled paths under My paths, the rest under Explore', () => {
+    const html = pathCardsHtml(two, new Set(['mm']), true);
+    expect(html).toContain('My paths');
+    expect(html).toContain('Explore');
+    expect(html.indexOf('Mission Masters Degree')).toBeLessThan(html.indexOf('Frontier Lab'));
+  });
+
+  it('shows no section headings when nothing is enrolled', () => {
+    expect(pathCardsHtml(two, new Set(), true)).not.toContain('My paths');
+    expect(pathCardsHtml(two, new Set(), false)).not.toContain('Explore');
+  });
+});

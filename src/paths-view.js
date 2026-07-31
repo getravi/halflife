@@ -18,8 +18,8 @@ function cardButton(p, enrolledIds, signedIn) {
   return view;
 }
 
-export function pathCardsHtml(catalogue, enrolledIds, signedIn) {
-  return (catalogue.paths ?? []).map(p => `
+function card(p, enrolledIds, signedIn) {
+  return `
     <div class="path-card">
       <div class="path-card-head">
         <span class="path-title">${esc(p.title)}</span>
@@ -30,7 +30,20 @@ export function pathCardsHtml(catalogue, enrolledIds, signedIn) {
       <ol class="path-phase-list">
         ${(p.phases ?? []).map(ph => `<li>${esc(ph.title)}</li>`).join('')}
       </ol>
-    </div>`).join('');
+    </div>`;
+}
+
+export function pathCardsHtml(catalogue, enrolledIds, signedIn) {
+  const all = catalogue.paths ?? [];
+  const mine = all.filter(p => enrolledIds.has(p.id));
+  const rest = all.filter(p => !enrolledIds.has(p.id));
+  const cards = ps => ps.map(p => card(p, enrolledIds, signedIn)).join('');
+
+  // Sections only when there is something of yours to put on top; an
+  // unenrolled visitor gets one plain list, not an empty "My paths".
+  if (!mine.length) return cards(all);
+  return `<div class="path-section-title">My paths</div>${cards(mine)}${
+    rest.length ? `<div class="path-section-title">Explore</div>${cards(rest)}` : ''}`;
 }
 
 export function renderPaths(catalogue, enrolledIds, signedIn, onEnrol) {
