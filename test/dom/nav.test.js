@@ -23,7 +23,26 @@ describe('mobile nav drawer', () => {
     // Hash navigation keeps the page alive, so the drawer has to close
     // itself — otherwise it sits on top of the view the user just picked.
     toggle.click();
-    $('.nav a[href="#cards"]').click();
+    $('.nav a[href="#settings"]').click();
     expect(nav.classList.contains('nav-open')).toBe(false);
+  });
+});
+
+describe('path bar visibility', () => {
+  it('hides on app-level views and shows inside a path', async () => {
+    await mountApp();
+
+    window.location.hash = '#paths';
+    window.dispatchEvent(new Event('hashchange'));
+    expect($('#path-bar').hidden).toBe(true);
+
+    window.location.hash = '#cards';
+    window.dispatchEvent(new Event('hashchange'));
+    expect($('#path-bar').hidden).toBe(false);
+    expect($('.path-bar a[href="#cards"]').classList.contains('active')).toBe(true);
+
+    window.location.hash = '#settings';
+    window.dispatchEvent(new Event('hashchange'));
+    expect($('#path-bar').hidden).toBe(true);
   });
 });
