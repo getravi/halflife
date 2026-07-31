@@ -11,12 +11,7 @@ import path from '../paths/frontier-lab.json';
  */
 function capture(fn) {
   let html = '';
-  fn({
-    insertAdjacentHTML: (_pos, s) => { html += s; },
-    // renderNav wires a change listener onto the switcher it just inserted;
-    // the markup is what these tests assert, so the hook is a stub.
-    querySelector: () => ({ addEventListener() {} })
-  });
+  fn({ insertAdjacentHTML: (_pos, s) => { html += s; } });
   return html;
 }
 
@@ -89,13 +84,8 @@ describe('renderPath against the real curriculum', () => {
 });
 
 describe('renderNav', () => {
-  const catalogue = { paths: [
-    { id: path.id, title: 'This one', phases: [] },
-    { id: 'other', title: 'Other one', phases: [{ id: 'o-p0', title: 'O' }] }
-  ] };
-
   it('builds the whole path bar: views plus one link per phase', () => {
-    const bar = capture(root => renderNav(path, root, catalogue));
+    const bar = capture(root => renderNav(path, root));
     for (const [href, label] of [['#today', 'Today'], ['#cards', 'Cards'],
         ['#glossary', 'Terms'], ['#notes', 'Notes']]) {
       expect(bar).toContain(`href="${href}">${label}`);
@@ -103,16 +93,11 @@ describe('renderNav', () => {
     for (const ph of path.phases) expect(bar).toContain(`href="#${ph.id}"`);
   });
 
-  it('offers a path switcher when the catalogue holds more than one path', () => {
-    const bar = capture(root => renderNav(path, root, catalogue));
-    expect(bar).toContain('nav-path-switcher');
-    expect(bar).toContain('Other one');
-    expect(bar).toMatch(new RegExp(`value="${path.id}"[^>]*selected`));
-  });
-
-  it('renders no switcher when there is only one path', () => {
-    const one = { paths: [{ id: path.id, title: 'Only', phases: [] }] };
-    const bar = capture(root => renderNav(path, root, one));
-    expect(bar).not.toContain('nav-path-switcher');
+  it('opens with a breadcrumb: Paths, then the path name', () => {
+    const bar = capture(root => renderNav(path, root));
+    expect(bar).toContain('path-crumb');
+    expect(bar).toContain('href="#paths">Paths');
+    expect(bar).toContain(path.title);
+    expect(bar.indexOf('Paths')).toBeLessThan(bar.indexOf(path.title));
   });
 });

@@ -72,31 +72,9 @@ export function renderPath(path, root) {
     (path.phases ?? []).map(phasePanel).join(''));
 }
 
-// Views that exist for every path, so a switch can keep you where you are.
-// Anything else is a phase hash belonging to the old path, which would land
-// on a blank panel — those switch to the target's first phase instead.
-const SHARED_VIEWS = new Set(
-  ['#today', '#paths', '#cards', '#glossary', '#notes', '#settings', '#account']);
-
-export function renderNav(path, nav, catalogue) {
-  const paths = catalogue?.paths ?? [];
-  if (paths.length > 1) {
-    nav.insertAdjacentHTML('beforeend',
-      `<select class="nav-path-switcher" aria-label="Learning path">${
-        paths.map(p =>
-          `<option value="${esc(p.id)}"${p.id === path.id ? ' selected' : ''}>${esc(p.title)}</option>`
-        ).join('')}</select>`);
-    nav.querySelector('.nav-path-switcher').addEventListener('change', e => {
-      const target = paths.find(p => p.id === e.target.value);
-      const hash = SHARED_VIEWS.has(window.location.hash)
-        ? window.location.hash
-        : `#${target.phases?.[0]?.id ?? ''}`;
-      window.location.href = `/?path=${encodeURIComponent(target.id)}${hash}`;
-    });
-  }
-
+export function renderNav(path, nav) {
   nav.insertAdjacentHTML('beforeend',
-    `<a href="#today">Today</a>${
+    `<span class="path-crumb"><a href="#paths">Paths</a><span class="crumb-sep">&rsaquo;</span><span class="path-bar-name">${esc(path.title)}</span></span><a href="#today">Today</a>${
       (path.phases ?? []).map(ph =>
         `<a href="#${esc(ph.id)}">${esc(ph.num || ph.id)}</a>`).join('')
     }<a href="#cards">Cards</a><a href="#glossary">Terms</a><a href="#notes">Notes</a>`);

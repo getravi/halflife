@@ -55,7 +55,7 @@ async function boot() {
   };
 
   renderPath(path, document.getElementById('phase-views'));
-  renderNav(path, document.getElementById('path-bar'), catalogue);
+  renderNav(path, document.getElementById('path-bar'));
   initSidebar(ctx);
 
   // Content, not user data — it renders whether or not anyone is signed in.

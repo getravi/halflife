@@ -33,9 +33,26 @@ export function renderHeader() {
 
   const { email, emailVerified } = current.user;
   slot.innerHTML = `
-    <span class="auth-login">${email ?? ''}</span>
-    ${emailVerified ? '' : '<a class="auth-signin" href="#account">verify</a>'}
-    <button class="auth-signout" id="auth-signout">Sign out</button>`;
+    <div class="user-menu">
+      <button class="user-menu-btn auth-login" id="user-menu-btn">${email ?? ''} &#9662;</button>
+      <div class="user-menu-list" id="user-menu-list" hidden>
+        <a href="#settings">Settings</a>
+        <a href="#account">Account${emailVerified ? '' : ' &middot; verify'}</a>
+        <button class="auth-signout" id="auth-signout">Sign out</button>
+      </div>
+    </div>`;
+
+  const btn = document.getElementById('user-menu-btn');
+  const list = document.getElementById('user-menu-list');
+  btn.addEventListener('click', () => { list.hidden = !list.hidden; });
+  // A menu that stays open over content is worse than no menu: close on any
+  // choice and on any click that lands outside it.
+  list.addEventListener('click', e => {
+    if (e.target.closest('a')) list.hidden = true;
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.user-menu')) list.hidden = true;
+  });
 
   document.getElementById('auth-signout').addEventListener('click', async () => {
     await API.signout();
