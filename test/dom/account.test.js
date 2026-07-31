@@ -104,9 +104,9 @@ describe('signed in but unverified', () => {
 });
 
 describe('signed in and verified', () => {
-  it('goes to Today when enrolled', async () => {
+  it('lands on the paths homepage even when enrolled — the app is its paths', async () => {
     await mountApp({ signedIn: true, verified: true, enrolled: true });
-    expect(window.location.hash).toBe('#today');
+    expect(window.location.hash).toBe('#paths');
   });
 
   it('shows the email in the header', async () => {

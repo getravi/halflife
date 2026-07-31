@@ -55,7 +55,7 @@ async function boot() {
   };
 
   renderPath(path, document.getElementById('phase-views'));
-  renderNav(path, document.querySelector('.nav'), catalogue);
+  renderNav(path, document.getElementById('path-bar'), catalogue);
   initSidebar(ctx);
 
   // Content, not user data — it renders whether or not anyone is signed in.
@@ -133,11 +133,9 @@ async function boot() {
   if (me.user && !me.user.emailVerified) {
     window.location.hash = '#account';
   } else if (!window.location.hash) {
-    // An explicit hash is always respected — browsing a path you have not
-    // enrolled in is legitimate. Only the landing depends on enrolment:
-    // your own path opens on your work, anything else on the catalogue.
-    window.location.hash =
-      isSignedIn() && enrolled.has(PATH_ID) ? '#today' : '#paths';
+    // The app is its paths; everyone starts at the catalogue. Explicit
+    // hashes are always respected — browsing needs no enrolment.
+    window.location.hash = '#paths';
   }
 
   initNav();

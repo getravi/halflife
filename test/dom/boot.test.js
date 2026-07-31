@@ -20,10 +20,10 @@ describe('boot, signed out', () => {
     expect($$('.task-item')).toHaveLength(subtasks.length);      // 158
   });
 
-  it('builds a nav link per phase', async () => {
+  it('builds a path-bar link per phase', async () => {
     await mountApp();
     for (const ph of path.phases) {
-      expect($(`.nav a[href="#${ph.id}"]`)).toBeTruthy();
+      expect($(`.path-bar a[href="#${ph.id}"]`)).toBeTruthy();
     }
   });
 
