@@ -96,6 +96,8 @@ export function renderNav(path, nav, catalogue) {
   }
 
   nav.insertAdjacentHTML('beforeend',
-    (path.phases ?? []).map(ph =>
-      `<a href="#${esc(ph.id)}">${esc(ph.num || ph.id)}</a>`).join(''));
+    `<a href="#today">Today</a>${
+      (path.phases ?? []).map(ph =>
+        `<a href="#${esc(ph.id)}">${esc(ph.num || ph.id)}</a>`).join('')
+    }<a href="#cards">Cards</a><a href="#glossary">Terms</a><a href="#notes">Notes</a>`);
 }

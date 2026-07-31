@@ -89,26 +89,30 @@ describe('renderPath against the real curriculum', () => {
 });
 
 describe('renderNav', () => {
-  it('emits one link per phase, pointing at the panel ids renderPath created', () => {
-    const nav = capture(root => renderNav(path, root));
-    expect(count(nav, /<a /g)).toBe(5);
-    for (const ph of path.phases) expect(nav).toContain(`href="#${ph.id}"`);
+  const catalogue = { paths: [
+    { id: path.id, title: 'This one', phases: [] },
+    { id: 'other', title: 'Other one', phases: [{ id: 'o-p0', title: 'O' }] }
+  ] };
+
+  it('builds the whole path bar: views plus one link per phase', () => {
+    const bar = capture(root => renderNav(path, root, catalogue));
+    for (const [href, label] of [['#today', 'Today'], ['#cards', 'Cards'],
+        ['#glossary', 'Terms'], ['#notes', 'Notes']]) {
+      expect(bar).toContain(`href="${href}">${label}`);
+    }
+    for (const ph of path.phases) expect(bar).toContain(`href="#${ph.id}"`);
   });
 
   it('offers a path switcher when the catalogue holds more than one path', () => {
-    const catalogue = { paths: [
-      { id: path.id, title: 'This one', phases: [] },
-      { id: 'other', title: 'Other one', phases: [{ id: 'o-p0', title: 'O' }] }
-    ] };
-    const nav = capture(root => renderNav(path, root, catalogue));
-    expect(nav).toContain('nav-path-switcher');
-    expect(nav).toContain('Other one');
-    expect(nav).toMatch(new RegExp(`value="${path.id}"[^>]*selected`));
+    const bar = capture(root => renderNav(path, root, catalogue));
+    expect(bar).toContain('nav-path-switcher');
+    expect(bar).toContain('Other one');
+    expect(bar).toMatch(new RegExp(`value="${path.id}"[^>]*selected`));
   });
 
   it('renders no switcher when there is only one path', () => {
-    const catalogue = { paths: [{ id: path.id, title: 'Only', phases: [] }] };
-    const nav = capture(root => renderNav(path, root, catalogue));
-    expect(nav).not.toContain('nav-path-switcher');
+    const one = { paths: [{ id: path.id, title: 'Only', phases: [] }] };
+    const bar = capture(root => renderNav(path, root, one));
+    expect(bar).not.toContain('nav-path-switcher');
   });
 });

@@ -58,6 +58,37 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0.08em;
   color: var(--accent);
   text-transform: uppercase;
+  text-decoration: none;
+}
+
+/* Row 2: the open path's own navigation. Hidden on app-level views. */
+.path-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 2rem;
+  height: 40px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 52px;
+  z-index: 99;
+  font-family: var(--mono);
+  font-size: 11px;
+  overflow-x: auto;
+}
+.path-bar[hidden] { display: none; }
+.path-bar a {
+  padding: 4px 12px;
+  color: var(--muted2);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.path-bar a:hover, .path-bar a.active {
+  color: var(--text);
+  border-color: var(--border2);
+  background: var(--bg2);
 }
 
 .nav {
@@ -81,7 +112,7 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--border);
   border-radius: 2px;
   padding: 5px 8px;
-  margin: 0 10px 0 4px;
+  margin: 0 10px 0 0;
   max-width: 180px;
   cursor: pointer;
 }
@@ -952,6 +983,16 @@ weight-badge {
 .auth-signin:hover, .auth-signout:hover { background: rgba(255,255,255,0.12); }
 .signed-out-note { color: var(--muted); font-size: 13px; }
 .step-checkbox:disabled { opacity: 0.4; cursor: not-allowed; }
+.path-section-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 18px 0 4px;
+}
+.path-section-title:first-child { margin-top: 0; }
+
 .path-card { padding: 16px 0; border-bottom: 1px solid var(--border); }
 .path-card:last-child { border-bottom: none; }
 .path-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -1060,6 +1101,10 @@ weight-badge {
   html { zoom: 1; }
 
   .site-header { padding: 0 1rem; }
+
+  /* The path bar stays a scrollable strip on phones; only row 1 collapses
+     into the drawer. */
+  .path-bar { padding: 0 1rem; }
 
   .nav-toggle {
     display: block;
